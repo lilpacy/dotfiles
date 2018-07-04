@@ -15,10 +15,8 @@ set clipboard+=unnamed
 set smartindent "改行の前の行の構文をチェックしてインデントを増減する
 set shiftwidth=2 "自動インデントでずれる幅
 set noswapfile
-" 括弧自動補完とエンター後のインデントを深く
-inoremap { {}<Left>
+" 括弧エンター後のインデントを深く
 inoremap {<Enter> {}<Left><CR><ESC><S-o>
-inoremap ( ()<ESC>i
 inoremap (<Enter> ()<Left><CR><ESC><S-o>
 "クリップボードからのペーストの際、なし崩し的にインデントが成されるのを停止する
 if &term =~ "xterm"
