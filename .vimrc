@@ -92,5 +92,9 @@ filetype plugin indent on
 
 " If there are uninstalled bundles found on startup,
 " this will conveniently prompt you to install them.
+
+" neocomplete.vimの設定
+let g:neocomplete#enable_at_startup = 1
+
 NeoBundleCheck
 
