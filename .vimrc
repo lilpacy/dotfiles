@@ -147,6 +147,22 @@ set ruler " ステータスラインの右側にカーソルの現在位置を�
 " Unite.vimの設定
 NeoBundle 'Shougo/unite.vim'
 
+" TypeScriptシンタックス設定
+NeoBundle 'Shougo/vimproc.vim', {
+\ 'build' : {
+\     'windows' : 'tools\\update-dll-mingw',
+\     'cygwin' : 'make -f make_cygwin.mak',
+\     'mac' : 'make -f make_mac.mak',
+\     'linux' : 'make',
+\     'unix' : 'gmake',
+\    },
+\ }
+NeoBundle 'Quramy/tsuquyomi'
+NeoBundleLazy 'leafgarland/typescript-vim', {
+\ 'autoload' : {
+\   'filetypes' : ['typescript'] }
+\}
+
 call neobundle#end()
 
 " If there are uninstalled bundles found on startup,
