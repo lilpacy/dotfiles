@@ -105,6 +105,14 @@ nnoremap <silent><C-e> :NERDTreeToggle<CR>
 NeoBundleLazy 'othree/yajs.vim', {'autoload':{'filetypes':['javascript']}}
 autocmd BufRead,BufNewFile *.es6 setfiletype javascript
 
+" ウインドウが移動した時にファイルを読み直し
+if has("autocmd")
+  augroup vimrc-checktime
+    autocmd!
+    autocmd WinEnter * checktime
+  augroup END
+endif " has("autocmd")
+
 " Required:
 filetype plugin indent on
 
