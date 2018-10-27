@@ -34,6 +34,10 @@ set backspace=indent,eol,start
 " 括弧エンター後のインデントを深く
 inoremap {<Enter> {}<Left><CR><ESC><S-o>
 inoremap (<Enter> ()<Left><CR><ESC><S-o>
+
+" Omni Completionの有効化(補完機能の拡張)
+filetype plugin on
+set omnifunc=syntaxcomplete#Complete
 "クリップボードからのペーストの際、なし崩し的にインデントが成されるのを停止する
 if &term =~ "xterm"
     let &t_SI .= "\e[?2004h"
