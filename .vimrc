@@ -29,6 +29,11 @@ nnoremap j gj
 nnoremap k gk
 nnoremap <down> gj
 nnoremap <up> gk
+" vimgrep検索結果移動ショートカット
+nnoremap [q :cprevious<CR>   " 前へ
+nnoremap ]q :cnext<CR>       " 次へ
+nnoremap [Q :<C-u>cfirst<CR> " 最初へ
+nnoremap ]Q :<C-u>clast<CR>  " 最後へ
 " バックスペースキーの有効化
 set backspace=indent,eol,start
 " 括弧エンター後のインデントを深く
