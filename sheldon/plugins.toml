@@ -1,0 +1,7 @@
+[plugins]
+
+[plugins.zsh-autosuggestions]
+github = "zsh-users/zsh-autosuggestions"
+
+[plugins.ni]
+github = 'azu/ni.zsh'
