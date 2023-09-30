@@ -76,12 +76,8 @@
 
 # zsh history
 	# https://qiita.com/syui/items/c1a1567b2b76051f50c4
-	# メモリに保存される履歴の件数
-	export HISTSIZE=10000
-	# 履歴ファイルに保存される履歴の件数
-	export SAVEHIST=100000
 	# 重複を記録しない
-	setopt hist_ignore_dups
+	setopt hist_ignore_all_dups
 	# 開始と終了を記録
 	setopt EXTENDED_HISTORY
 	# 全履歴一覧表示
@@ -90,6 +86,23 @@
 	setopt share_history
 	# 補完時にヒストリを自動的に展開         
 	setopt hist_expand
+	# ヒストリーファイルの設定
+	HISTFILE=$HOME/.zsh_history
+	# メモリに保存される履歴の件数
+	HISTSIZE=100000
+	# 履歴ファイルに保存される履歴の件数
+	SAVEHIST=100000
+	# ヒストリーの共有
+	setopt share_history
+	# 重複を記録しない
+	setopt hist_ignore_all_dups
+	# ディレクトリスタックへの自動追加
+	setopt auto_pushd
+	# 自動的にcd
+	setopt auto_cd
+	# 補完システムの初期化
+	autoload -Uz compinit
+	compinit
 
 # bookmark
 	# https://threkk.medium.com/how-to-use-bookmarks-in-bash-zsh-6b8074e40774
@@ -173,7 +186,6 @@
 # aqua
 	export PATH="${AQUA_ROOT_DIR:-${XDG_DATA_HOME:-$HOME/.local/share}/aquaproj-aqua}/bin:$PATH"
 
-
 # pnpm
 	export PNPM_HOME="/Users/lilpacy/Library/pnpm"
 	case ":$PATH:" in
@@ -185,3 +197,15 @@
 # sheldon
 	eval "$(sheldon source)"
 
+# eza
+	alias la="eza -a --git -g -h --oneline"
+	alias ls="eza"
+
+## fzf
+	function fzf-select-history() {
+	    BUFFER=$(history -n -r 1 | fzf --query "$LBUFFER")
+	    CURSOR=$#BUFFER
+	    zle reset-prompt
+	}
+	zle -N fzf-select-history
+	bindkey '^r' fzf-select-history
