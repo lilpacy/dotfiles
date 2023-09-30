@@ -5,10 +5,6 @@
 # alias
 	alias ll='ls -lh'
 	alias la='ls -lah'
-	alias cd-ws='cd ~/workspace'
-	alias cd-front='cd ~/workspace/cg/nftstudio-frontend'
-	alias cd-back='cd ~/workspace/cg/nftstudio'
-	alias cd-cg=' cd ~/workspace/cg'
 	alias hh='hardhat'
 	alias python='python3'
 
