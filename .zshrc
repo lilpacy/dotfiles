@@ -50,7 +50,6 @@
 	alias gck='git checkout'
 	alias gpf='git push --force-with-lease'
 	alias gpp='git pull --prune'
-	function gi() {curl -sL https://www.toptal.com/developers/gitignore/api/\$@; gi}
 
 # tmux
 	if [[ ! "$TERM" =~ "screen" ]]; then
