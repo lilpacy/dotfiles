@@ -5,6 +5,8 @@
 ```sh
 npm i
 aqua i
+chmod 700 link.sh
+./link.sh
 ```
 
 ## homebrew
