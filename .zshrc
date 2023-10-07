@@ -175,10 +175,6 @@
 # sheldon
 	eval "$(sheldon source)"
 
-# eza
-	alias la="eza -a --git -g -h --oneline"
-	alias ls="eza"
-
 # fzf
 	function fzf-select-history() {
 	    BUFFER=$(history -n -r 1 | fzf --query "$LBUFFER")
