@@ -1,0 +1,46 @@
+#!/bin/bash
+
+get_float_input() {
+    while true; do
+        read -p "$1" number
+        if [[ $number =~ ^[0-9]*\.?[0-9]+$ ]]; then
+            echo $number
+            break
+        else
+            echo "Please enter a valid number."
+        fi
+    done
+}
+
+main() {
+    echo "Welcome to the Dynamic Task Benefit Calculator!"
+
+    read -p "Enter the number of tasks (excluding Task A): " num_tasks
+
+    without_A_total=0
+    with_A_total=0
+
+    tA=$(get_float_input "Enter the time to complete Task A: ")
+    with_A_total=$(echo "$with_A_total + $tA" | bc)
+
+    for ((i=0; i<$num_tasks; i++)); do
+        task_label=$(printf "\x$(printf %x $((66+i)))")
+
+        original_time=$(get_float_input "Enter the time to complete Task $task_label without doing A: ")
+        time_with_A=$(get_float_input "Enter the time to complete Task $task_label after doing A: ")
+
+        without_A_total=$(echo "$without_A_total + $original_time" | bc)
+        with_A_total=$(echo "$with_A_total + $time_with_A" | bc)
+    done
+
+    echo -e "\nTotal time without doing Task A first: $without_A_total"
+    echo "Total time with doing Task A first: $with_A_total"
+
+    if (( $(echo "$with_A_total < $without_A_total" | bc -l) )); then
+        echo "It's beneficial to do Task A first."
+    else
+        echo "It's not beneficial to do Task A first."
+    fi
+}
+
+main
