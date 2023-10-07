@@ -1,5 +1,12 @@
 # dotfiles
 
+## setup
+
+```sh
+npm i
+aqua i
+```
+
 ## homebrew
 
 backup
