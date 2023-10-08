@@ -23,20 +23,18 @@ main() {
     tA=$(get_float_input "Enter the time to complete Task A: ")
     with_A_total=$(echo "$with_A_total + $tA" | bc)
 
-    for ((i=0; i<$num_tasks; i++)); do
-        task_label=$(printf "\x$(printf %x $((66+i)))")
+    task_label=$(printf "\x$(printf %x $((66 + i)))")
 
-        original_time=$(get_float_input "Enter the time to complete Task $task_label without doing A: ")
-        time_with_A=$(get_float_input "Enter the time to complete Task $task_label after doing A: ")
+    original_time=$(get_float_input "Enter the time to complete Task $task_label without doing A: ")
+    time_with_A=$(get_float_input "Enter the time to complete Task $task_label after doing A: ")
 
-        without_A_total=$(echo "$without_A_total + $original_time" | bc)
-        with_A_total=$(echo "$with_A_total + $time_with_A" | bc)
-    done
+    without_A_total=$(echo "$without_A_total + $original_time * $num_tasks" | bc)
+    with_A_total=$(echo "$with_A_total + $time_with_A * $num_tasks" | bc)
 
     echo -e "\nTotal time without doing Task A first: $without_A_total"
     echo "Total time with doing Task A first: $with_A_total"
 
-    if (( $(echo "$with_A_total < $without_A_total" | bc -l) )); then
+    if (($(echo "$with_A_total < $without_A_total" | bc -l))); then
         echo "It's beneficial to do Task A first."
     else
         echo "It's not beneficial to do Task A first."
