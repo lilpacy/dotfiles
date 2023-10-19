@@ -6,8 +6,6 @@ set fileformats=unix,dos,mac
 set tabstop=4
 set shiftwidth=4
 
-set smartindent
-
 let g:netrw_liststyle = 3
 
 set clipboard+=unnamed
