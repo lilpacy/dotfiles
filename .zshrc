@@ -175,15 +175,6 @@
 # sheldon
 	eval "$(sheldon source)"
 
-# fzf
-	function fzf-select-history() {
-	    BUFFER=$(history -n -r 1 | fzf --query "$LBUFFER")
-	    CURSOR=$#BUFFER
-	    zle reset-prompt
-	}
-	zle -N fzf-select-history
-	bindkey '^r' fzf-select-history
-
 	# fshow - git commit browser
 	fshow() {
 	  git log --graph --color=always \
