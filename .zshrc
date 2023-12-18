@@ -119,8 +119,8 @@
 	zle -N peco-src
 
 # boostnote
-	alias backup-bs="/bin/bash -l -c 'cd /Users/lilpacy/Library/CloudStorage/GoogleDrive-revivedtomorrow@gmail.com/My\ Drive/Boostnote && sh backup.sh'"
-	alias backup-ob="/bin/bash -l -c 'cd /Users/lilpacy/Library/CloudStorage/GoogleDrive-revivedtomorrow@gmail.com/My\ Drive/Obsidian && sh backup.sh'"
+	alias backup-bs="/bin/bash -l -c 'cd /Users/lilpacy/Library/CloudStorage/GoogleDrive-revivedtomorrow@gmail.com/My\ Drive/Boostnote && sh -x backup.sh'"
+	alias backup-ob="/bin/bash -l -c 'cd /Users/lilpacy/Library/CloudStorage/GoogleDrive-revivedtomorrow@gmail.com/My\ Drive/Obsidian && sh -x backup.sh'"
 
 # elixir
 	. /opt/homebrew/opt/asdf/libexec/asdf.sh
