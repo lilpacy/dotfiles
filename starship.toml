@@ -36,5 +36,4 @@ disabled = true
 [aws]
 disabled = true
 
-[command_timeout]
-timeout = 6000
+command_timeout = 6000
