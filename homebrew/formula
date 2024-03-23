@@ -24,13 +24,16 @@ ca-certificates
 cabextract
 cairo
 ceres-solver
+certifi
 cffi
 cfn-lint
+chatgpt-cli
 cjson
 cmake
 cmocka
 cookiecutter
 coreutils
+cryptography
 curl
 dav1d
 dbus
@@ -88,6 +91,7 @@ hdf5
 heroku
 heroku-node
 highway
+htop
 hunspell
 hwloc
 icu4c
@@ -101,6 +105,7 @@ jpeg
 jpeg-turbo
 jpeg-xl
 jq
+json-c
 jsoncpp
 krb5
 lambroll
@@ -147,6 +152,7 @@ libsamplerate
 libsndfile
 libsodium
 libsoxr
+libssh
 libssh2
 libtasn1
 libtiff
@@ -184,6 +190,7 @@ mpg123
 mysql
 ncurses
 netcdf
+netdata
 netpbm
 nettle
 nkf
@@ -215,6 +222,7 @@ pkg-config
 postgresql
 postgresql@14
 protobuf
+protobuf-c
 protobuf@21
 pugixml
 pycparser
@@ -261,6 +269,7 @@ rtmpdump
 rubberband
 rustup-init
 sdl2
+serverless
 shared-mime-info
 sheldon
 six
@@ -286,6 +295,7 @@ tmux
 tree
 unbound
 unixodbc
+unrar
 unzip
 utf8cpp
 utf8proc
