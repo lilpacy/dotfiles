@@ -5,6 +5,7 @@ name = lilpacy
 email = revivedtomorrow@gmail.com
 [core]
 autocrlf = input
+quotepath = false
 [alias]
 ac = !git add -A && aicommits -a
 ignore = "!gi() { curl -L -s https://www.gitignore.io/api/$@ ;}; gi"
