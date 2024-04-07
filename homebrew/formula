@@ -31,6 +31,7 @@ chatgpt-cli
 cjson
 cmake
 cmocka
+colordiff
 cookiecutter
 coreutils
 cryptography
@@ -136,6 +137,7 @@ libidn2
 libksba
 liblqr
 libmagic
+libmaxminddb
 libmicrohttpd
 libmng
 libmpc
@@ -149,6 +151,7 @@ libraw
 librist
 librsvg
 libsamplerate
+libsmi
 libsndfile
 libsodium
 libsoxr
@@ -175,6 +178,7 @@ libxrender
 libyaml
 libzip
 little-cms2
+lua
 lz4
 lzo
 m4
@@ -276,6 +280,7 @@ six
 snappy
 source-highlight
 speex
+speexdsp
 sqlite
 srt
 starship
