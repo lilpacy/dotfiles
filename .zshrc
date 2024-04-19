@@ -120,7 +120,7 @@
 
 # boostnote
 	alias backup-bs="/bin/bash -l -c 'cd /Users/lilpacy/Library/CloudStorage/GoogleDrive-revivedtomorrow@gmail.com/My\ Drive/Boostnote && sh -x backup.sh'"
-	alias backup-ob="/bin/bash -l -c 'cd /Users/lilpacy/Library/CloudStorage/GoogleDrive-revivedtomorrow@gmail.com/My\ Drive/Obsidian && sh -x backup.sh'"
+	alias backup-ob="/bin/bash -l -c 'cd /Users/lilpacy/go/src/github.com/lilpacy/obsidian && sh -x backup.sh'"
 	alias backup-al="/bin/bash -l -c 'cd ~/Library/Application\ Support/Alfred/ && sh -x backup.sh'"
 
 # elixir
