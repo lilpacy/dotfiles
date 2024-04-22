@@ -4,6 +4,8 @@ ln -sf ~/dotfiles/.bashrc ~/.bashrc
 ln -sf ~/dotfiles/.tmux.conf ~/.tmux.conf
 ln -sf ~/dotfiles/starship.toml ~/.config/starship.toml
 ln -sf ~/dotfiles/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
+ln -sf ~/dotfiles/.yabairc ~/.yabairc
+ln -sf ~/dotfiles/.skhdrc ~/.skhdrc
 
 find shell | xargs -p chmod 700
 sudo ln -sf ~/dotfiles/shell/task_cal /usr/local/bin/task_cal
