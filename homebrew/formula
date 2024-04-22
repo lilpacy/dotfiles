@@ -102,6 +102,7 @@ ipfs
 isl
 jasper
 jbig2dec
+jnv
 jpeg
 jpeg-turbo
 jpeg-xl
@@ -277,6 +278,7 @@ serverless
 shared-mime-info
 sheldon
 six
+skhd
 snappy
 source-highlight
 speex
@@ -319,6 +321,7 @@ xmlto
 xorgproto
 xvid
 xz
+yabai
 yt-dlp
 zeromq
 zimg
