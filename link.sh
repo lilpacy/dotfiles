@@ -6,6 +6,7 @@ ln -sf ~/dotfiles/starship.toml ~/.config/starship.toml
 ln -sf ~/dotfiles/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
 ln -sf ~/dotfiles/.yabairc ~/.yabairc
 ln -sf ~/dotfiles/.skhdrc ~/.skhdrc
+ln -sf ~/dotfiles/karabiner.json ~/.config/karabiner/karabiner.json
 
 find shell | xargs -p chmod 700
 sudo ln -sf ~/dotfiles/shell/task_cal /usr/local/bin/task_cal
