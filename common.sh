@@ -23,6 +23,7 @@ export GO111MODULE=on
 # 『改訂2版 みんなのGO言語』
 # go1.16からはgomodulesがデフォルトonになりGOPATHからは解放されているが
 # 他のバージョンの開発のために一応設定しておく
+mkdir -p ~/go/bin ~/go/src ~/go/pkg
 export GOPATH=$(go env GOPATH)
 
 # go installで入れた実行ファイルにパスを通す
