@@ -38,7 +38,8 @@ eval "$(direnv hook zsh)"
 	# 補完システムの初期化
 	autoload -Uz compinit
 	compinit
-
+	# reverse-i-search
+	bindkey '^R' history-incremental-search-backward
 
 # ghq x peco
 bindkey '^]' peco-src
@@ -60,3 +61,6 @@ eval "$(starship init zsh)"
 
 # sheldon
 eval "$(sheldon source)"
+
+# fzf
+eval "$(fzf --zsh)"

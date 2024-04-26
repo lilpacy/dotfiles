@@ -1,3 +1,6 @@
+# emacs keybind
+set -o emacs
+
 # change path priority to local
 export PATH=/usr/local/bin:$PATH
 export PATH=/opt/homebrew/bin:$PATH
