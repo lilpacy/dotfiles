@@ -61,6 +61,3 @@ eval "$(starship init zsh)"
 
 # sheldon
 eval "$(sheldon source)"
-
-# fzf
-eval "$(fzf --zsh)"
