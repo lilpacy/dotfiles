@@ -3,8 +3,17 @@
 ## setup
 
 ```sh
+brew install asdf
+
+asdf plugin add nodejs
+asdf install nodejs 20.12.2
+asdf global nodejs 20.12.2
+
+brew install aquaproj/aqua/aqua
+
 npm i
 aqua i
+
 chmod 700 link.sh
 ./link.sh
 ```
