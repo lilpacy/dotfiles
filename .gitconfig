@@ -14,3 +14,8 @@ ignore = "!gi() { curl -L -s https://www.gitignore.io/api/$@ ;}; gi"
 ff = false
 [pull]
 ff = only
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process

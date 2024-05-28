@@ -87,7 +87,7 @@ export LC_MESSAGES='ja_JP.UTF-8'
 
 # aws
 export AWS_REGION=ap-northeast-1
-export AWS_PROFILE=cryptogames-local-dev
+export AWS_PROFILE=default
 
 # others
 #export LDFLAGS="-L/opt/homebrew/opt/bison/lib"
