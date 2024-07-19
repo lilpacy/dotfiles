@@ -158,3 +158,8 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
+
+# yabai
+alias yabai-start='yabai --start-service'
+alias yabai-stop='yabai --stop-service'
+alias yabai-restart='yabai --restart-service'
