@@ -9,6 +9,8 @@ asdf plugin add nodejs
 asdf install nodejs 20.12.2
 asdf global nodejs 20.12.2
 
+# aquaなどbrewのパッケージでarm64で動かないものがあるのでrosettaを入れる
+softwareupdate --install-rosetta
 brew install aquaproj/aqua/aqua
 
 npm i
