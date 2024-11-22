@@ -1,9 +1,7 @@
 shell = "zsh"
 
-[plugins]
-
 [plugins.zsh-autosuggestions]
 github = "zsh-users/zsh-autosuggestions"
 
 [plugins.fast-syntax-highlighting]
-github = 'zdharma/fast-syntax-highlighting'
+github = "zdharma-continuum/fast-syntax-highlighting"
