@@ -13,6 +13,7 @@ ln -sf ~/dotfiles/.yabairc ~/.yabairc
 ln -sf ~/dotfiles/.skhdrc ~/.skhdrc
 ln -sf ~/dotfiles/karabiner.json ~/.config/karabiner/karabiner.json
 ln -sf ~/dotfiles/.gitconfig ~/.gitconfig
+ln -sf ~/dotfiles/.alacritty.toml ~/.alacritty.toml
 
 sudo ln -sf ~/dotfiles/shell/task_cal /usr/local/bin/task_cal
 sudo ln -sf ~/dotfiles/shell/sssh /usr/local/bin/sssh
