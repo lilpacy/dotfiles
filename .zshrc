@@ -62,3 +62,7 @@ eval "$(starship init zsh)"
 # sheldon
 eval "$(sheldon source)"
 
+# neofetchが存在する場合は実行
+if (( $+commands[neofetch] )); then
+    neofetch
+fi
