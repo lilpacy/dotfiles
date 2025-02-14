@@ -32,6 +32,7 @@ yabai -m rule --add app="^Screen Sharing$" manage=off
 yabai -m rule --add app="^ChatGPT$" manage=off
 yabai -m rule --add app="^Stickies$" manage=off
 yabai -m rule --add app="^python$" manage=off
+yabai -m rule --add app="^OrbStack$" manage=off
 
 yabai -m config debug_output on
 
