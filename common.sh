@@ -146,7 +146,7 @@ pbedit() {
 # https://zenn.dev/s_ha_3000/articles/71d10761889ac7
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/opt/anaconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+__conda_setup="$('/opt/anaconda3/bin/conda' 'shell.zsh' 'hook' 2>/dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
 else
@@ -163,3 +163,10 @@ unset __conda_setup
 alias yabai-start='yabai --start-service'
 alias yabai-stop='yabai --stop-service'
 alias yabai-restart='yabai --restart-service'
+
+# postgresql
+
+export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
+export LDFLAGS="-L/opt/homebrew/opt/postgresql@15/lib"
+export CPPFLAGS="-I/opt/homebrew/opt/postgresql@15/include"
+export PKG_CONFIG_PATH="/opt/homebrew/opt/postgresql@15/lib/pkgconfig"
