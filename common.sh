@@ -103,7 +103,11 @@ export PATH="$PATH:$HOME/.local/bin"
 function lk {
     cd "$(walk "$@")"
 }
+
+# vim
 export EDITOR=vim
+alias vi=nvim
+alias vim=nvim
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
