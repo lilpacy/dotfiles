@@ -35,6 +35,9 @@ yabai -m rule --add app="^python$" manage=off
 yabai -m rule --add app="^OrbStack$" manage=off
 yabai -m rule --add app="^QuickTime Player$" manage=off
 
+yabai -m signal --add event=display_added action="~/dotfiles/tune_yabai_for_deskpad.sh"
+yabai -m signal --add event=display_removed action="~/dotfiles/tune_yabai_for_deskpad.sh"
+
 yabai -m config debug_output on
 
 echo "yabai configuration loaded.."
