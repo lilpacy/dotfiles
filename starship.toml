@@ -34,6 +34,9 @@ disabled = true
 disabled = true
 
 [aws]
-disabled = true
+format = ' [☁ $profile(\($region\))]($style) '
+style = 'bold yellow'
+force_display = true
 
 command_timeout = 6000
+
