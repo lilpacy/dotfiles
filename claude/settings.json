@@ -1,11 +1,29 @@
 {
   "permissions": {
+    "allow": [
+      "Read(~/**)",
+      "WebSearch",
+      "WebFetch"
+    ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
       "Read(./secrets/**)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
       "Read(./config/credentials.json)",
-      "Read(./build)"
+      "Read(./build)",
+      "Edit(./.env)",
+      "Edit(./.env.*)",
+      "Edit(./**/.env)",
+      "Edit(./**/.env.*)",
+      "Edit(./secrets/**)",
+      "Edit(~/.ssh/**)",
+      "Edit(~/.aws/**)",
+      "Edit(./config/credentials.json)",
+      "Edit(./build)"
     ]
   },
   "hooks": {
