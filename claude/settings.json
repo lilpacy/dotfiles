@@ -1,9 +1,26 @@
 {
+  "env": {
+      "CLAUDE_CODE_USE_BEDROCK": 1,
+      "ANTHROPIC_MODEL": "jp.anthropic.claude-sonnet-4-5-20250929-v1:0",
+      "CLAUDE_CODE_MAX_OUTPUT_TOKENS": 4096,
+      "MAX_THINKING_TOKENS": 1024
+  },
   "permissions": {
     "allow": [
       "Read(~/**)",
       "WebSearch",
-      "WebFetch"
+      "WebFetch",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(pwd:*)",
+      "Bash(cd:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(grep -n:*)",
+      "Bash(ls:*)",
+      "Bash(head:*)",
+      "Bash(echo:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [
       "Read(./.env)",
@@ -15,15 +32,22 @@
       "Read(~/.aws/**)",
       "Read(./config/credentials.json)",
       "Read(./build)",
-      "Edit(./.env)",
-      "Edit(./.env.*)",
-      "Edit(./**/.env)",
-      "Edit(./**/.env.*)",
-      "Edit(./secrets/**)",
-      "Edit(~/.ssh/**)",
-      "Edit(~/.aws/**)",
-      "Edit(./config/credentials.json)",
-      "Edit(./build)"
+      "Write(./.env)",
+      "Write(./.env.*)",
+      "Write(./**/.env)",
+      "Write(./**/.env.*)",
+      "Write(./secrets/**)",
+      "Write(~/.ssh/**)",
+      "Write(~/.aws/**)",
+      "Write(./config/credentials.json)",
+      "Write(./build)",
+      "Bash(sudo:*)",
+      "Bash(rm -rf:*)",
+      "Bash(git push:*)",
+      "Bash(git reset:*)",
+      "Bash(git rebase:*)",
+      "Read(.env*)",
+      "Write(.env*)"
     ]
   },
   "hooks": {
