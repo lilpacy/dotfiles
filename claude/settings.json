@@ -10,6 +10,8 @@
       "Read(~/**)",
       "WebSearch",
       "WebFetch",
+      "Grep",
+      "Glob",
       "Bash(ls:*)",
       "Bash(cat:*)",
       "Bash(pwd:*)",
