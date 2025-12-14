@@ -1,9 +1,9 @@
 {
   "env": {
-      "CLAUDE_CODE_USE_BEDROCK": 1,
-      "ANTHROPIC_MODEL": "jp.anthropic.claude-sonnet-4-5-20250929-v1:0",
-      "CLAUDE_CODE_MAX_OUTPUT_TOKENS": 4096,
-      "MAX_THINKING_TOKENS": 1024
+    "CLAUDE_CODE_USE_BEDROCK": "1",
+    "ANTHROPIC_MODEL": "jp.anthropic.claude-sonnet-4-5-20250929-v1:0",
+    "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "8192",
+    "MAX_THINKING_TOKENS": "1024"
   },
   "permissions": {
     "allow": [
@@ -34,22 +34,22 @@
       "Read(~/.aws/**)",
       "Read(./config/credentials.json)",
       "Read(./build)",
-      "Write(./.env)",
-      "Write(./.env.*)",
-      "Write(./**/.env)",
-      "Write(./**/.env.*)",
-      "Write(./secrets/**)",
-      "Write(~/.ssh/**)",
-      "Write(~/.aws/**)",
-      "Write(./config/credentials.json)",
-      "Write(./build)",
+      "Edit(./.env)",
+      "Edit(./.env.*)",
+      "Edit(./**/.env)",
+      "Edit(./**/.env.*)",
+      "Edit(./secrets/**)",
+      "Edit(~/.ssh/**)",
+      "Edit(~/.aws/**)",
+      "Edit(./config/credentials.json)",
+      "Edit(./build)",
       "Bash(sudo:*)",
       "Bash(rm -rf:*)",
       "Bash(git push:*)",
       "Bash(git reset:*)",
       "Bash(git rebase:*)",
       "Read(.env*)",
-      "Write(.env*)"
+      "Edit(.env*)"
     ]
   },
   "hooks": {
@@ -76,5 +76,5 @@
       }
     ]
   },
-  "alwaysThinkingEnabled": false
+  "alwaysThinkingEnabled": true
 }
