@@ -26,9 +26,12 @@ return {
       end
 
       -- LSPサーバーの設定
-      local lspconfig = require("lspconfig")
-      lspconfig.lua_ls.setup({ on_attach = on_attach })
-      lspconfig.ts_ls.setup({ on_attach = on_attach })
+      vim.lsp.config('lua_ls', {
+        on_attach = on_attach
+      })
+      vim.lsp.config('ts_ls', {
+        on_attach = on_attach
+      })
       -- 他の言語サーバーも同様に追加
     end,
   },
