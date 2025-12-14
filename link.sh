@@ -15,7 +15,7 @@ ln -sf ~/dotfiles/karabiner.json ~/.config/karabiner/karabiner.json
 ln -sf ~/dotfiles/.gitconfig ~/.gitconfig
 ln -sf ~/dotfiles/.alacritty.toml ~/.alacritty.toml
 ln -sf ~/dotfiles/nvim ~/.config/nvim
-ln -sf ~/dotfiles/.claude/settings.json ~/.claude/settings.json
+ln -sf ~/dotfiles/claude/settings.json ~/.claude/settings.json
 
 sudo ln -sf ~/dotfiles/shell/task_cal /usr/local/bin/task_cal
 sudo ln -sf ~/dotfiles/shell/sssh /usr/local/bin/sssh
