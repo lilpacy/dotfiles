@@ -14,29 +14,13 @@ return {
       on_attach = function(bufnr)
         local api = require('nvim-tree.api')
 
-        -- デフォルトのキーマッピングを適用
+        -- デフォルトのキーマッピングを適用（<2-LeftMouse>も含む）
         api.config.mappings.default_on_attach(bufnr)
 
-        -- マウスクリックでファイル/フォルダを開く
-        vim.keymap.set('n', '<LeftMouse>', function()
-          vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<LeftMouse>', true, false, true), 'n', false)
-          local node = api.tree.get_node_under_cursor()
-          if node then
-            if node.type == 'directory' then
-              api.node.open.edit()
-            else
-              api.node.open.edit()
-            end
-          end
-        end, { buffer = bufnr, noremap = true, silent = true, desc = 'Open with mouse click' })
-
-        -- ダブルクリックでも開く
-        vim.keymap.set('n', '<2-LeftMouse>', function()
-          local node = api.tree.get_node_under_cursor()
-          if node then
-            api.node.open.edit()
-          end
-        end, { buffer = bufnr, noremap = true, silent = true, desc = 'Open with double click' })
+        -- シングルクリックで開く（ボタンを離したタイミング）
+        vim.keymap.set('n', '<LeftRelease>', function()
+          api.node.open.edit()
+        end, { buffer = bufnr, noremap = true, silent = true, desc = 'Open with single click' })
       end,
       -- レンダラー設定
       renderer = {
