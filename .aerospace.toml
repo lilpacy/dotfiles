@@ -1,0 +1,193 @@
+# AeroSpace configuration
+# Migration from yabai + skhd
+
+config-version = 2
+
+# Start AeroSpace at login
+start-at-login = true
+
+# Normalizations (similar to yabai BSP behavior)
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+# Layout settings
+accordion-padding = 30
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+
+# Mouse follows focus
+on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
+
+# Automatically unhide hidden apps
+automatically-unhide-macos-hidden-apps = false
+
+# Persistent workspaces (1-9 only, matching yabai setup)
+persistent-workspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+[key-mapping]
+preset = 'qwerty'
+
+# Gaps (matching yabai padding of 10px)
+[gaps]
+inner.horizontal = 10
+inner.vertical = 10
+outer.left = 10
+outer.bottom = 10
+outer.top = 10
+outer.right = 10
+
+# Main key bindings (translated from .skhdrc)
+[mode.main.binding]
+
+# Focus window (alt + hjkl) - matching yabai focus
+alt-h = 'focus left'
+alt-j = 'focus down'
+alt-k = 'focus up'
+alt-l = 'focus right'
+
+# Swap window (shift + alt + hjkl) - matching yabai swap
+alt-shift-h = 'swap left'
+alt-shift-j = 'swap down'
+alt-shift-k = 'swap up'
+alt-shift-l = 'swap right'
+
+# Move/warp window (shift + cmd + hjkl) - matching yabai warp
+cmd-shift-h = 'move left'
+cmd-shift-j = 'move down'
+cmd-shift-k = 'move up'
+cmd-shift-l = 'move right'
+
+# Resize windows (increase: shift + alt + wasd, decrease: shift + cmd + wasd)
+# Note: Using smart resize as AeroSpace doesn't have exact pixel control
+alt-shift-w = 'resize smart +50'
+alt-shift-s = 'resize smart -50'
+alt-shift-a = 'resize smart -50'
+alt-shift-d = 'resize smart +50'
+
+cmd-shift-w = 'resize smart +20'
+cmd-shift-s = 'resize smart -20'
+cmd-shift-a = 'resize smart -20'
+cmd-shift-d = 'resize smart +20'
+
+# Toggle split orientation (alt + e) - similar to yabai toggle split
+alt-e = 'layout horizontal vertical'
+
+# Fullscreen zoom (alt + f) - similar to yabai zoom-fullscreen
+alt-f = 'fullscreen --no-outer-gaps'
+
+# Native fullscreen (shift + alt + f)
+alt-shift-f = 'macos-native-fullscreen'
+
+# Float/unfloat window (alt + t) - similar to yabai toggle float
+alt-t = 'layout floating tiling'
+
+# Workspaces 1-9 (alt + number)
+alt-1 = 'workspace 1'
+alt-2 = 'workspace 2'
+alt-3 = 'workspace 3'
+alt-4 = 'workspace 4'
+alt-5 = 'workspace 5'
+alt-6 = 'workspace 6'
+alt-7 = 'workspace 7'
+alt-8 = 'workspace 8'
+alt-9 = 'workspace 9'
+
+# Move window to workspace (alt + shift + number)
+alt-shift-1 = 'move-node-to-workspace 1'
+alt-shift-2 = 'move-node-to-workspace 2'
+alt-shift-3 = 'move-node-to-workspace 3'
+alt-shift-4 = 'move-node-to-workspace 4'
+alt-shift-5 = 'move-node-to-workspace 5'
+alt-shift-6 = 'move-node-to-workspace 6'
+alt-shift-7 = 'move-node-to-workspace 7'
+alt-shift-8 = 'move-node-to-workspace 8'
+alt-shift-9 = 'move-node-to-workspace 9'
+
+# Workspace back and forth
+alt-tab = 'workspace-back-and-forth'
+
+# Enter service mode for advanced operations
+alt-shift-semicolon = 'mode service'
+
+# Service mode for advanced window management
+[mode.service.binding]
+esc = ['reload-config', 'mode main']
+r = ['flatten-workspace-tree', 'mode main']
+f = ['layout floating tiling', 'mode main']
+backspace = ['close-all-windows-but-current', 'mode main']
+
+alt-shift-h = ['join-with left', 'mode main']
+alt-shift-j = ['join-with down', 'mode main']
+alt-shift-k = ['join-with up', 'mode main']
+alt-shift-l = ['join-with right', 'mode main']
+
+# App-specific rules (matching yabai manage=off apps)
+# These apps will float by default instead of being tiled
+
+[[on-window-detected]]
+if.app-id = 'com.apple.systempreferences'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.systemsettings'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'company.thebrowser.Browser'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.googlecode.iterm2'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.finder'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.1password.1password'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.runningwithcrayons.Alfred-Preferences'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Preview'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Notes'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.raycast.macos'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.ScreenSharing'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.openai.chat'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.Stickies'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.orbstack.OrbStack'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.apple.QuickTimePlayerX'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.nordvpn.osx'
+run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.anthropic.claude'
+run = 'layout floating'
