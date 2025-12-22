@@ -81,6 +81,9 @@ alt-shift-f = 'macos-native-fullscreen'
 # Float/unfloat window (alt + t) - similar to yabai toggle float
 alt-t = 'layout floating tiling'
 
+# Toggle AeroSpace on/off (alt + shift + o) - useful for Stickies and other apps
+alt-shift-o = 'enable toggle'
+
 # Workspaces 1-9 (alt + number)
 alt-1 = 'workspace 1'
 alt-2 = 'workspace 2'
