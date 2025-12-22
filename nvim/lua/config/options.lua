@@ -33,3 +33,20 @@ vim.api.nvim_create_autocmd({ "TextChanged", "InsertLeave", "CursorHold" }, {
   end,
   desc = "変更を自動保存"
 })
+
+-- tmuxのフォーカスに応じて背景色を変更
+vim.api.nvim_create_autocmd("FocusGained", {
+  pattern = "*",
+  callback = function()
+    vim.cmd("highlight Normal guibg=NONE ctermbg=NONE")
+  end,
+  desc = "フォーカス時に背景色をクリア"
+})
+
+vim.api.nvim_create_autocmd("FocusLost", {
+  pattern = "*",
+  callback = function()
+    vim.cmd("highlight Normal guibg=NONE ctermbg=NONE")
+  end,
+  desc = "フォーカス喪失時も背景色をクリア"
+})
