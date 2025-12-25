@@ -1,0 +1,9 @@
+# Window settings
+window-decoration = false
+window-padding-x = 2
+window-padding-y = 2
+
+# Font settings
+font-family = Hack Nerd Font
+font-size = 12
+
