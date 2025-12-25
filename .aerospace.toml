@@ -15,14 +15,25 @@ accordion-padding = 30
 default-root-container-layout = 'tiles'
 default-root-container-orientation = 'auto'
 
-# Mouse follows focus
-on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
-
 # Automatically unhide hidden apps
 automatically-unhide-macos-hidden-apps = false
 
 # Persistent workspaces (1-9 only, matching yabai setup)
 persistent-workspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+# Workspace to monitor assignment
+# When external monitor is connected: 1-5 on external (main), 6-9 on built-in
+# When only built-in: all workspaces on built-in
+[workspace-to-monitor-force-assignment]
+1 = ['main', 'built-in']
+2 = ['main', 'built-in']
+3 = ['main', 'built-in']
+4 = ['main', 'built-in']
+5 = ['main', 'built-in']
+6 = 'built-in'
+7 = 'built-in'
+8 = 'built-in'
+9 = 'built-in'
 
 [key-mapping]
 preset = 'qwerty'
@@ -194,3 +205,16 @@ run = 'layout floating'
 [[on-window-detected]]
 if.app-id = 'com.anthropic.claude'
 run = 'layout floating'
+
+[[on-window-detected]]
+if.app-id = 'com.tinyspeck.slackmacgap'
+run = ['move-node-to-workspace 2']
+
+[[on-window-detected]]
+if.app-id = 'com.hnc.Discord'
+run = ['move-node-to-workspace 2']
+
+[[on-window-detected]]
+if.app-id = 'com.mitchellh.ghostty'
+run = ['move-node-to-workspace 3']
+
