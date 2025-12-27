@@ -5,6 +5,7 @@ return {
     dependencies = {
       "williamboman/mason.nvim",
       "williamboman/mason-lspconfig.nvim",
+      "WhoIsSethDaniel/mason-tool-installer.nvim",
     },
     config = function()
       -- Masonのセットアップ
@@ -18,6 +19,17 @@ return {
           "jsonls",          -- JSON (package.json, tsconfig.jsonなど)
         },
         automatic_installation = true,
+      })
+
+      -- フォーマッタの自動インストール
+      require("mason-tool-installer").setup({
+        ensure_installed = {
+          "prettierd",       -- Prettier daemon (高速版)
+          "prettier",        -- Prettier (フォールバック用)
+          "stylua",          -- Lua formatter
+        },
+        auto_update = false,
+        run_on_start = true,
       })
 
       -- LSPキーマッピング
