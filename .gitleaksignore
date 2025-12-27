@@ -1,0 +1,9 @@
+# Ignore false positives in documentation examples
+claude/skills/implement-design/SKILL.md:generic-api-key:45
+claude/skills/implement-design/SKILL.md:generic-api-key:165
+claude/skills/implement-design/SKILL.md:generic-api-key:166
+claude/skills/implement-design/SKILL.md:generic-api-key:167
+claude/skills/implement-design/SKILL.md:generic-api-key:182
+claude/skills/implement-design/SKILL.md:generic-api-key:183
+claude/skills/implement-design/SKILL.md:generic-api-key:185
+claude/skills/implement-design/SKILL.md:generic-api-key:186
