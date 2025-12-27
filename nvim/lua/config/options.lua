@@ -23,17 +23,6 @@ vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHo
   desc = "外部変更を自動検知"
 })
 
--- 自動保存
-vim.api.nvim_create_autocmd({ "TextChanged", "InsertLeave", "CursorHold" }, {
-  pattern = "*",
-  callback = function()
-    if vim.bo.modified and vim.fn.filereadable(vim.fn.expand("%")) == 1 and not vim.bo.readonly then
-      vim.cmd("silent! write")
-    end
-  end,
-  desc = "変更を自動保存"
-})
-
 -- tmuxのフォーカスに応じて背景色を変更
 vim.api.nvim_create_autocmd("FocusGained", {
   pattern = "*",
