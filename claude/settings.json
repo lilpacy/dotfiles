@@ -22,7 +22,8 @@
       "Bash(ls:*)",
       "Bash(head:*)",
       "Bash(echo:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "mcp__ais__gpt5_reason_browse"
     ],
     "deny": [
       "Read(./.env)",
