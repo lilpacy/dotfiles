@@ -80,10 +80,8 @@ return {
         end, 'Ctrl+Click で定義へ')
       end
 
-      -- LSPサーバーの設定
-      local lspconfig = require('lspconfig')
-
-      lspconfig.lua_ls.setup({
+      -- LSPサーバーの設定 (Neovim 0.11+ の新しいAPI)
+      vim.lsp.config('lua_ls', {
         on_attach = on_attach,
         settings = {
           Lua = {
@@ -95,7 +93,7 @@ return {
       })
 
       -- TypeScript/JavaScript (Next.js対応)
-      lspconfig.ts_ls.setup({
+      vim.lsp.config('ts_ls', {
         on_attach = on_attach,
         settings = {
           typescript = {
@@ -124,19 +122,22 @@ return {
       })
 
       -- Tailwind CSS
-      lspconfig.tailwindcss.setup({
+      vim.lsp.config('tailwindcss', {
         on_attach = on_attach,
       })
 
       -- ESLint
-      lspconfig.eslint.setup({
+      vim.lsp.config('eslint', {
         on_attach = on_attach,
       })
 
       -- JSON
-      lspconfig.jsonls.setup({
+      vim.lsp.config('jsonls', {
         on_attach = on_attach,
       })
+
+      -- LSPサーバーを有効化
+      vim.lsp.enable({ 'lua_ls', 'ts_ls', 'tailwindcss', 'eslint', 'jsonls' })
     end,
   },
 }
