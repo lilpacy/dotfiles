@@ -41,10 +41,52 @@ return {
       end,
       desc = "Search & Replace in current file",
     },
+    -- 大文字小文字を区別して検索（Case Sensitive）
+    {
+      "<leader>sC",
+      function()
+        require("grug-far").open({
+          prefills = { flags = "-s" },
+        })
+      end,
+      desc = "Search & Replace (Case Sensitive)",
+    },
+    -- 単語完全一致（Whole Word）
+    {
+      "<leader>sW",
+      function()
+        require("grug-far").open({
+          prefills = { flags = "-w" },
+        })
+      end,
+      desc = "Search & Replace (Whole Word)",
+    },
+    -- リテラル検索（正規表現OFF、VSCodeのRegexボタンOFF相当）
+    {
+      "<leader>sL",
+      function()
+        require("grug-far").open({
+          prefills = { flags = "-F" },
+        })
+      end,
+      desc = "Search & Replace (Literal/Fixed)",
+    },
   },
   config = function()
     require("grug-far").setup({
-      -- デフォルト設定で十分、必要に応じてカスタマイズ
+      -- VSCode風のキーマップ（grug-farバッファ内で使用）
+      keymaps = {
+        toggleShowCommand = { n = "<localleader>c" },
+        toggleFlags = { n = "<localleader>f" },
+      },
+      -- エンジン別の設定
+      engines = {
+        ripgrep = {
+          placeholders = {
+            flags = "e.g. -i (ignore case), -s (case sensitive), -w (whole word), -F (fixed/literal)",
+          },
+        },
+      },
     })
   end,
 }
