@@ -4,18 +4,29 @@ return {
     "nvim-treesitter/nvim-treesitter",
     "nvim-tree/nvim-web-devicons",
   },
-  ft = { "markdown" },
+  -- ftなし: どのfiletypeでも<leader>oで使える
   keys = {
-    { "<leader>o", "<cmd>AerialToggle!<cr>", desc = "Toggle Outline (ToC)" },
+    { "<leader>o", "<cmd>AerialToggle!<cr>", desc = "Toggle Outline (ToC / Symbols)" },
   },
   config = function()
     require("aerial").setup({
-      backends = { "treesitter", "markdown" },
+      -- filetypeごとのbackend設定
+      backends = {
+        _ = { "treesitter", "lsp" },  -- デフォルト（コード全般）
+        markdown = { "markdown" },     -- Markdown専用
+      },
       layout = {
         min_width = 30,
-        default_direction = "right",
+        max_width = { 40, 0.25 },
+        default_direction = "prefer_right",
+        placement = "edge",
       },
-      filter_kind = false,
+      attach_mode = "global",  -- VSCodeのOutlineのようにバッファ切り替えに追従
+      -- 言語ごとのシンボルフィルタ
+      filter_kind = {
+        _ = { "Class", "Constructor", "Enum", "Function", "Interface", "Module", "Method", "Struct" },
+        markdown = { "Interface" },  -- 見出しのみ
+      },
       show_guides = true,
       guides = {
         mid_item = "├─",
@@ -23,24 +34,6 @@ return {
         nested_top = "│ ",
         whitespace = "  ",
       },
-      markdown = {
-        update_delay = 100,
-      },
-    })
-
-    -- Markdownファイルを開いた時、画面が広ければ自動でアウトラインを表示
-    vim.api.nvim_create_autocmd("FileType", {
-      pattern = "markdown",
-      callback = function()
-        if vim.o.columns >= 120 then
-          vim.defer_fn(function()
-            local aerial = require("aerial")
-            if not aerial.is_open() then
-              aerial.open()
-            end
-          end, 100)
-        end
-      end,
     })
   end,
 }
