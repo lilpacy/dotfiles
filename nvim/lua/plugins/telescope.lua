@@ -74,6 +74,11 @@ return {
           },
         },
       },
+      pickers = {
+        find_files = {
+          hidden = true,
+        },
+      },
       extensions = {
         live_grep_args = {
           auto_quoting = true,
