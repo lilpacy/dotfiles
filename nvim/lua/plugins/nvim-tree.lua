@@ -35,7 +35,7 @@ return {
         side = "left",
       },
       -- 空の[No Name]バッファから開いたときはそのウィンドウを乗っ取る
-      hijack_unnamed_buffer_when_opening = true,
+      hijack_unnamed_buffer_when_opening = false,
       -- ディレクトリ自動オープンは自前のautocmdに任せる
       hijack_directories = {
         enable = false,

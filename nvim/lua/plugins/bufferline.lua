@@ -10,6 +10,14 @@ return {
         show_buffer_close_icons = false,
         show_close_icon = false,
         separator_style = "thin",
+        -- バッファを削除してもウィンドウは保持（VSCodeライクな挙動）
+        close_command = function(bufnr)
+          require("bufdelete").bufdelete(bufnr, true)
+        end,
+        right_mouse_command = function(bufnr)
+          require("bufdelete").bufdelete(bufnr, true)
+        end,
+        left_mouse_command = "buffer %d",
         offsets = {
           {
             filetype = "NvimTree",
