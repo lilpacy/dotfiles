@@ -1,5 +1,5 @@
-# Color scheme (tokyonight統一)
-theme = tokyonight
+# Color scheme (nord統一)
+theme = Nord
 
 # Window settings
 window-padding-x = 2
@@ -9,6 +9,6 @@ window-padding-y = 2
 font-family = JetBrainsMono Nerd Font
 font-size = 13
 
-background-opacity = 0.90
+background-opacity = 0.99
 background-opacity-cells = true
 
