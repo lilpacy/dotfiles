@@ -3,12 +3,52 @@ return {
   dependencies = {
     "nvim-tree/nvim-web-devicons", -- アイコン表示用
   },
+
+  -- 起動時にディレクトリならNvimTreeを現在のウィンドウで開く
+  init = function()
+    local function open_nvim_tree(data)
+      -- 起動時のバッファがディレクトリかどうか
+      local directory = vim.fn.isdirectory(data.file) == 1
+      if not directory then
+        return
+      end
+
+      -- Neovimのcwdをそのディレクトリに変更
+      vim.cmd.cd(data.file)
+
+      -- このウィンドウをそのままNvimTreeに置き換える
+      require("nvim-tree.api").tree.open({
+        current_window = true,
+      })
+    end
+
+    vim.api.nvim_create_autocmd("VimEnter", {
+      callback = open_nvim_tree,
+    })
+  end,
+
   config = function()
     require("nvim-tree").setup({
       -- ビューの設定
       view = {
         width = 30,
         side = "left",
+      },
+      -- 空の[No Name]バッファから開いたときはそのウィンドウを乗っ取る
+      hijack_unnamed_buffer_when_opening = true,
+      -- ディレクトリ自動オープンは自前のautocmdに任せる
+      hijack_directories = {
+        enable = false,
+        auto_open = false,
+      },
+      -- ファイルを開いた時の挙動
+      actions = {
+        open_file = {
+          quit_on_open = false,
+          window_picker = {
+            enable = true,
+          },
+        },
       },
       -- マウスサポートを有効化
       on_attach = function(bufnr)
@@ -49,4 +89,3 @@ return {
     { "<C-n>", "<cmd>NvimTreeToggle<CR>", desc = "Toggle NvimTree" },
   },
 }
-
