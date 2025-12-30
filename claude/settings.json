@@ -23,7 +23,8 @@
       "Bash(head:*)",
       "Bash(echo:*)",
       "Bash(npx tsc:*)",
-      "mcp__ais__gpt5_reason_browse"
+      "mcp__ais__gpt5_reason_browse",
+      "Bash(git show *)"
     ],
     "deny": [
       "Read(./.env)",
