@@ -39,3 +39,47 @@ vim.api.nvim_create_autocmd("FocusLost", {
   end,
   desc = "フォーカス喪失時も背景色をクリア"
 })
+
+-- insertモードを抜けた時に自動保存
+vim.api.nvim_create_autocmd("InsertLeave", {
+  pattern = "*",
+  callback = function()
+    if vim.bo.modified and vim.fn.expand("%") ~= "" then
+      vim.cmd("silent! write")
+    end
+  end,
+  desc = "InsertLeave時に自動保存"
+})
+
+-- normalモードでテキスト変更時（ペースト等）に自動保存
+vim.api.nvim_create_autocmd("TextChanged", {
+  pattern = "*",
+  callback = function()
+    if vim.bo.modified and vim.fn.expand("%") ~= "" then
+      vim.cmd("silent! write")
+    end
+  end,
+  desc = "TextChanged時に自動保存"
+})
+
+-- 100ms操作がなければ自動保存
+vim.api.nvim_create_autocmd("CursorHold", {
+  pattern = "*",
+  callback = function()
+    if vim.bo.modified and vim.fn.expand("%") ~= "" then
+      vim.cmd("silent! write")
+    end
+  end,
+  desc = "CursorHold時に自動保存"
+})
+
+-- バッファを離れる時、フォーカス喪失時に自動保存
+vim.api.nvim_create_autocmd({ "BufLeave", "FocusLost" }, {
+  pattern = "*",
+  callback = function()
+    if vim.bo.modified and vim.fn.expand("%") ~= "" then
+      vim.cmd("silent! write")
+    end
+  end,
+  desc = "BufLeave/FocusLost時に自動保存"
+})
