@@ -1,11 +1,14 @@
+# Color scheme (tokyonight統一)
+theme = tokyonight
+
 # Window settings
 window-padding-x = 2
 window-padding-y = 2
 
 # Font settings
-font-family = Hack Nerd Font
+font-family = JetBrainsMono Nerd Font
 font-size = 13
 
-background-opacity = 0.80
+background-opacity = 0.90
 background-opacity-cells = true
 

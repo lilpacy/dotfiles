@@ -1,3 +1,6 @@
+-- true color対応
+vim.opt.termguicolors = true
+
 -- クリップボード連携を有効化
 vim.opt.clipboard = "unnamedplus"
 
