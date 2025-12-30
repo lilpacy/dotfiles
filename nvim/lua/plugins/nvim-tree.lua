@@ -50,17 +50,30 @@ return {
           },
         },
       },
-      -- マウスサポートを有効化
+      -- netrw風キーマッピング
       on_attach = function(bufnr)
         local api = require('nvim-tree.api')
 
-        -- デフォルトのキーマッピングを適用（<2-LeftMouse>も含む）
+        -- デフォルトのキーマッピングを適用
         api.config.mappings.default_on_attach(bufnr)
 
-        -- シングルクリックで開く（ボタンを離したタイミング）
-        vim.keymap.set('n', '<LeftRelease>', function()
-          api.node.open.edit()
-        end, { buffer = bufnr, noremap = true, silent = true, desc = 'Open with single click' })
+        local function opts(desc)
+          return { buffer = bufnr, noremap = true, silent = true, desc = desc }
+        end
+
+        -- netrw風キーバインド
+        vim.keymap.set('n', 't', api.node.open.tab, opts('Open in new tab'))           -- タブで開く
+        vim.keymap.set('n', 'v', api.node.open.vertical, opts('Open vertical split'))  -- 垂直分割
+        vim.keymap.set('n', 'o', api.node.open.horizontal, opts('Open horizontal split'))  -- 水平分割
+        vim.keymap.set('n', '-', api.tree.change_root_to_parent, opts('Go to parent dir'))  -- 親ディレクトリ
+        vim.keymap.set('n', '%', api.fs.create, opts('Create file'))                   -- ファイル作成
+        vim.keymap.set('n', 'd', api.fs.create, opts('Create directory'))              -- ディレクトリ作成（末尾に/をつける）
+        vim.keymap.set('n', 'D', api.fs.remove, opts('Delete'))                        -- 削除
+        vim.keymap.set('n', 'R', api.fs.rename, opts('Rename'))                        -- リネーム
+        vim.keymap.set('n', '<CR>', api.node.open.edit, opts('Open'))                  -- Enter で開く
+
+        -- シングルクリックで開く
+        vim.keymap.set('n', '<LeftRelease>', api.node.open.edit, opts('Open with single click'))
       end,
       -- レンダラー設定
       renderer = {
