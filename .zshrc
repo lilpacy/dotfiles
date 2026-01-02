@@ -41,6 +41,11 @@ eval "$(direnv hook zsh)"
 	# reverse-i-search
 	bindkey '^R' history-incremental-search-backward
 
+# peco wrapper for tmux-256color compatibility
+function peco() {
+    env TERM=screen-256color command peco "$@"
+}
+
 # ghq x peco
 bindkey '^]' peco-src
 function peco-src() {
