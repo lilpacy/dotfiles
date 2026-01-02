@@ -78,6 +78,10 @@ return {
           vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<LeftMouse>', true, false, true), 'n', false)
           goto_definition_with_jump()
         end, 'Ctrl+Click で定義へ')
+
+        -- VSCode風のCode Action (Ctrl+. でimport文の自動追加など)
+        bufmap('n', '<C-.>', vim.lsp.buf.code_action, 'Code Action')
+        bufmap('v', '<C-.>', vim.lsp.buf.code_action, 'Code Action')
       end
 
       -- LSPサーバーの設定 (Neovim 0.11+ の新しいAPI)
