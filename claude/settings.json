@@ -10,6 +10,7 @@
       "Read(~/**)",
       "WebSearch",
       "WebFetch",
+      "Fetch",
       "Grep",
       "Glob",
       "Bash(ls:*)",
@@ -57,11 +58,12 @@
   "hooks": {
     "Notification": [
       {
-        "matcher": "",
+        "matcher": "idle_prompt",
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Blow.aiff"
+            "command": "afplay /System/Library/Sounds/Blow.aiff",
+            "timeout": 5
           }
         ]
       }
@@ -72,7 +74,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Blow.aiff"
+            "command": "afplay /System/Library/Sounds/Blow.aiff",
+            "timeout": 5
           }
         ]
       }
