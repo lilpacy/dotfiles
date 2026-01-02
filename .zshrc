@@ -1,7 +1,7 @@
 source ${ZDOTDIR:-$HOME}/dotfiles/common.sh
 
 # tmux
-	if [[ ! "$TERM" =~ "screen" ]]; then
+	if [[ -z "$TMUX" ]] && [[ ! "$TERM" =~ "screen" ]]; then
 		tmux attach -t default || tmux new -s default
 	fi
 
