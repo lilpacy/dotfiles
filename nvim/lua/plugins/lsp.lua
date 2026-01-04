@@ -13,7 +13,7 @@ return {
       require("mason-lspconfig").setup({
         ensure_installed = {
           "lua_ls",
-          "ts_ls",           -- TypeScript/JavaScript
+          -- ts_ls は typescript-tools.nvim に移行したため削除
           "tailwindcss",     -- Tailwind CSS (Next.jsでよく使う)
           "eslint",          -- ESLint
           "jsonls",          -- JSON (package.json, tsconfig.jsonなど)
@@ -96,34 +96,7 @@ return {
         }
       })
 
-      -- TypeScript/JavaScript (Next.js対応)
-      vim.lsp.config('ts_ls', {
-        on_attach = on_attach,
-        settings = {
-          typescript = {
-            inlayHints = {
-              includeInlayParameterNameHints = 'all',
-              includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayVariableTypeHints = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayEnumMemberValueHints = true,
-            }
-          },
-          javascript = {
-            inlayHints = {
-              includeInlayParameterNameHints = 'all',
-              includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayVariableTypeHints = true,
-              includeInlayPropertyDeclarationTypeHints = true,
-              includeInlayFunctionLikeReturnTypeHints = true,
-              includeInlayEnumMemberValueHints = true,
-            }
-          }
-        }
-      })
+      -- TypeScript/JavaScript は typescript-tools.nvim で管理
 
       -- Tailwind CSS
       vim.lsp.config('tailwindcss', {
@@ -145,8 +118,8 @@ return {
         on_attach = on_attach,
       })
 
-      -- LSPサーバーを有効化
-      vim.lsp.enable({ 'lua_ls', 'ts_ls', 'tailwindcss', 'eslint', 'jsonls', 'clangd' })
+      -- LSPサーバーを有効化 (ts_ls は typescript-tools.nvim に移行)
+      vim.lsp.enable({ 'lua_ls', 'tailwindcss', 'eslint', 'jsonls', 'clangd' })
     end,
   },
 }
