@@ -86,3 +86,35 @@ vim.api.nvim_create_autocmd({ "BufLeave", "FocusLost" }, {
   end,
   desc = "BufLeave/FocusLost時に自動保存"
 })
+
+-- =============================================
+-- 右クリックメニュー (PopUp) の設定
+-- =============================================
+
+-- デフォルトメニューをクリア
+vim.cmd([[aunmenu PopUp]])
+
+-- LSP関連
+vim.cmd([[menu PopUp.Go\ to\ Definition <Cmd>lua vim.lsp.buf.definition()<CR>]])
+vim.cmd([[menu PopUp.Go\ to\ Implementation <Cmd>lua vim.lsp.buf.implementation()<CR>]])
+vim.cmd([[menu PopUp.Find\ References <Cmd>lua vim.lsp.buf.references()<CR>]])
+vim.cmd([[menu PopUp.-sep1- :]])
+vim.cmd([[menu PopUp.Rename <Cmd>lua vim.lsp.buf.rename()<CR>]])
+vim.cmd([[menu PopUp.Code\ Action <Cmd>lua vim.lsp.buf.code_action()<CR>]])
+vim.cmd([[menu PopUp.Format <Cmd>lua vim.lsp.buf.format({ async = true })<CR>]])
+
+-- Git関連
+vim.cmd([[menu PopUp.-sep2- :]])
+vim.cmd([[menu PopUp.Git:\ Blame\ Line <Cmd>Gitsigns blame_line<CR>]])
+vim.cmd([[menu PopUp.Git:\ Stage\ Hunk <Cmd>Gitsigns stage_hunk<CR>]])
+vim.cmd([[menu PopUp.Git:\ Reset\ Hunk <Cmd>Gitsigns reset_hunk<CR>]])
+vim.cmd([[menu PopUp.Git:\ Preview\ Hunk <Cmd>Gitsigns preview_hunk<CR>]])
+
+-- 検索
+vim.cmd([[menu PopUp.-sep3- :]])
+vim.cmd([[menu PopUp.Search\ in\ Workspace <Cmd>lua require('telescope.builtin').grep_string()<CR>]])
+
+-- コメント
+vim.cmd([[menu PopUp.-sep4- :]])
+vim.cmd([[menu PopUp.Toggle\ Comment <Cmd>lua require('Comment.api').toggle.linewise.current()<CR>]])
+vim.cmd([[vmenu PopUp.Toggle\ Comment <Esc><Cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>]])

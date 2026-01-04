@@ -140,8 +140,13 @@ return {
         on_attach = on_attach,
       })
 
+      -- C/C++ (clangd)
+      vim.lsp.config('clangd', {
+        on_attach = on_attach,
+      })
+
       -- LSPサーバーを有効化
-      vim.lsp.enable({ 'lua_ls', 'ts_ls', 'tailwindcss', 'eslint', 'jsonls' })
+      vim.lsp.enable({ 'lua_ls', 'ts_ls', 'tailwindcss', 'eslint', 'jsonls', 'clangd' })
     end,
   },
 }
