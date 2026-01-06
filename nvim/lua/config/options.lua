@@ -11,6 +11,22 @@ vim.opt.expandtab = true      -- タブをスペースに変換
 vim.opt.shiftwidth = 2        -- インデント幅
 vim.opt.tabstop = 2           -- タブ幅
 vim.opt.mouse = "a"           -- すべてのモードでマウスを有効化
+vim.opt.fileformat = "unix"   -- 改行コードをLF（Unix形式）に
+vim.opt.fileformats = { "unix", "dos" }  -- 優先順位: unix > dos
+
+-- CRLF/CRを自動的にLFに変換
+vim.api.nvim_create_autocmd("BufReadPost", {
+  pattern = "*",
+  callback = function()
+    local lines_with_cr = vim.fn.search('\\r$', 'nw')
+    if lines_with_cr > 0 then
+      vim.cmd([[silent! %s/\r$//e]])
+      vim.bo.fileformat = "unix"
+      vim.bo.bomb = false
+    end
+  end,
+  desc = "CRLF/CRを自動的にLFに変換"
+})
 
 -- netrw設定
 vim.g.netrw_liststyle = 3     -- ツリービュー形式
