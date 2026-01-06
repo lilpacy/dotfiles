@@ -12,3 +12,6 @@ font-size = 13
 background-opacity = 1
 background-opacity-cells = true
 
+# Link settings
+link-url = true
+
