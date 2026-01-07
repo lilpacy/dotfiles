@@ -9,17 +9,21 @@ description: Next.js App RouterでのServer Components / Server Actions / Route 
 
 ```
 何を実現したい？
-├─ UIにinteractivity必要？（state/handlers/browser API）
-│   └─ Yes → Client Component
-│   └─ No → データ更新（mutation）？
-│       ├─ Yes → HTTP API公開？
-│       │   ├─ Yes → Route Handler
-│       │   └─ No → Server Action
-│       └─ No → Server Component
+├─ UIコンポーネント？
+│   ├─ Yes → interactivity必要？（state/handlers/browser API）
+│   │   ├─ Yes → Client Component
+│   │   └─ No → Server Component
+│   └─ No（関数/ロジック） → クライアントから呼ぶ？
+│       ├─ No → server-only関数（import 'server-only'）
+│       └─ Yes → HTTP API公開？
+│           ├─ Yes → Route Handler
+│           └─ No → Server Function（'use server'）
+│               └─ mutation文脈？（form action等）
+│                   └─ Yes → Server Action
 ```
 
 **Server Action選択後のキャッシュ更新：**
-- stale許容 → `revalidateTag`
+- stale許容 → `revalidateTag`（`profile="max"`でstale-while-revalidate）
 - 即時反映必須 → `updateTag`
 - パス指定 → `revalidatePath`
 
@@ -179,7 +183,7 @@ revalidatePath('/posts/[id]', 'page')
 
 | 関数 | 特徴 | ユースケース |
 |------|------|-------------|
-| `revalidateTag` | stale-while-revalidate（裏でfreshを取る間staleを返す） | 更新が多少遅れてもよいコンテンツ |
+| `revalidateTag` | `profile="max"`指定でstale-while-revalidate（裏でfreshを取る間staleを返す） | 更新が多少遅れてもよいコンテンツ |
 | `updateTag` | staleを返さずfreshを待つ | read-your-own-writes（更新直後に必ず最新を見せたい） |
 
 `updateTag`はServer Actions内でのみ使える。
@@ -246,6 +250,6 @@ Cache ComponentsはNext configで`cacheComponents`フラグを有効化して使
 - **デフォルトはServer Component**、state/handlers/browser APIが必要なときだけClient Component
 - **UIからの更新はServer Action**、HTTP API公開はRoute Handler
 - **Server Actionsはmutation向け**、並列データ取得にはServer Componentsを使う
-- **キャッシュ制御**は`revalidatePath`/`revalidateTag`、即時反映なら`updateTag`
+- **キャッシュ制御**は`revalidatePath`/`revalidateTag`、即時反映（read-your-own-writes）なら`updateTag`
 - **server-only**にしたいモジュールは`import 'server-only'`で漏洩防止
 - **フォームUI**には`useFormStatus`/`useActionState`/`useOptimistic`を活用
