@@ -4,6 +4,14 @@ return {
   priority = 1000,
   ---@type snacks.Config
   opts = {
+    styles = {
+      snacks_image = {
+        keys = {
+          q = "close",
+          ["<Esc>"] = "close",
+        },
+      },
+    },
     image = {
       enabled = true,
       doc = {
