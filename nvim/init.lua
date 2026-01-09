@@ -14,6 +14,9 @@ vim.api.nvim_create_autocmd('VimEnter', {
 -- 基本設定を読み込み
 require("config.options")
 
+-- キーマップを読み込み
+require("config.keymaps")
+
 -- プラグインマネージャーを読み込み
 require("config.lazy")
 
