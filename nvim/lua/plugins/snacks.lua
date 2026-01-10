@@ -23,6 +23,9 @@ return {
       },
       convert = {
         notify = true,
+        magick = {
+          default = { "{src}[0]", "-scale", "3840x2160>" },
+        },
         mermaid = function()
           local theme = vim.o.background == "light" and "neutral" or "dark"
           return {
