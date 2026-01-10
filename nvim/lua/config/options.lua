@@ -134,3 +134,77 @@ vim.cmd([[menu PopUp.Search\ in\ Workspace <Cmd>lua require('telescope.builtin')
 vim.cmd([[menu PopUp.-sep4- :]])
 vim.cmd([[menu PopUp.Toggle\ Comment <Cmd>lua require('Comment.api').toggle.linewise.current()<CR>]])
 vim.cmd([[vmenu PopUp.Toggle\ Comment <Esc><Cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>]])
+
+-- =============================================
+-- nvim-tree用の右クリックメニュー
+-- =============================================
+
+-- バッファタイプに応じてメニューを動的に切り替える
+vim.api.nvim_create_autocmd("BufEnter", {
+  pattern = "*",
+  callback = function()
+    -- 現在のバッファがnvim-treeかどうかを判定
+    local ft = vim.bo.filetype
+
+    if ft == "NvimTree" then
+      -- nvim-tree用メニューに切り替え
+      vim.cmd([[aunmenu PopUp]])
+
+      -- ファイルパスコピー
+      vim.cmd([[menu PopUp.Copy\ Filename <Cmd>lua require('nvim-tree.api').fs.copy.filename()<CR>]])
+      vim.cmd([[menu PopUp.Copy\ Relative\ Path <Cmd>lua require('nvim-tree.api').fs.copy.relative_path()<CR>]])
+      vim.cmd([[menu PopUp.Copy\ Absolute\ Path <Cmd>lua require('nvim-tree.api').fs.copy.absolute_path()<CR>]])
+
+      vim.cmd([[menu PopUp.-sep1- :]])
+
+      -- ファイル操作
+      vim.cmd([[menu PopUp.Open <Cmd>lua require('nvim-tree.api').node.open.edit()<CR>]])
+      vim.cmd([[menu PopUp.Open\ in\ Vertical\ Split <Cmd>lua require('nvim-tree.api').node.open.vertical()<CR>]])
+      vim.cmd([[menu PopUp.Open\ in\ Horizontal\ Split <Cmd>lua require('nvim-tree.api').node.open.horizontal()<CR>]])
+      vim.cmd([[menu PopUp.Open\ in\ New\ Tab <Cmd>lua require('nvim-tree.api').node.open.tab()<CR>]])
+
+      vim.cmd([[menu PopUp.-sep2- :]])
+
+      -- 編集
+      vim.cmd([[menu PopUp.Rename <Cmd>lua require('nvim-tree.api').fs.rename()<CR>]])
+      vim.cmd([[menu PopUp.Delete <Cmd>lua require('nvim-tree.api').fs.remove()<CR>]])
+      vim.cmd([[menu PopUp.Create\ File/Directory <Cmd>lua require('nvim-tree.api').fs.create()<CR>]])
+
+      vim.cmd([[menu PopUp.-sep3- :]])
+
+      -- カット/コピー/ペースト
+      vim.cmd([[menu PopUp.Cut <Cmd>lua require('nvim-tree.api').fs.cut()<CR>]])
+      vim.cmd([[menu PopUp.Copy <Cmd>lua require('nvim-tree.api').fs.copy.node()<CR>]])
+      vim.cmd([[menu PopUp.Paste <Cmd>lua require('nvim-tree.api').fs.paste()<CR>]])
+    else
+      -- 通常のバッファ用メニューに戻す
+      vim.cmd([[aunmenu PopUp]])
+
+      -- LSP関連
+      vim.cmd([[menu PopUp.Go\ to\ Definition <Cmd>lua vim.lsp.buf.definition()<CR>]])
+      vim.cmd([[menu PopUp.Go\ to\ Implementation <Cmd>lua vim.lsp.buf.implementation()<CR>]])
+      vim.cmd([[menu PopUp.Find\ References <Cmd>lua vim.lsp.buf.references()<CR>]])
+      vim.cmd([[menu PopUp.-sep1- :]])
+      vim.cmd([[menu PopUp.Rename <Cmd>lua vim.lsp.buf.rename()<CR>]])
+      vim.cmd([[menu PopUp.Code\ Action <Cmd>lua vim.lsp.buf.code_action()<CR>]])
+      vim.cmd([[menu PopUp.Format <Cmd>lua vim.lsp.buf.format({ async = true })<CR>]])
+
+      -- Git関連
+      vim.cmd([[menu PopUp.-sep2- :]])
+      vim.cmd([[menu PopUp.Git:\ Blame\ Line <Cmd>Gitsigns blame_line<CR>]])
+      vim.cmd([[menu PopUp.Git:\ Stage\ Hunk <Cmd>Gitsigns stage_hunk<CR>]])
+      vim.cmd([[menu PopUp.Git:\ Reset\ Hunk <Cmd>Gitsigns reset_hunk<CR>]])
+      vim.cmd([[menu PopUp.Git:\ Preview\ Hunk <Cmd>Gitsigns preview_hunk<CR>]])
+
+      -- 検索
+      vim.cmd([[menu PopUp.-sep3- :]])
+      vim.cmd([[menu PopUp.Search\ in\ Workspace <Cmd>lua require('telescope.builtin').grep_string()<CR>]])
+
+      -- コメント
+      vim.cmd([[menu PopUp.-sep4- :]])
+      vim.cmd([[menu PopUp.Toggle\ Comment <Cmd>lua require('Comment.api').toggle.linewise.current()<CR>]])
+      vim.cmd([[vmenu PopUp.Toggle\ Comment <Esc><Cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>]])
+    end
+  end,
+  desc = "バッファタイプに応じて右クリックメニューを切り替え"
+})
