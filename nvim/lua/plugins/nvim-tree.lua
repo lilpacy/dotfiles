@@ -33,6 +33,7 @@ return {
       view = {
         width = 30,
         side = "left",
+        preserve_window_proportions = true, -- 幅を変更したら保持する
       },
       -- 空の[No Name]バッファから開いたときはそのウィンドウを乗っ取る
       hijack_unnamed_buffer_when_opening = false,
@@ -45,6 +46,7 @@ return {
       actions = {
         open_file = {
           quit_on_open = false,
+          resize_window = false, -- 手動で変更した幅を保持する
           window_picker = {
             enable = true,
           },
