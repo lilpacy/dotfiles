@@ -139,6 +139,31 @@ vim.cmd([[vmenu PopUp.Toggle\ Comment <Esc><Cmd>lua require('Comment.api').toggl
 -- nvim-tree用の右クリックメニュー
 -- =============================================
 
+-- ファイル内容をクリップボードにコピーする関数
+function _G.NvimTreeCopyFileContent()
+  local api = require('nvim-tree.api')
+  local node = api.tree.get_node_under_cursor()
+
+  if not node or node.type ~= 'file' then
+    print('Not a file')
+    return
+  end
+
+  local filepath = node.absolute_path
+  local file = io.open(filepath, 'r')
+
+  if not file then
+    print('Failed to read file: ' .. node.name)
+    return
+  end
+
+  local content = file:read('*all')
+  file:close()
+
+  vim.fn.setreg('+', content)
+  print('Copied file content: ' .. node.name)
+end
+
 -- バッファタイプに応じてメニューを動的に切り替える
 vim.api.nvim_create_autocmd("BufEnter", {
   pattern = "*",
@@ -154,6 +179,9 @@ vim.api.nvim_create_autocmd("BufEnter", {
       vim.cmd([[menu PopUp.Copy\ Filename <Cmd>lua require('nvim-tree.api').fs.copy.filename()<CR>]])
       vim.cmd([[menu PopUp.Copy\ Relative\ Path <Cmd>lua require('nvim-tree.api').fs.copy.relative_path()<CR>]])
       vim.cmd([[menu PopUp.Copy\ Absolute\ Path <Cmd>lua require('nvim-tree.api').fs.copy.absolute_path()<CR>]])
+
+      -- ファイル内容コピー
+      vim.cmd([[menu PopUp.Copy\ File\ Content <Cmd>lua NvimTreeCopyFileContent()<CR>]])
 
       vim.cmd([[menu PopUp.-sep1- :]])
 
