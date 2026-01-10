@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+"""
+AWS SSO認証トークンの残り有効期限を表示するスクリプト（最適化版）
+"""
+import configparser
+import datetime as dt
+import json
+import os
+import sys
+from pathlib import Path
+
+AWS_CONFIG = Path.home() / ".aws" / "config"
+SSO_CACHE_DIR = Path.home() / ".aws" / "sso" / "cache"
+
+
+def get_sso_start_url_and_region(profile: str):
+    """profile から sso_start_url / sso_region を解決する（.aws/config直読み版）"""
+    if not AWS_CONFIG.exists():
+        return None, None
+
+    cfg = configparser.RawConfigParser()
+    cfg.read(AWS_CONFIG)
+
+    # プロファイルセクション名の解決
+    if profile in ("", "default"):
+        section = "default"
+    else:
+        section = f"profile {profile}"
+
+    if not cfg.has_section(section):
+        return None, None
+
+    # 1. レガシー形式: プロファイルに直接設定されている場合
+    start = cfg.get(section, "sso_start_url", fallback=None)
+    region = cfg.get(section, "sso_region", fallback=None)
+    if start and region:
+        return start, region
+
+    # 2. 新形式: sso_session 経由
+    session = cfg.get(section, "sso_session", fallback=None)
+    if not session:
+        return None, None
+
+    session_section = f"sso-session {session}"
+    if not cfg.has_section(session_section):
+        return None, None
+
+    start = cfg.get(session_section, "sso_start_url", fallback=None)
+    region = cfg.get(session_section, "sso_region", fallback=None)
+    if start and region:
+        return start, region
+
+    return None, None
+
+
+def find_sso_cache(start_url: str, region: str):
+    """startUrl & region が一致する最新のキャッシュファイルを探す（最適化版）"""
+    if not SSO_CACHE_DIR.is_dir():
+        return None, None
+
+    # mtime降順でソート（新しいファイルから探す）
+    paths = sorted(
+        SSO_CACHE_DIR.glob("*.json"),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+
+    for path in paths:
+        try:
+            with path.open() as f:
+                data = json.load(f)
+        except Exception:
+            continue
+
+        if (
+            data.get("startUrl") == start_url
+            and data.get("region") == region
+            and data.get("accessToken")
+            and data.get("expiresAt")
+        ):
+            # 見つかった時点で即return
+            return path, data
+
+    return None, None
+
+
+def parse_expires_at(s: str) -> dt.datetime:
+    """expiresAt 文字列を UTC aware datetime に変換 (Z / UTC 両対応)"""
+    s = s.strip()
+    if s.endswith("UTC"):
+        s = s.replace("UTC", "+00:00")
+    elif s.endswith("Z"):
+        s = s.replace("Z", "+00:00")
+
+    return dt.datetime.fromisoformat(s)
+
+
+def format_delta(delta: dt.timedelta) -> str:
+    """残り時間を h/m 形式でフォーマット"""
+    sec = int(delta.total_seconds())
+    if sec <= 0:
+        return "expired"
+
+    h, rem = divmod(sec, 3600)
+    m, _ = divmod(rem, 60)
+    if h > 0:
+        return f"{h}h{m:02d}m"
+    else:
+        return f"{m}m"
+
+
+def main():
+    # プロファイルの取得
+    if len(sys.argv) > 1:
+        profile = sys.argv[1]
+    else:
+        profile = os.environ.get("AWS_PROFILE", "")
+        if not profile:
+            # プロファイルが指定されていない場合は何も出力しない
+            sys.exit(0)
+
+    # SSO設定の取得
+    start_url, sso_region = get_sso_start_url_and_region(profile)
+    if not start_url or not sso_region:
+        # SSO設定がない場合は何も出力しない
+        sys.exit(0)
+
+    # キャッシュの検索
+    cache_path, data = find_sso_cache(start_url, sso_region)
+    if not cache_path or not data:
+        # キャッシュがない場合は「not logged in」と表示
+        print("not logged in")
+        sys.exit(0)
+
+    # 有効期限の計算
+    try:
+        expires = parse_expires_at(data["expiresAt"])
+        now = dt.datetime.now(dt.timezone.utc)
+        delta = expires - now
+
+        # 残り時間を出力（starship用にシンプルに）
+        print(format_delta(delta))
+    except Exception:
+        # エラーの場合は何も出力しない
+        sys.exit(0)
+
+
+if __name__ == "__main__":
+    main()

@@ -5,6 +5,9 @@ set -o emacs
 export PATH=/usr/local/bin:$PATH
 export PATH=/opt/homebrew/bin:$PATH
 
+# dotfiles/bin
+export PATH="$HOME/dotfiles/bin:$PATH"
+
 # alias
 alias ll='ls -lh'
 alias la='ls -lah'

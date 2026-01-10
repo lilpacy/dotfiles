@@ -1,5 +1,6 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 add_newline = true
+command_timeout = 1000
 [character]
 format = "[\\$](green bold) "
 
@@ -37,4 +38,11 @@ disabled = true
 format = ' [☁ $profile(\($region\))]($style) '
 style = 'bold yellow'
 force_display = true
+
+# AWS SSO認証の残り時間を表示するカスタムモジュール
+[custom.aws_sso]
+command = '/Users/lilpacy/dotfiles/bin/aws-sso-remaining'
+when = true
+format = '[($output )]($style)'
+style = 'bold yellow'
 
