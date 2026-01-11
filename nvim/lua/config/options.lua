@@ -164,6 +164,22 @@ function _G.NvimTreeCopyFileContent()
   print('Copied file content: ' .. node.name)
 end
 
+-- nvim-treeで選択中のパスでgrug-farを開く関数
+function _G.NvimTreeSearchInPath()
+  local api = require('nvim-tree.api')
+  local node = api.tree.get_node_under_cursor()
+
+  if not node then
+    print('No node selected')
+    return
+  end
+
+  local path = node.absolute_path
+  require("grug-far").open({
+    prefills = { paths = path }
+  })
+end
+
 -- バッファタイプに応じてメニューを動的に切り替える
 vim.api.nvim_create_autocmd("BufEnter", {
   pattern = "*",
@@ -204,6 +220,11 @@ vim.api.nvim_create_autocmd("BufEnter", {
       vim.cmd([[menu PopUp.Cut <Cmd>lua require('nvim-tree.api').fs.cut()<CR>]])
       vim.cmd([[menu PopUp.Copy <Cmd>lua require('nvim-tree.api').fs.copy.node()<CR>]])
       vim.cmd([[menu PopUp.Paste <Cmd>lua require('nvim-tree.api').fs.paste()<CR>]])
+
+      vim.cmd([[menu PopUp.-sep4- :]])
+
+      -- 検索
+      vim.cmd([[menu PopUp.Search\ &\ Replace\ in\ Path <Cmd>lua NvimTreeSearchInPath()<CR>]])
     else
       -- 通常のバッファ用メニューに戻す
       vim.cmd([[aunmenu PopUp]])
