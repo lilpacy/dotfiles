@@ -76,6 +76,36 @@ return {
 
         -- シングルクリックで開く
         vim.keymap.set('n', '<LeftRelease>', api.node.open.edit, opts('Open with single click'))
+
+        -- Ctrl+Shift+H: カーソル下のパスでgrug-farを開く
+        vim.keymap.set('n', '<C-S-h>', function()
+          local node = api.tree.get_node_under_cursor()
+
+          if not node then
+            print('No node selected')
+            return
+          end
+
+          local path = node.absolute_path
+          vim.cmd("tab split")
+          require("grug-far").open({
+            prefills = { paths = path },
+            transient = true,
+          })
+          vim.cmd("wincmd o")
+
+          -- 名前なしの未変更バッファをbufferlineから隠す
+          local vim_api = vim.api
+          for _, bufnr in ipairs(vim_api.nvim_list_bufs()) do
+            if vim_api.nvim_buf_is_valid(bufnr) and vim_api.nvim_buf_is_loaded(bufnr) then
+              local name = vim_api.nvim_buf_get_name(bufnr)
+              local modified = vim_api.nvim_get_option_value("modified", { buf = bufnr })
+              if name == "" and not modified then
+                vim_api.nvim_set_option_value("buflisted", false, { buf = bufnr })
+              end
+            end
+          end
+        end, opts('Search & Replace in this path'))
       end,
       -- レンダラー設定
       renderer = {

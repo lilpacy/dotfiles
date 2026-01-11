@@ -166,8 +166,8 @@ end
 
 -- nvim-treeで選択中のパスでgrug-farを開く関数
 function _G.NvimTreeSearchInPath()
-  local api = require('nvim-tree.api')
-  local node = api.tree.get_node_under_cursor()
+  local tree_api = require('nvim-tree.api')
+  local node = tree_api.tree.get_node_under_cursor()
 
   if not node then
     print('No node selected')
@@ -175,9 +175,24 @@ function _G.NvimTreeSearchInPath()
   end
 
   local path = node.absolute_path
+  vim.cmd("tab split")  -- 現在のウィンドウを新しいタブに複製（空バッファを作らない）
   require("grug-far").open({
-    prefills = { paths = path }
+    prefills = { paths = path },
+    transient = true,  -- 一時的なバッファとして扱う
   })
+  vim.cmd("wincmd o")  -- 他のウィンドウを閉じる
+
+  -- 名前なしの未変更バッファをbufferlineから隠す
+  local api = vim.api
+  for _, bufnr in ipairs(api.nvim_list_bufs()) do
+    if api.nvim_buf_is_valid(bufnr) and api.nvim_buf_is_loaded(bufnr) then
+      local name = api.nvim_buf_get_name(bufnr)
+      local modified = api.nvim_get_option_value("modified", { buf = bufnr })
+      if name == "" and not modified then
+        api.nvim_set_option_value("buflisted", false, { buf = bufnr })
+      end
+    end
+  end
 end
 
 -- バッファタイプに応じてメニューを動的に切り替える

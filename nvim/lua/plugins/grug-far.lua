@@ -4,7 +4,23 @@ return {
     -- VSCode style: Cmd+Shift+H for search and replace
     {
       "<C-S-h>",
-      function() require("grug-far").open({}) end,
+      function()
+        vim.cmd("tab split")
+        require("grug-far").open({ transient = true })
+        vim.cmd("wincmd o")
+
+        -- 名前なしの未変更バッファをbufferlineから隠す
+        local api = vim.api
+        for _, bufnr in ipairs(api.nvim_list_bufs()) do
+          if api.nvim_buf_is_valid(bufnr) and api.nvim_buf_is_loaded(bufnr) then
+            local name = api.nvim_buf_get_name(bufnr)
+            local modified = api.nvim_get_option_value("modified", { buf = bufnr })
+            if name == "" and not modified then
+              api.nvim_set_option_value("buflisted", false, { buf = bufnr })
+            end
+          end
+        end
+      end,
       desc = "Search & Replace (Cmd+Shift+H)",
     },
     {
