@@ -32,6 +32,13 @@ return {
           vim.schedule(function() gs.prev_hunk() end)
           return '<Ignore>'
         end, { expr = true, desc = "前のhunkへ" })
+
+        -- 差分プレビュー（Floating window）- VSCode風の機能
+        map('n', '<leader>hp', gs.preview_hunk, { desc = "Git: hunkをプレビュー" })
+
+        -- 差分プレビュー（Inline）- カーソル行の下に差分を展開
+        map('n', '<leader>hP', gs.preview_hunk_inline, { desc = "Git: hunkをインライン表示" })
+
       end
     })
   end,
