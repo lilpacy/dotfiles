@@ -98,6 +98,7 @@ return {
       -- エンジン別の設定
       engines = {
         ripgrep = {
+          extraArgs = "--hidden",  -- 隠しファイル（dotfiles）も検索対象に含める
           placeholders = {
             flags = "e.g. -i (ignore case), -s (case sensitive), -w (whole word), -F (fixed/literal)",
           },

@@ -64,6 +64,17 @@ return {
 
     telescope.setup({
       defaults = {
+        vimgrep_arguments = {
+          "rg",
+          "--color=never",
+          "--no-heading",
+          "--with-filename",
+          "--line-number",
+          "--column",
+          "--smart-case",
+          "--hidden",  -- 隠しファイル（dotfiles）も検索対象に含める
+          "--glob", "!.git/*",  -- .gitディレクトリは除外
+        },
         file_ignore_patterns = { "node_modules", ".git/" },
         mappings = {
           i = {
