@@ -76,6 +76,29 @@ VSCodeのように、変更があった行で簡単に差分を表示できる�
 - `]c` - 次のhunkへ移動
 - `[c` - 前のhunkへ移動
 
+### Git差分の自動更新
+
+**キーマップ**: `<leader>hr`
+
+git commit後やターミナルでgit操作を行った後、Neovimのバッファに表示される差分マーカー（黄色の変更行表示）が自動的に更新されます。
+
+**自動更新のタイミング**:
+- Neovimにフォーカスが戻った時（`FocusGained`）
+- 別のバッファから戻った時（`BufEnter`）
+- `.git`ディレクトリの変更を1秒ごとに監視
+
+**手動更新**:
+- 自動更新が間に合わない場合、`<leader>hr`で即座にリフレッシュ可能
+
+**設定内容**:
+```lua
+watch_gitdir = {
+  enable = true,
+  interval = 1000,  -- gitdirを1秒ごとにチェック
+},
+update_debounce = 100,  -- 更新のデバウンス時間（ミリ秒）
+```
+
 ## 実装詳細
 
 設定ファイル: `/Users/lilpacy/dotfiles/nvim/lua/plugins/gitsigns.lua`
@@ -87,11 +110,18 @@ map('n', '<leader>hp', gs.preview_hunk, { desc = "Git: hunkをプレビュー" }
 -- 差分プレビュー（Inline）- カーソル行の下に差分を展開
 map('n', '<leader>hP', gs.preview_hunk_inline, { desc = "Git: hunkをインライン表示" })
 
--- マウスクリック対応（オプション）
-map('n', '<C-LeftMouse>', function()
-  vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<LeftMouse>', true, false, true), 'n', false)
-  pcall(gs.preview_hunk)
-end, { desc = "Git: hunkをクリックでプレビュー" })
+-- Git差分を手動でリフレッシュ
+map('n', '<leader>hr', gs.refresh, { desc = "Git: 差分をリフレッシュ" })
+
+-- commit後やターミナルから戻った時に自動リフレッシュ
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter" }, {
+  pattern = "*",
+  callback = function()
+    if vim.bo.buftype == "" then
+      require("gitsigns").refresh()
+    end
+  end,
+})
 ```
 
 ## Tips
@@ -100,6 +130,7 @@ end, { desc = "Git: hunkをクリックでプレビュー" })
 - **視覚的確認派**: `<leader>hP`でコンテキストを保持
 - **マウス派**: `Ctrl+左クリック`でVSCode風の操作感
 - **変更の多いファイル**: `]c`/`[c`でhunk間を移動しながら`<leader>hp`で確認
+- **commit後の確認**: 通常は自動更新されるが、即座に確認したい場合は`<leader>hr`でリフレッシュ
 
 ## トラブルシューティング
 
@@ -108,6 +139,14 @@ end, { desc = "Git: hunkをクリックでプレビュー" })
 - ファイルがgit管理下にあるか確認
 - 実際に変更があるか確認
 - gitsigns.nvimが読み込まれているか確認（`:Gitsigns`コマンドが使えるか）
+
+### commit後に差分マーカーが消えない
+
+- 通常は1秒以内に自動更新される（`watch_gitdir.interval = 1000`）
+- フォーカスを一度外して戻すと更新される（`FocusGained`イベント）
+- 別のバッファに移動して戻ると更新される（`BufEnter`イベント）
+- 即座に更新したい場合は`<leader>hr`で手動リフレッシュ
+- それでも更新されない場合は`:Gitsigns refresh`コマンドを実行
 
 ### マウスクリックが効かない
 

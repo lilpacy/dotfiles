@@ -11,6 +11,11 @@ return {
         changedelete = { text = "~" },
       },
       current_line_blame = false,  -- 必要なら true に
+      watch_gitdir = {
+        enable = true,
+        interval = 1000,  -- gitdirを1秒ごとにチェック
+      },
+      update_debounce = 100,  -- 更新のデバウンス時間（ミリ秒）
       on_attach = function(bufnr)
         local gs = package.loaded.gitsigns
 
@@ -39,7 +44,20 @@ return {
         -- 差分プレビュー（Inline）- カーソル行の下に差分を展開
         map('n', '<leader>hP', gs.preview_hunk_inline, { desc = "Git: hunkをインライン表示" })
 
+        -- Git差分を手動でリフレッシュ
+        map('n', '<leader>hr', gs.refresh, { desc = "Git: 差分をリフレッシュ" })
+
       end
+    })
+
+    -- commit後やターミナルから戻った時に自動リフレッシュ
+    vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter" }, {
+      pattern = "*",
+      callback = function()
+        if vim.bo.buftype == "" then
+          require("gitsigns").refresh()
+        end
+      end,
     })
   end,
 }
