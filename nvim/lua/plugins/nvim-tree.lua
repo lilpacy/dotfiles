@@ -28,12 +28,15 @@ return {
   end,
 
   config = function()
+    -- 手動で変更した幅を保存する変数（nilの場合はデフォルト幅30を使用）
+    _G.nvim_tree_manual_width = nil
+
     require("nvim-tree").setup({
       -- ビューの設定
       view = {
         width = 30,
         side = "left",
-        preserve_window_proportions = true, -- 幅を変更したら保持する
+        preserve_window_proportions = true, -- nvim-tree以外のウィンドウ比率を保持
       },
       -- 空の[No Name]バッファから開いたときはそのウィンドウを乗っ取る
       hijack_unnamed_buffer_when_opening = false,
@@ -46,7 +49,7 @@ return {
       actions = {
         open_file = {
           quit_on_open = false,
-          resize_window = false, -- 手動で変更した幅を保持する
+          resize_window = true, -- ファイルを開くときにview.widthに合わせる
           window_picker = {
             enable = true,
           },
@@ -129,6 +132,59 @@ return {
         ignore = false,
       },
     })
+
+    -- nvim-treeの幅を固定（:wincmd =などで自動変更されないように）
+    vim.api.nvim_create_autocmd("FileType", {
+      pattern = "NvimTree",
+      callback = function()
+        vim.cmd("setlocal winfixwidth")
+      end,
+    })
+
+    -- nvim-treeの幅が手動で変更されたときに保存
+    -- 1ウィンドウのみの場合(treeが全幅になる)は手動変更とみなさない
+    vim.api.nvim_create_autocmd("WinResized", {
+      callback = function()
+        -- 1つしかウィンドウがないときは無視
+        local wins = vim.api.nvim_tabpage_list_wins(0)
+        if #wins <= 1 then
+          return
+        end
+
+        local winid = vim.api.nvim_get_current_win()
+        local bufnr = vim.api.nvim_win_get_buf(winid)
+        local ft = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
+
+        if ft == "NvimTree" then
+          local width = vim.api.nvim_win_get_width(winid)
+          _G.nvim_tree_manual_width = width
+        end
+      end,
+    })
+
+    -- nvim-treeを開くときに保存された幅を復元
+    vim.api.nvim_create_autocmd("BufWinEnter", {
+      pattern = "NvimTree_*",
+      callback = function()
+        local winid = vim.api.nvim_get_current_win()
+        local width = _G.nvim_tree_manual_width or 30
+        vim.api.nvim_win_set_width(winid, width)
+      end,
+    })
+
+    -- 手動で変更した幅をリセットしてデフォルト(30)に戻すコマンド
+    vim.api.nvim_create_user_command("NvimTreeResetWidth", function()
+      _G.nvim_tree_manual_width = nil
+      -- 開いているnvim-treeがあれば即座に30に戻す
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        local bufnr = vim.api.nvim_win_get_buf(win)
+        local ft = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
+        if ft == "NvimTree" then
+          vim.api.nvim_win_set_width(win, 30)
+        end
+      end
+      print("NvimTree width reset to default (30)")
+    end, {})
   end,
   keys = {
     { "<C-n>", "<cmd>NvimTreeToggle<CR>", desc = "Toggle NvimTree" },
