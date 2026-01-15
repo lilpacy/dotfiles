@@ -1,39 +1,17 @@
-return {
-  -- LSP設定
-  {
-    "neovim/nvim-lspconfig",
-    dependencies = {
-      "williamboman/mason.nvim",
-      "williamboman/mason-lspconfig.nvim",
-      "WhoIsSethDaniel/mason-tool-installer.nvim",
-    },
-    config = function()
-      -- Masonのセットアップ
-      require("mason").setup()
-      require("mason-lspconfig").setup({
-        ensure_installed = {
-          "lua_ls",
-          -- ts_ls は typescript-tools.nvim に移行したため削除
-          "tailwindcss",     -- Tailwind CSS (Next.jsでよく使う)
-          "eslint",          -- ESLint
-          "jsonls",          -- JSON (package.json, tsconfig.jsonなど)
-        },
-        automatic_installation = true,
-      })
+-- 共通のon_attach関数（他のプラグインからも使用可能）
+local M = {}
 
-      -- フォーマッタの自動インストール
-      require("mason-tool-installer").setup({
-        ensure_installed = {
-          "prettierd",       -- Prettier daemon (高速版)
-          "prettier",        -- Prettier (フォールバック用)
-          "stylua",          -- Lua formatter
-        },
-        auto_update = false,
-        run_on_start = true,
-      })
+M.on_attach = function(client, bufnr)
+        -- typescript-tools以外のTypeScript LSPは定義ジャンプを無効化（重複回避）
+        if client.name == "tsserver"
+          or client.name == "ts_ls"
+          or client.name == "typescript-language-server"
+          or client.name == "vtsls"
+        then
+          client.server_capabilities.definitionProvider = false
+          client.server_capabilities.typeDefinitionProvider = false
+        end
 
-      -- LSPキーマッピング
-      local on_attach = function(client, bufnr)
         local bufmap = function(mode, lhs, rhs, desc)
           vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
         end
@@ -84,9 +62,43 @@ return {
         bufmap('v', '<C-.>', vim.lsp.buf.code_action, 'Code Action')
       end
 
+return {
+  -- LSP設定
+  {
+    "neovim/nvim-lspconfig",
+    dependencies = {
+      "williamboman/mason.nvim",
+      "williamboman/mason-lspconfig.nvim",
+      "WhoIsSethDaniel/mason-tool-installer.nvim",
+    },
+    config = function()
+      -- Masonのセットアップ
+      require("mason").setup()
+      require("mason-lspconfig").setup({
+        ensure_installed = {
+          "lua_ls",
+          -- ts_ls は typescript-tools.nvim に移行したため削除
+          "tailwindcss",     -- Tailwind CSS (Next.jsでよく使う)
+          "eslint",          -- ESLint
+          "jsonls",          -- JSON (package.json, tsconfig.jsonなど)
+        },
+        automatic_installation = true,
+      })
+
+      -- フォーマッタの自動インストール
+      require("mason-tool-installer").setup({
+        ensure_installed = {
+          "prettierd",       -- Prettier daemon (高速版)
+          "prettier",        -- Prettier (フォールバック用)
+          "stylua",          -- Lua formatter
+        },
+        auto_update = false,
+        run_on_start = true,
+      })
+
       -- LSPサーバーの設定 (Neovim 0.11+ の新しいAPI)
       vim.lsp.config('lua_ls', {
-        on_attach = on_attach,
+        on_attach = M.on_attach,
         settings = {
           Lua = {
             diagnostics = {
@@ -100,26 +112,35 @@ return {
 
       -- Tailwind CSS
       vim.lsp.config('tailwindcss', {
-        on_attach = on_attach,
+        on_attach = M.on_attach,
       })
 
       -- ESLint
       vim.lsp.config('eslint', {
-        on_attach = on_attach,
+        on_attach = M.on_attach,
       })
 
       -- JSON
       vim.lsp.config('jsonls', {
-        on_attach = on_attach,
+        on_attach = M.on_attach,
       })
 
       -- C/C++ (clangd)
       vim.lsp.config('clangd', {
-        on_attach = on_attach,
+        on_attach = M.on_attach,
+      })
+
+      -- ts_lsの定義ジャンプ機能を無効化（typescript-toolsと競合するため）
+      vim.lsp.config('ts_ls', {
+        on_attach = M.on_attach,  -- カスタムon_attachを使用して、definitionProviderを無効化
+        enabled = false,  -- 可能なら起動自体を無効化
       })
 
       -- LSPサーバーを有効化 (ts_ls は typescript-tools.nvim に移行)
       vim.lsp.enable({ 'lua_ls', 'tailwindcss', 'eslint', 'jsonls', 'clangd' })
+
+      -- on_attachをグローバルに公開（typescript-tools.nvimで再利用するため）
+      _G.lsp_on_attach = M.on_attach
     end,
   },
 }
