@@ -318,4 +318,141 @@ actions = {
 ### 関連コミット
 
 - コミット `5c780a4`: 最初の幅保存実装（問題あり）
-- コミット（今回）: フラグによる自動変更の除外
+- コミット `af8cb3f`: フラグによる自動変更の除外（新たな問題発生）
+
+---
+
+## 2026-01-16 (2): 50%:50%問題の再発と最終解決
+
+### 問題の再発見
+
+コミット `af8cb3f` の修正後、新たな問題が発生:
+- `:q`でバッファを閉じた後、再度ファイルを開くと **50%:50%の分割になってしまう**
+- 期待: nvim-tree(30幅) | ファイル(残り全体)
+
+### 根本原因の再分析
+
+コミット `af8cb3f` での変更:
+```lua
+resize_window = false, -- BufWinEnterで復元するため、ここでは自動調整しない
+```
+
+**問題の流れ:**
+1. `:q`でバッファを閉じる → nvim-treeが全幅(100%)になる
+2. nvim-treeからファイルを開く → 新しいウィンドウが作成される
+3. `preserve_window_proportions = true` が働いて、現在のnvim-tree(100%)を50%に縮小し、新しいウィンドウを50%で作成
+4. `resize_window = false` なので、nvim-treeは30幅に自動調整されない
+5. **`BufWinEnter`は発火しない** (nvim-treeはすでに開いているため、新しく"入る"わけではない)
+6. 結果: nvim-tree(50%) | バッファ(50%)
+
+### AIS MCP (GPT-5 reasoning) への相談
+
+詳細な前提を含めて相談した結果、以下の解決策が推奨された:
+
+#### 推奨案: `view.width`を関数化 + `resize_window = true`
+
+**キーポイント:**
+- nvim-treeの`view.width`は数値だけでなく、**関数も指定可能**
+- `resize_window = true`にすると、ファイルを開くたびに`view.width()`の値にnvim-treeをリサイズする
+- グローバル変数`_G.nvim_tree_manual_width`に手動変更した幅を保存し、`view.width()`がそれを返すようにする
+
+**メリット:**
+- ファイルを開くたびに保存された幅（なければ30）に自動調整される
+- 50%:50%問題が解決
+- 手動変更の幅も保持される
+- `BufWinEnter`や`_G.nvim_tree_restoring_width`フラグが不要になり、シンプルな実装
+
+### 最終実装
+
+```lua
+-- 手動で変更した幅を保存する変数（デフォルトは30）
+_G.nvim_tree_manual_width = 30
+
+require("nvim-tree").setup({
+  view = {
+    -- 幅はグローバル変数から読む関数にする
+    width = function()
+      return _G.nvim_tree_manual_width or 30
+    end,
+    side = "left",
+    preserve_window_proportions = true,
+  },
+  actions = {
+    open_file = {
+      resize_window = true, -- ファイルを開くときにview.width()の値にリサイズ
+    },
+  },
+})
+
+-- nvim-treeの幅を固定（:wincmd =などで自動変更されないように）
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "NvimTree",
+  callback = function()
+    vim.cmd("setlocal winfixwidth")
+  end,
+})
+
+-- nvim-treeの幅が手動で変更されたときに保存
+vim.api.nvim_create_autocmd("WinResized", {
+  callback = function()
+    local wins = vim.api.nvim_tabpage_list_wins(0)
+
+    -- NvimTreeだけの全画面状態は「手動幅」とみなさない
+    if #wins <= 1 then
+      return
+    end
+
+    for _, winid in ipairs(wins) do
+      local bufnr = vim.api.nvim_win_get_buf(winid)
+      local ft = vim.api.nvim_get_option_value("filetype", { buf = bufnr })
+      if ft == "NvimTree" then
+        _G.nvim_tree_manual_width = vim.api.nvim_win_get_width(winid)
+        break
+      end
+    end
+  end,
+})
+```
+
+### 修正後の動作
+
+1. nvim-tree(30) | ファイル(残り全体)
+2. `:vertical resize 40`で手動変更 → `_G.nvim_tree_manual_width = 40`に保存
+3. ファイルを開く → `resize_window = true`により40幅に調整
+4. `:q`でファイルを閉じる → nvim-treeが全幅になるが、`_G.nvim_tree_manual_width = 40`は保持
+5. 再度ファイルを開く → `resize_window = true`により40幅に調整 ✓
+6. 50%:50%問題が解決 ✓
+
+### 学んだこと
+
+1. **nvim-treeの`view.width`は関数も指定可能**
+   - ドキュメントを丁寧に読むことで、より柔軟な実装が可能になる
+   - 動的な値を返す関数を使うことで、状態管理がシンプルになる
+
+2. **`BufWinEnter`の発火タイミングの理解**
+   - `BufWinEnter`は「バッファがウィンドウに入るとき」に発火
+   - すでに開いているnvim-treeからファイルを開くときは発火しない
+   - タイミングに依存する実装は脆弱
+
+3. **シンプルな設計原則**
+   - 「ツリーの望ましい幅」をグローバルに1つだけ持つ
+   - nvim-treeに「常にその値に戻せ」とだけ指示する
+   - 複雑なフラグ管理や競合する自動化処理を避ける
+
+4. **WinResizedでの手動変更判定の限界**
+   - Neovim APIでは「手動リサイズ」と「自動リサイズ」を完全に区別できない
+   - ヒューリスティックな判定（`winfixwidth`、`#wins`チェック）が実用的な上限
+
+### 削除された実装
+
+以下の実装は不要になり削除された:
+- `_G.nvim_tree_restoring_width`フラグ
+- `BufWinEnter`による幅の復元処理
+- `WinResized`での`_G.nvim_tree_restoring_width`チェック
+
+### 関連コミット
+
+- コミット `fac6e1b`: 最初の試み（問題あり）
+- コミット `5c780a4`: 幅保存実装（手動変更が保存されない問題）
+- コミット `af8cb3f`: フラグによる自動変更の除外（50%:50%問題が再発）
+- コミット（今回）: `view.width`の関数化による最終解決
