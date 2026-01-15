@@ -1,0 +1,4 @@
+gui:
+  language: en
+  theme:
+    lightTheme: false

@@ -2,6 +2,7 @@ mkdir -p ~/.config
 mkdir -p ~/.config/sheldon/
 mkdir -p ~/.config/karabiner/
 mkdir -p ~/.config/git/
+mkdir -p "$HOME/Library/Application Support/lazygit"
 sudo mkdir -p /usr/local/bin/
 
 ln -sf ~/dotfiles/.vimrc ~/.vimrc
@@ -19,6 +20,7 @@ ln -sf ~/dotfiles/nvim ~/.config/nvim
 ln -sf ~/dotfiles/claude/settings.json ~/.claude/settings.json
 ln -sf ~/dotfiles/claude/skills ~/.claude/skills
 ln -sf ~/dotfiles/.gitignore_global ~/.config/git/ignore
+ln -sf ~/dotfiles/.config/lazygit/config.yml "$HOME/Library/Application Support/lazygit/config.yml"
 
 sudo ln -sf ~/dotfiles/shell/task_cal /usr/local/bin/task_cal
 sudo ln -sf ~/dotfiles/shell/sssh /usr/local/bin/sssh
