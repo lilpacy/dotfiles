@@ -9,14 +9,14 @@ tmux 3.2+ で使える `display-popup` 機能のショートカット設定。
 ```tmux
 # ===== display-popup keybindings =====
 
-# Prefix + p: 基本的なポップアップターミナル（90% x 80%、中央）
-bind-key p display-popup -E -x C -y C -w 90% -h 80% -d "#{pane_current_path}"
+# Prefix + P (Shift+p): 基本的なポップアップターミナル（90% x 80%、中央）
+bind-key P display-popup -E -x C -y C -w 90% -h 80% -d "#{pane_current_path}"
 
 # Prefix + g: lazygit をポップアップで開く
-bind-key g display-popup -E -x C -y C -w 90% -h 90% -d "#{pane_current_path}" "lazygit"
+bind-key g display-popup -E -x C -y C -w 95% -h 95% -d "#{pane_current_path}" "lazygit"
 
 # Prefix + s: lazysql をポップアップで開く
-bind-key s display-popup -E -x C -y C -w 90% -h 90% -d "#{pane_current_path}" "lazysql"
+bind-key s display-popup -E -x C -y C -w 95% -h 95% -d "#{pane_current_path}" "lazysql"
 
 # Prefix + f: fzfファイル検索をポップアップで開く（選択したファイルをエディタで開く）
 bind-key f display-popup -E -x C -y C -w 90% -h 80% -d "#{pane_current_path}" "nvim \$(fzf)"
@@ -26,9 +26,9 @@ bind-key f display-popup -E -x C -y C -w 90% -h 80% -d "#{pane_current_path}" "n
 
 | キー | 機能 | サイズ |
 |------|------|--------|
-| `Prefix + p` | ポップアップターミナル（シェル） | 90% × 80% |
-| `Prefix + g` | lazygit | 90% × 90% |
-| `Prefix + s` | lazysql | 90% × 90% |
+| `Prefix + P` (Shift+p) | ポップアップターミナル（シェル） | 90% × 80% |
+| `Prefix + g` | lazygit | 95% × 95% |
+| `Prefix + s` | lazysql | 95% × 95% |
 | `Prefix + f` | fzf ファイル検索 → nvim で開く | 90% × 80% |
 
 ## ポップアップの閉じ方
