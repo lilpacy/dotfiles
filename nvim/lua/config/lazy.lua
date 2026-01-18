@@ -16,6 +16,10 @@ require("lazy").setup({
     { import = "plugins" },
   },
   install = { colorscheme = { "tokyonight" } },
-  checker = { enabled = true },
+  checker = {
+    enabled = true,
+    notify = false,      -- 通知を無効化
+    frequency = 86400,   -- 1日1回チェック
+  },
 })
 
