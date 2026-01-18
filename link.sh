@@ -19,6 +19,7 @@ ln -sf ~/dotfiles/.alacritty.toml ~/.alacritty.toml
 ln -sf ~/dotfiles/nvim ~/.config/nvim
 ln -sf ~/dotfiles/claude/settings.json ~/.claude/settings.json
 ln -sf ~/dotfiles/claude/skills ~/.claude/skills
+ln -sf ~/dotfiles/claude/commands ~/.claude/commands
 ln -sf ~/dotfiles/.gitignore_global ~/.config/git/ignore
 ln -sf ~/dotfiles/.config/lazygit/config.yml "$HOME/Library/Application Support/lazygit/config.yml"
 
