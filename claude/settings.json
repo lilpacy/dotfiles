@@ -74,7 +74,7 @@
           },
           {
             "type": "command",
-            "command": "tmux set -w @claude_waiting '⏳'",
+            "command": "tmux set -p -t $TMUX_PANE @claude_waiting 1",
             "timeout": 5
           }
         ]
@@ -86,7 +86,43 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Blow.aiff",
+            "command": "afplay /System/Library/Sounds/Blow.aiff && tmux set -p -t $TMUX_PANE @claude_waiting 1",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tmux set -p -t $TMUX_PANE @claude_waiting 0",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tmux set -p -t $TMUX_PANE @claude_waiting 0",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tmux set -p -t $TMUX_PANE @claude_waiting 0",
             "timeout": 5
           }
         ]
