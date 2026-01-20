@@ -41,6 +41,24 @@ return {
         side = "left",
         preserve_window_proportions = true, -- nvim-tree以外のウィンドウ比率を保持
       },
+      -- バッファ切り替え時に自動的にnvim-treeのフォーカスを追従
+      update_focused_file = {
+        enable = true,
+        update_root = false, -- ルートディレクトリは変更しない
+        exclude = function(event)
+          -- event は BufEnter イベントオブジェクト、バッファ番号は event.buf
+          local bufnr = event.buf
+          if not bufnr or bufnr <= 0 then
+            return true
+          end
+          if not vim.api.nvim_buf_is_valid(bufnr) then
+            return true
+          end
+          local buftype = vim.bo[bufnr].buftype
+          -- terminal、nofile、quickfix、promptなどのバッファはスキップ
+          return buftype == "nofile" or buftype == "terminal" or buftype == "quickfix" or buftype == "prompt"
+        end,
+      },
       -- 空の[No Name]バッファから開いたときはそのウィンドウを乗っ取る
       hijack_unnamed_buffer_when_opening = false,
       -- ディレクトリ自動オープンは自前のautocmdに任せる
