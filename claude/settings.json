@@ -71,6 +71,11 @@
             "type": "command",
             "command": "afplay /System/Library/Sounds/Blow.aiff",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "tmux set -w @claude_waiting '⏳'",
+            "timeout": 5
           }
         ]
       }
