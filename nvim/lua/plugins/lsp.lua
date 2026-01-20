@@ -60,6 +60,11 @@ M.on_attach = function(client, bufnr)
         -- VSCode風のCode Action (Ctrl+. でimport文の自動追加など)
         bufmap('n', '<C-.>', vim.lsp.buf.code_action, 'Code Action')
         bufmap('v', '<C-.>', vim.lsp.buf.code_action, 'Code Action')
+
+        -- 診断（Diagnostics）
+        bufmap('n', 'gl', vim.diagnostic.open_float, '診断をフロートで表示')
+        bufmap('n', '[d', vim.diagnostic.goto_prev, '前の診断へ')
+        bufmap('n', ']d', vim.diagnostic.goto_next, '次の診断へ')
       end
 
 return {
