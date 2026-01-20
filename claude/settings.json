@@ -65,7 +65,7 @@
   "hooks": {
     "Notification": [
       {
-        "matcher": "idle_prompt",
+        "matcher": "permission_prompt|idle_prompt",
         "hooks": [
           {
             "type": "command",
