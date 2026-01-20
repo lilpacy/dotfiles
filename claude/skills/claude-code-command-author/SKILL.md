@@ -4,7 +4,7 @@ description: >
   Claude Codeのカスタムslash command（Commands）を設計・生成・更新する。
   「/コマンドを作りたい」「この作業を毎回同じ手順でやりたいのでコマンド化したい」「.claude/commandsにテンプレを追加したい」
   「Claude Codeのcommands作って」「スラッシュコマンド作成」「引数付きコマンド」「allowed-toolsを設定したい」などの依頼で発動する。
-  プロジェクト用(.claude/commands)・個人用(~/.claude/commands)・サブディレクトリ(namespacing)・引数($ARGUMENTS/$1..)・bash事前実行(!`...`)・ファイル参照(@path)・context:fork などに対応する。
+  プロジェクト用(.claude/commands)・個人用(~/.claude/commands)・サブディレクトリ(namespacing)・引数($ARGUMENTS/$1..)・bash事前実行(!)・ファイル参照(@)・context:fork などに対応する。
 ---
 
 # Claude Code Command Author
@@ -47,7 +47,7 @@ description: >
 - コマンド名候補（`/review-pr` 的なやつ）
 - スコープ: project (`.claude/commands/`) or personal (`~/.claude/commands/`)
 - 引数設計: フリーフォーム(`$ARGUMENTS`) or 位置引数(`$1`, `$2`, ...)
-- 事前コンテキスト: bash埋め込み(`!`) / ファイル参照(`@`)
+- 事前コンテキスト: bash埋め込み(!) / ファイル参照(@)
 - 安全性: 読み取り中心？書き換えあり？
 
 **デフォルト方針**（ユーザーが指定しない場合）：
@@ -71,7 +71,7 @@ description: >
 - `argument-hint`: 補完時に出る引数ヒント（引数ありの場合）
 
 必要に応じて：
-- `allowed-tools`: `!` bash実行を使うなら必要（最小権限で）
+- `allowed-tools`: ! bash実行を使うなら必要（最小権限で）
 - `model`: 特定モデル固定したい場合
 - `context: fork` + `agent`: 会話を汚したくない/重い作業を分離
 - `disable-model-invocation: true`: Skill toolからの自動呼び出しを避けたい
@@ -93,7 +93,7 @@ description: >
 - 完了条件（DoD）
 
 ### Step 5: 事前コンテキスト埋め込み（必要なら）
-#### bash事前実行（`!`）
+#### bash事前実行（!）
 ```
 !`git status`
 !`git diff HEAD`
@@ -151,7 +151,7 @@ argument-hint: [optional-args]
 - [ ] `description` が入っているか（/helpで分かる）
 - [ ] 引数があるなら `argument-hint` があるか
 - [ ] `$ARGUMENTS` / `$1..` の設計が目的に合っているか
-- [ ] `!` を使うなら `allowed-tools` に Bash が適切に絞られているか
+- [ ] ! を使うなら `allowed-tools` に Bash が適切に絞られているか
 - [ ] `@file` 参照は最小限か
 - [ ] 制約（編集禁止など）が明記されているか
 - [ ] `/help` と実行例のテスト手順が書かれているか
@@ -168,12 +168,12 @@ argument-hint: [optional-args]
 ### Example 2
 ユーザー: 「コミットメッセージ作成をコマンド化したい。実行前にgit statusとdiffを入れて。」
 
-→ `allowed-tools` + `!` を使うコマンドを生成（危険コマンドは許可しない）。
+→ `allowed-tools` + ! を使うコマンドを生成（危険コマンドは許可しない）。
 
 ### Example 3
 ユーザー: 「このリポジトリの特定ファイルを説明する `/explain-file` を作って。パスを引数で渡す。」
 
-→ `$ARGUMENTS` で受け、`@`参照を使う運用を提案。
+→ `$ARGUMENTS` で受け、@参照を使う運用を提案。
 
 ### Example 4（非対象）
 ユーザー: 「このPRをレビューして」
