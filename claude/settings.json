@@ -61,7 +61,7 @@
       "Edit(.env*)"
     ]
   },
-  "model": "sonnet",
+  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -129,8 +129,8 @@
       }
     ]
   },
-  "alwaysThinkingEnabled": true,
   "enabledPlugins": {
     "claude-mem@thedotmack": true
-  }
+  },
+  "alwaysThinkingEnabled": true
 }
