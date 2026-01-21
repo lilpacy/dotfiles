@@ -17,14 +17,27 @@ M.on_attach = function(client, bufnr)
           vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true, desc = desc })
         end
 
-        -- LSP定義ジャンプ（ジャンプリストに確実に記録）
-        local function goto_definition_with_jump()
+        -- カスタム定義ジャンプ（Telescope UIで複数候補を表示）
+        local function goto_definition_telescope()
           vim.cmd("normal! m'")  -- 現在位置をジャンプリストに保存
-          vim.lsp.buf.definition({ reuse_win = true })
+          vim.lsp.buf.definition({
+            on_list = function(options)
+              if #options.items == 1 then
+                -- 候補が1つなら直接ジャンプ
+                local item = options.items[1]
+                vim.cmd.edit(item.filename)
+                vim.api.nvim_win_set_cursor(0, {item.lnum, item.col - 1})
+              else
+                -- 複数候補はTelescopeで表示
+                vim.fn.setqflist({}, ' ', options)
+                require('telescope.builtin').quickfix()
+              end
+            end,
+          })
         end
 
-        -- 基本のキーマップ (Telescope経由で選択後自動で閉じる)
-        bufmap('n', 'gd', function() require('telescope.builtin').lsp_definitions() end, '定義へジャンプ')
+        -- 基本のキーマップ
+        bufmap('n', 'gd', goto_definition_telescope, '定義へジャンプ')
         bufmap('n', 'gi', function() require('telescope.builtin').lsp_implementations() end, '実装へジャンプ')
         bufmap('n', 'gr', function() require('telescope.builtin').lsp_references() end, '参照を表示')
         bufmap('n', 'K', vim.lsp.buf.hover, 'ホバー情報')
@@ -42,20 +55,20 @@ M.on_attach = function(client, bufnr)
         end, 'Go Forward: 次の場所へ進む')
 
         -- declarationはサーバーが対応している場合のみ
-        if client.supports_method('textDocument/declaration') then
+        if client:supports_method('textDocument/declaration') then
           bufmap('n', 'gD', vim.lsp.buf.declaration, '宣言へジャンプ')
         end
 
         -- Cmd+Click で定義にジャンプ (VSCode風)
         bufmap('n', '<D-LeftMouse>', function()
           vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<LeftMouse>', true, false, true), 'n', false)
-          goto_definition_with_jump()
+          goto_definition_telescope()
         end, 'Cmd+Click で定義へ')
 
         -- Ctrl+Click でも定義にジャンプ
         bufmap('n', '<C-LeftMouse>', function()
           vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<LeftMouse>', true, false, true), 'n', false)
-          goto_definition_with_jump()
+          goto_definition_telescope()
         end, 'Ctrl+Click で定義へ')
 
         -- VSCode風のCode Action (Ctrl+. でimport文の自動追加など)
