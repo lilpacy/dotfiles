@@ -2,7 +2,7 @@
 local M = {}
 
 M.on_attach = function(client, bufnr)
-        -- typescript-tools以外のTypeScript LSPは定義ジャンプを無効化（重複回避）
+        -- typescript-tools以外のTypeScript LSPは定義ジャンプ・参照を無効化（重複回避）
         if client.name == "tsserver"
           or client.name == "ts_ls"
           or client.name == "typescript-language-server"
@@ -10,6 +10,7 @@ M.on_attach = function(client, bufnr)
         then
           client.server_capabilities.definitionProvider = false
           client.server_capabilities.typeDefinitionProvider = false
+          client.server_capabilities.referencesProvider = false
         end
 
         local bufmap = function(mode, lhs, rhs, desc)
@@ -22,13 +23,13 @@ M.on_attach = function(client, bufnr)
           vim.lsp.buf.definition({ reuse_win = true })
         end
 
-        -- 基本のキーマップ
-        bufmap('n', 'gd', goto_definition_with_jump, '定義へジャンプ')
-        bufmap('n', 'gi', vim.lsp.buf.implementation, '実装へジャンプ')
-        bufmap('n', 'gr', vim.lsp.buf.references, '参照を表示')
+        -- 基本のキーマップ (Telescope経由で選択後自動で閉じる)
+        bufmap('n', 'gd', function() require('telescope.builtin').lsp_definitions() end, '定義へジャンプ')
+        bufmap('n', 'gi', function() require('telescope.builtin').lsp_implementations() end, '実装へジャンプ')
+        bufmap('n', 'gr', function() require('telescope.builtin').lsp_references() end, '参照を表示')
         bufmap('n', 'K', vim.lsp.buf.hover, 'ホバー情報')
         bufmap('n', '<leader>rn', vim.lsp.buf.rename, 'リネーム')
-        bufmap('n', 'gt', vim.lsp.buf.type_definition, '型定義へジャンプ')
+        bufmap('n', 'gt', function() require('telescope.builtin').lsp_type_definitions() end, '型定義へジャンプ')
 
         -- VSCode風の戻る/進む（確実に動作するキー）
         bufmap('n', 'gb', function()
@@ -82,12 +83,12 @@ return {
       require("mason-lspconfig").setup({
         ensure_installed = {
           "lua_ls",
-          -- ts_ls は typescript-tools.nvim に移行したため削除
           "tailwindcss",     -- Tailwind CSS (Next.jsでよく使う)
           "eslint",          -- ESLint
           "jsonls",          -- JSON (package.json, tsconfig.jsonなど)
         },
-        automatic_installation = true,
+        -- mason-lspconfig v2: 自動有効化を無効にし、vim.lsp.enable()で明示的に管理
+        automatic_enable = false,
       })
 
       -- フォーマッタの自動インストール
@@ -133,12 +134,6 @@ return {
       -- C/C++ (clangd)
       vim.lsp.config('clangd', {
         on_attach = M.on_attach,
-      })
-
-      -- ts_lsの定義ジャンプ機能を無効化（typescript-toolsと競合するため）
-      vim.lsp.config('ts_ls', {
-        on_attach = M.on_attach,  -- カスタムon_attachを使用して、definitionProviderを無効化
-        enabled = false,  -- 可能なら起動自体を無効化
       })
 
       -- LSPサーバーを有効化 (ts_ls は typescript-tools.nvim に移行)
