@@ -5,13 +5,21 @@ model: opus
 argument-hint: <観点: react, security, performance, etc.>
 allowed-tools:
   - Bash(git diff*)
+  - Bash(git ls-files*)
 ---
 
 # Diff Review
 
 ## Context
+
+### Staged & Unstaged changes
 ```
-!git diff
+!git diff HEAD
+```
+
+### Untracked files
+```
+!git ls-files --others --exclude-standard | while read f; do echo "=== NEW FILE: $f ==="; cat "$f"; done
 ```
 
 ## Your task
