@@ -82,6 +82,12 @@ M.on_attach = function(client, bufnr)
       end
 
 return {
+  -- LSP進捗表示
+  {
+    "j-hui/fidget.nvim",
+    opts = {},
+  },
+
   -- LSP設定
   {
     "neovim/nvim-lspconfig",
