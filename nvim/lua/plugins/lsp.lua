@@ -153,6 +153,7 @@ return {
       -- C/C++ (clangd)
       vim.lsp.config('clangd', {
         on_attach = M.on_attach,
+        cmd = { 'clangd', '--background-index' },
       })
 
       -- LSPサーバーを有効化 (ts_ls は typescript-tools.nvim に移行)
