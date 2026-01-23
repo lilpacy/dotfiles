@@ -130,7 +130,8 @@
     ]
   },
   "enabledPlugins": {
-    "claude-mem@thedotmack": true
+    "claude-mem@thedotmack": true,
+    "clangd-lsp@claude-plugins-official": true
   },
   "alwaysThinkingEnabled": true
 }
