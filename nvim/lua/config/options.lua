@@ -59,11 +59,28 @@ vim.api.nvim_create_autocmd("FocusLost", {
   desc = "フォーカス喪失時も背景色をクリア"
 })
 
+-- 自動保存可能かチェック（バイナリ・特殊バッファ・画像等を除外）
+local function can_autosave()
+  if not vim.bo.modified then return false end
+  if vim.fn.expand("%") == "" then return false end
+  if vim.bo.buftype ~= "" then return false end
+  if vim.bo.readonly or not vim.bo.modifiable then return false end
+  if vim.bo.binary then return false end
+  local fname = vim.api.nvim_buf_get_name(0)
+  if fname == "" or vim.fn.filereadable(fname) == 0 then return false end
+  local ft = vim.bo.filetype
+  if ft == "gitcommit" or ft == "gitrebase" then return false end
+  local ext = vim.fn.expand("%:e"):lower()
+  local exclude_ext = { "gif", "png", "jpg", "jpeg", "webp", "bmp", "ico", "svg", "pdf", "exe", "dll", "so", "dylib" }
+  if vim.tbl_contains(exclude_ext, ext) then return false end
+  return true
+end
+
 -- insertモードを抜けた時に自動保存
 vim.api.nvim_create_autocmd("InsertLeave", {
   pattern = "*",
   callback = function()
-    if vim.bo.modified and vim.fn.expand("%") ~= "" then
+    if can_autosave() then
       vim.cmd("silent! write")
     end
   end,
@@ -74,7 +91,7 @@ vim.api.nvim_create_autocmd("InsertLeave", {
 vim.api.nvim_create_autocmd("TextChanged", {
   pattern = "*",
   callback = function()
-    if vim.bo.modified and vim.fn.expand("%") ~= "" then
+    if can_autosave() then
       vim.cmd("silent! write")
     end
   end,
@@ -85,7 +102,7 @@ vim.api.nvim_create_autocmd("TextChanged", {
 vim.api.nvim_create_autocmd("CursorHold", {
   pattern = "*",
   callback = function()
-    if vim.bo.modified and vim.fn.expand("%") ~= "" then
+    if can_autosave() then
       vim.cmd("silent! write")
     end
   end,
@@ -96,7 +113,7 @@ vim.api.nvim_create_autocmd("CursorHold", {
 vim.api.nvim_create_autocmd({ "BufLeave", "FocusLost" }, {
   pattern = "*",
   callback = function()
-    if vim.bo.modified and vim.fn.expand("%") ~= "" then
+    if can_autosave() then
       vim.cmd("silent! write")
     end
   end,
