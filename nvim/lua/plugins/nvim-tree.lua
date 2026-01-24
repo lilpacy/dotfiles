@@ -98,8 +98,8 @@ return {
         vim.keymap.set('n', 'R', api.fs.rename, opts('Rename'))                        -- リネーム
         vim.keymap.set('n', '<CR>', api.node.open.edit, opts('Open'))                  -- Enter で開く
 
-        -- シングルクリックで開く
-        vim.keymap.set('n', '<LeftRelease>', api.node.open.edit, opts('Open with single click'))
+        -- ダブルクリックで開く（シングルクリックだとリサイズ時に誤動作する）
+        vim.keymap.set('n', '<2-LeftMouse>', api.node.open.edit, opts('Open with double click'))
 
         -- Ctrl+Shift+H: カーソル下のパスでgrug-farを開く
         vim.keymap.set('n', '<C-S-h>', function()
