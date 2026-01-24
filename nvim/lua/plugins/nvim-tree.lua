@@ -31,6 +31,40 @@ return {
     -- 手動で変更した幅を保存する変数（デフォルトは30）
     _G.nvim_tree_manual_width = 30
 
+    -- マウス状態の初期化
+    if not _G.nvim_tree_mouse_state then
+      _G.nvim_tree_mouse_state = { press = nil }
+    end
+
+    -- vim.on_key で<LeftMouse>と<LeftDrag>を監視（マッピングはしない）
+    if not _G.nvim_tree_mouse_listener_registered then
+      _G.nvim_tree_mouse_listener_registered = true
+      vim.on_key(function(char)
+        local key = vim.fn.keytrans(char)
+
+        -- nvim-tree バッファ以外では無視
+        local buf = vim.api.nvim_get_current_buf()
+        if not vim.api.nvim_buf_is_valid(buf) or vim.bo[buf].filetype ~= 'NvimTree' then
+          return
+        end
+
+        if key == '<LeftMouse>' then
+          local m = vim.fn.getmousepos()
+          _G.nvim_tree_mouse_state.press = {
+            winid = m.winid,
+            line = m.line,
+            column = m.column,
+            time = vim.loop.now(),
+            dragged = false,
+          }
+        elseif key == '<LeftDrag>' then
+          if _G.nvim_tree_mouse_state.press then
+            _G.nvim_tree_mouse_state.press.dragged = true
+          end
+        end
+      end, vim.api.nvim_create_namespace('nvim-tree-mouse-watch'))
+    end
+
     require("nvim-tree").setup({
       -- ビューの設定
       view = {
@@ -98,8 +132,53 @@ return {
         vim.keymap.set('n', 'R', api.fs.rename, opts('Rename'))                        -- リネーム
         vim.keymap.set('n', '<CR>', api.node.open.edit, opts('Open'))                  -- Enter で開く
 
-        -- ダブルクリックで開く（シングルクリックだとリサイズ時に誤動作する）
-        vim.keymap.set('n', '<2-LeftMouse>', api.node.open.edit, opts('Open with double click'))
+        -- 左ボタンを離したときに「クリックかドラッグか」を判定（exprマッピング）
+        vim.keymap.set('n', '<LeftRelease>', function()
+          local press = _G.nvim_tree_mouse_state.press
+          _G.nvim_tree_mouse_state.press = nil
+
+          -- このバッファ上での押下イベントがなければデフォルト動作
+          if not press then
+            return '<LeftRelease>'
+          end
+
+          -- ドラッグが発生していたらデフォルト動作（リサイズなど）
+          if press.dragged then
+            return '<LeftRelease>'
+          end
+
+          local m = vim.fn.getmousepos()
+
+          -- 押下時と別ウィンドウで離された場合はデフォルト動作
+          if m.winid ~= press.winid then
+            return '<LeftRelease>'
+          end
+
+          -- 分割線やステータスラインで離した場合はデフォルト動作
+          if m.line == 0 or m.column == 0 then
+            return '<LeftRelease>'
+          end
+
+          -- 移動量が大きければドラッグとみなしてデフォルト動作
+          local dline = math.abs(m.line - press.line)
+          local dcolumn = math.abs(m.column - press.column)
+          if dline + dcolumn > 1 then
+            return '<LeftRelease>'
+          end
+
+          -- 押下から離すまでの時間が長いものをドラッグ扱い
+          local dt = vim.loop.now() - press.time
+          if dt > 500 then
+            return '<LeftRelease>'
+          end
+
+          -- ここまで来たら「ほぼその場でのクリック」とみなし、ノードを開く
+          -- exprマッピング内ではバッファ変更ができないのでvim.schedule()で非同期実行
+          vim.schedule(function()
+            api.node.open.edit()
+          end)
+          return '' -- 処理済みなので<LeftRelease>をVimに渡さない
+        end, vim.tbl_extend('force', opts('Open with single click'), { expr = true, replace_keycodes = false }))
 
         -- Ctrl+Shift+H: カーソル下のパスでgrug-farを開く
         vim.keymap.set('n', '<C-S-h>', function()
