@@ -7,19 +7,28 @@ description: Next.js App RouterでのServer Components / Server Actions / Route 
 
 ## 最小の判断フロー
 
-```
-何を実現したい？
-├─ UIコンポーネント？
-│   ├─ Yes → interactivity必要？（state/handlers/browser API）
-│   │   ├─ Yes → Client Component
-│   │   └─ No → Server Component
-│   └─ No（関数/ロジック） → クライアントから呼ぶ？
-│       ├─ No → server-only関数（import 'server-only'）
-│       └─ Yes → HTTP API公開？
-│           ├─ Yes → Route Handler
-│           └─ No → Server Function（'use server'）
-│               └─ mutation文脈？（form action等）
-│                   └─ Yes → Server Action
+```mermaid
+flowchart TD
+    A[何を実現したい？] --> B{UIコンポーネント？}
+
+    B -->|Yes| C{interactivity必要？<br/>state/handlers/browser API}
+    C -->|Yes| D["Client Component<br/>(use client)"]
+    C -->|No| E[Server Component]
+
+    B -->|No<br/>関数/ロジック| F{クライアントから呼ぶ？}
+    F -->|No| G["server-only関数<br/>(import server-only)"]
+    F -->|Yes| H{HTTP API公開？}
+    H -->|Yes| I[Route Handler]
+    H -->|No| J["Server Function<br/>(use server)"]
+
+    J --> K{mutation文脈？<br/>form action等}
+    K -->|Yes| L[Server Action]
+    K -->|No| J
+
+    L --> M{キャッシュ更新}
+    M -->|stale許容| N[revalidateTag]
+    M -->|即時反映必須| O[updateTag]
+    M -->|パス指定| P[revalidatePath]
 ```
 
 **Server Action選択後のキャッシュ更新：**
@@ -49,6 +58,20 @@ description: Next.js App RouterでのServer Components / Server Actions / Route 
 
 App Routerではlayouts/pagesはデフォルトでServer Component。Client Componentが必要な場合のみファイル先頭に`'use client'`を付ける。
 
+### 補足：重いClient Componentは遅延ロードを検討
+
+重いUI（チャート、エディタ等）は遅延ロードして初期JSを抑える。
+
+```tsx
+import dynamic from 'next/dynamic'
+
+const HeavyChart = dynamic(() => import('./Chart'), { ssr: false })
+
+export function Dashboard() {
+  return <HeavyChart />
+}
+```
+
 ## Q2. Server FunctionsとServer Actionsの違いは？
 
 **「クライアントからネットワーク経由で呼べるか」で分ける。**
@@ -58,6 +81,10 @@ App Routerではlayouts/pagesはデフォルトでServer Component。Client Comp
 
 ### Server Action（= mutation文脈）
 「action / mutation文脈」ではServer FunctionsはServer Actionsとも呼ばれる。`<form action={...}>`や`<button formAction={...}>`に渡すと自動的にその扱いになり、Next.jsのキャッシュ機構と統合され、更新後UIと新データを1回のサーバー往復で返せる。
+
+### 補足：Server→Clientのデータ受け渡し（シリアライズ / 最小化）
+
+引数・戻り値はシリアライズ可能である必要がある。クライアントに返すデータは「必要最小限」にするとよい（例：画面に使わない列を返さない、機密をそのまま返さない、巨大な構造体を返さない等）。
 
 ### 普通のserver-only関数
 クライアントから呼ぶ必要がないユーティリティは「普通のserver-only関数」で十分。`import 'server-only'`でマークすると、Client Componentがimportした場合にビルドエラーにできる。
@@ -235,6 +262,33 @@ export async function getCachedData() {
 
 Cache ComponentsはNext configで`cacheComponents`フラグを有効化して使うopt-in機能。
 
+## Q13. Suspense境界はいつ使う？
+
+**「部分的に先に表示して、残りを後から差し込みたい」とき（ストリーミング最適化）。**
+
+App RouterではSuspenseを前提に「ルートセグメント単位でLoading UIを差し込む」設計が取りやすい。`loading.js`はReact Suspenseで意味のあるLoading UIを作り、サーバーからコンテンツがストリーミングされる間に即時のフォールバックを表示できる。
+
+典型例：
+- 上部レイアウト（ヘッダ/ナビ）は即表示
+- 記事本文や一覧など、データ依存部は後からストリームで差し込む
+- 「体感速度」を上げたいページ（ダッシュボード、検索結果、フィードなど）
+
+## Q14. React.cache() はいつ使う？
+
+**「同一リクエスト内での重複データ取得を避けたい」とき（リクエスト単位の重複排除）。**
+
+RSCの文脈で、Reactの`cache`は「関数呼び出し結果をメモ化する」。同一リクエスト内で同じ引数の呼び出しが繰り返される場合に、重複計算・重複I/Oを抑える。
+
+```ts
+import { cache } from 'react'
+
+const getUser = cache(async (id: string) => {
+  return db.user.findUnique({ where: { id } })
+})
+```
+
+「layoutとpageの両方で同じデータを触る」「複数コンポーネントが同じ参照データを読む」などで有効。
+
 ## Server Actionsの制約
 
 - **mutation向け**：データ取得（fetch用途）には推奨されない
@@ -253,3 +307,4 @@ Cache ComponentsはNext configで`cacheComponents`フラグを有効化して使
 - **キャッシュ制御**は`revalidatePath`/`revalidateTag`、即時反映（read-your-own-writes）なら`updateTag`
 - **server-only**にしたいモジュールは`import 'server-only'`で漏洩防止
 - **フォームUI**には`useFormStatus`/`useActionState`/`useOptimistic`を活用
+- **重いClient Componentは遅延ロード**、**体感速度はSuspense境界で最適化**、**重複取得はReact.cacheで抑制**
