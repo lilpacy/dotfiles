@@ -22,15 +22,59 @@ M.on_attach = function(client, bufnr)
           vim.cmd("normal! m'")  -- 現在位置をジャンプリストに保存
           vim.lsp.buf.definition({
             on_list = function(options)
-              if #options.items == 1 then
+              local items = options.items or {}
+              if #items == 0 then
+                vim.notify('定義が見つかりませんでした', vim.log.levels.INFO)
+                return
+              elseif #items == 1 then
                 -- 候補が1つなら直接ジャンプ
-                local item = options.items[1]
+                local item = items[1]
                 vim.cmd.edit(item.filename)
                 vim.api.nvim_win_set_cursor(0, {item.lnum, item.col - 1})
               else
-                -- 複数候補はTelescopeで表示
-                vim.fn.setqflist({}, ' ', options)
-                require('telescope.builtin').quickfix()
+                -- 複数候補はTelescopeで表示（quickfixを経由せず直接pickerを作成）
+                local pickers = require('telescope.pickers')
+                local finders = require('telescope.finders')
+                local conf = require('telescope.config').values
+                local actions = require('telescope.actions')
+                local action_state = require('telescope.actions.state')
+
+                vim.schedule(function()
+                  pickers.new({}, {
+                    prompt_title = options.title or 'LSP Definitions',
+                    finder = finders.new_table({
+                      results = items,
+                      entry_maker = function(item)
+                        local filename = item.filename or vim.api.nvim_buf_get_name(item.bufnr or 0)
+                        local display_filename = vim.fn.fnamemodify(filename, ':.')
+                        return {
+                          value = item,
+                          path = filename,
+                          lnum = item.lnum,
+                          col = item.col,
+                          ordinal = display_filename .. ' ' .. (item.text or ''),
+                          display = string.format('%s:%d:%d: %s',
+                            display_filename, item.lnum or 0, item.col or 0, item.text or ''),
+                        }
+                      end,
+                    }),
+                    sorter = conf.generic_sorter({}),
+                    previewer = conf.grep_previewer({}),
+                    attach_mappings = function(prompt_bufnr)
+                      actions.select_default:replace(function()
+                        actions.close(prompt_bufnr)
+                        local selection = action_state.get_selected_entry()
+                        if not selection or not selection.value then return end
+                        local loc = selection.value
+                        local filename = loc.filename or (loc.bufnr and vim.api.nvim_buf_get_name(loc.bufnr))
+                        if not filename or filename == '' then return end
+                        vim.cmd.edit(filename)
+                        vim.api.nvim_win_set_cursor(0, { loc.lnum, (loc.col or 1) - 1 })
+                      end)
+                      return true
+                    end,
+                  }):find()
+                end)
               end
             end,
           })
