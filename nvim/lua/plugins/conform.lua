@@ -5,12 +5,12 @@ return {
     require("conform").setup({
       -- filetype ごとに使うフォーマッタを指定
       formatters_by_ft = {
-        javascript = { "prettierd", "prettier" },
-        javascriptreact = { "prettierd", "prettier" },
-        typescript = { "prettierd", "prettier" },
-        typescriptreact = { "prettierd", "prettier" },
-        json = { "prettierd", "prettier" },
-        jsonc = { "prettierd", "prettier" },
+        javascript = { "eslint_d", "prettierd", "prettier", stop_after_first = true },
+        javascriptreact = { "eslint_d", "prettierd", "prettier", stop_after_first = true },
+        typescript = { "eslint_d", "prettierd", "prettier", stop_after_first = true },
+        typescriptreact = { "eslint_d", "prettierd", "prettier", stop_after_first = true },
+        json = { "prettierd", "prettier", stop_after_first = true },
+        jsonc = { "prettierd", "prettier", stop_after_first = true },
         lua = { "stylua" },
       },
 
