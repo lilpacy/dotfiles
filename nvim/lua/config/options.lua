@@ -181,6 +181,25 @@ function _G.NvimTreeCopyFileContent()
   print('Copied file content: ' .. node.name)
 end
 
+-- nvim-treeで選択中のパスをFinderで開く関数
+function _G.NvimTreeOpenInFinder()
+  local tree_api = require('nvim-tree.api')
+  local node = tree_api.tree.get_node_under_cursor()
+
+  if not node then
+    print('No node selected')
+    return
+  end
+
+  local path = node.absolute_path
+  -- ファイルの場合は親ディレクトリを開き、そのファイルを選択状態にする
+  if node.type == 'file' then
+    vim.fn.system({ 'open', '-R', path })
+  else
+    vim.fn.system({ 'open', path })
+  end
+end
+
 -- nvim-treeで選択中のパスでgrug-farを開く関数
 function _G.NvimTreeSearchInPath()
   local tree_api = require('nvim-tree.api')
@@ -257,6 +276,11 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
       -- 検索
       vim.cmd([[menu PopUp.Search\ &\ Replace\ in\ Path <Cmd>lua NvimTreeSearchInPath()<CR>]])
+
+      vim.cmd([[menu PopUp.-sep5- :]])
+
+      -- Finderで開く
+      vim.cmd([[menu PopUp.Open\ in\ Finder <Cmd>lua NvimTreeOpenInFinder()<CR>]])
     else
       -- 通常のバッファ用メニューに戻す
       vim.cmd([[aunmenu PopUp]])
