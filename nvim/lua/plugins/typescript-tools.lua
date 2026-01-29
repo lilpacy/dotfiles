@@ -3,9 +3,16 @@ return {
   dependencies = {
     "nvim-lua/plenary.nvim",
     "neovim/nvim-lspconfig",
+    "hrsh7th/cmp-nvim-lsp",
   },
   ft = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
   config = function()
+    -- cmp-nvim-lsp のcapabilities
+    local capabilities = vim.tbl_deep_extend(
+      "force",
+      vim.lsp.protocol.make_client_capabilities(),
+      require("cmp_nvim_lsp").default_capabilities()
+    )
     -- lsp.luaの共通on_attachを使用し、TypeScript固有のキーマップを追加
     local on_attach = function(client, bufnr)
       -- 共通のLSPキーマップを適用
@@ -24,6 +31,7 @@ return {
 
     require("typescript-tools").setup({
       on_attach = on_attach,
+      capabilities = capabilities,
       settings = {
         tsserver_file_preferences = {
           includeInlayParameterNameHints = "all",

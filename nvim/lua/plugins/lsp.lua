@@ -141,6 +141,13 @@ return {
       "WhoIsSethDaniel/mason-tool-installer.nvim",
     },
     config = function()
+      -- cmp-nvim-lsp のcapabilities（補完機能をLSPに通知）
+      local capabilities = vim.tbl_deep_extend(
+        "force",
+        vim.lsp.protocol.make_client_capabilities(),
+        require("cmp_nvim_lsp").default_capabilities()
+      )
+
       -- Masonのセットアップ
       require("mason").setup()
       require("mason-lspconfig").setup({
@@ -168,6 +175,7 @@ return {
       -- LSPサーバーの設定 (Neovim 0.11+ の新しいAPI)
       vim.lsp.config('lua_ls', {
         on_attach = M.on_attach,
+        capabilities = capabilities,
         settings = {
           Lua = {
             diagnostics = {
@@ -182,21 +190,25 @@ return {
       -- Tailwind CSS
       vim.lsp.config('tailwindcss', {
         on_attach = M.on_attach,
+        capabilities = capabilities,
       })
 
       -- ESLint
       vim.lsp.config('eslint', {
         on_attach = M.on_attach,
+        capabilities = capabilities,
       })
 
       -- JSON
       vim.lsp.config('jsonls', {
         on_attach = M.on_attach,
+        capabilities = capabilities,
       })
 
       -- C/C++ (clangd)
       vim.lsp.config('clangd', {
         on_attach = M.on_attach,
+        capabilities = capabilities,
         cmd = { 'clangd', '--background-index' },
       })
 
