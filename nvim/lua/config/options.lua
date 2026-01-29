@@ -200,6 +200,59 @@ function _G.NvimTreeOpenInFinder()
   end
 end
 
+-- nvim-treeで選択中のパスでlazygitをtmux popupで開く関数
+function _G.NvimTreeOpenLazygit()
+  local tree_api = require('nvim-tree.api')
+  local node = tree_api.tree.get_node_under_cursor()
+
+  if not node then
+    print('No node selected')
+    return
+  end
+
+  -- tmux内かチェック
+  if vim.env.TMUX == nil then
+    print('Not inside tmux')
+    return
+  end
+
+  local path = node.absolute_path
+  -- ファイルの場合は親ディレクトリを使用
+  if node.type == 'file' then
+    path = vim.fn.fnamemodify(path, ':h')
+  end
+
+  -- tmux popup でlazygitを開く
+  vim.fn.system({
+    'tmux', 'display-popup',
+    '-E',           -- 終了時にポップアップを閉じる
+    '-d', path,     -- 作業ディレクトリ
+    '-w', '90%',    -- 幅90%
+    '-h', '90%',    -- 高さ90%
+    'lazygit'
+  })
+end
+
+-- nvim-treeで選択中のパスのリポジトリをwebで開く関数
+function _G.NvimTreeOpenRepoInWeb()
+  local tree_api = require('nvim-tree.api')
+  local node = tree_api.tree.get_node_under_cursor()
+
+  if not node then
+    print('No node selected')
+    return
+  end
+
+  local path = node.absolute_path
+  -- ファイルの場合は親ディレクトリを使用
+  if node.type == 'file' then
+    path = vim.fn.fnamemodify(path, ':h')
+  end
+
+  -- gh repo view --web を実行（cdしてから実行）
+  vim.fn.jobstart('cd ' .. vim.fn.shellescape(path) .. ' && gh repo view --web', { detach = true })
+end
+
 -- nvim-treeで選択中のパスでgrug-farを開く関数
 function _G.NvimTreeSearchInPath()
   local tree_api = require('nvim-tree.api')
@@ -281,6 +334,12 @@ vim.api.nvim_create_autocmd("BufEnter", {
 
       -- Finderで開く
       vim.cmd([[menu PopUp.Open\ in\ Finder <Cmd>lua NvimTreeOpenInFinder()<CR>]])
+
+      -- Lazygitを開く
+      vim.cmd([[menu PopUp.Open\ Lazygit <Cmd>lua NvimTreeOpenLazygit()<CR>]])
+
+      -- リポジトリをWebで開く
+      vim.cmd([[menu PopUp.Open\ Repo\ in\ Web <Cmd>lua NvimTreeOpenRepoInWeb()<CR>]])
     else
       -- 通常のバッファ用メニューに戻す
       vim.cmd([[aunmenu PopUp]])
