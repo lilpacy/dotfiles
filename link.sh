@@ -2,6 +2,7 @@ mkdir -p ~/.config
 mkdir -p ~/.config/sheldon/
 mkdir -p ~/.config/karabiner/
 mkdir -p ~/.config/git/
+mkdir -p ~/.config/ghostty/
 mkdir -p "$HOME/Library/Application Support/lazygit"
 sudo mkdir -p /usr/local/bin/
 
@@ -20,6 +21,8 @@ ln -sfn ~/dotfiles/claude/skills ~/.claude/skills
 ln -sfn ~/dotfiles/claude/commands ~/.claude/commands
 ln -sf ~/dotfiles/.gitignore_global ~/.config/git/ignore
 ln -sf ~/dotfiles/.config/lazygit/config.yml "$HOME/Library/Application Support/lazygit/config.yml"
+ln -sf ~/dotfiles/.aerospace.toml ~/.aerospace.toml
+ln -sf ~/dotfiles/ghostty ~/.config/ghostty/config
 
 sudo ln -sf ~/dotfiles/shell/task_cal /usr/local/bin/task_cal
 sudo ln -sf ~/dotfiles/shell/sssh /usr/local/bin/sssh
