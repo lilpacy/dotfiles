@@ -4,36 +4,57 @@ return {
     "nvim-treesitter/nvim-treesitter",
     "nvim-tree/nvim-web-devicons",
   },
-  -- ftなし: どのfiletypeでも<leader>oで使える
+  event = "BufReadPost",
   keys = {
     { "<leader>o", "<cmd>AerialToggle!<cr>", desc = "Toggle Outline (ToC / Symbols)" },
   },
-  config = function()
-    require("aerial").setup({
-      -- filetypeごとのbackend設定
-      backends = {
-        _ = { "treesitter", "lsp" },  -- デフォルト（コード全般）
-        markdown = { "markdown" },     -- Markdown専用
+  opts = {
+    attach_mode = "global",
+    backends = { "lsp", "treesitter", "markdown", "man" },
+    show_guides = true,
+    layout = {
+      max_width = { 40, 0.25 },
+      min_width = 30,
+      default_direction = "prefer_right",
+      placement = "edge",
+    },
+    -- VSCode Outlineに近いシンボル表示
+    filter_kind = {
+      _ = {
+        "Class",
+        "Constant",
+        "Constructor",
+        "Enum",
+        "EnumMember",
+        "Field",
+        "Function",
+        "Interface",
+        "Method",
+        "Module",
+        "Namespace",
+        "Package",
+        "Property",
+        "Struct",
+        "TypeParameter",
       },
-      layout = {
-        min_width = 30,
-        max_width = { 40, 0.25 },
-        default_direction = "prefer_right",
-        placement = "edge",
-      },
-      attach_mode = "global",  -- VSCodeのOutlineのようにバッファ切り替えに追従
-      -- 言語ごとのシンボルフィルタ
-      filter_kind = {
-        _ = { "Class", "Constructor", "Enum", "Function", "Interface", "Module", "Method", "Struct" },
-        markdown = { "Interface" },  -- 見出しのみ
-      },
-      show_guides = true,
-      guides = {
-        mid_item = "├─",
-        last_item = "└─",
-        nested_top = "│ ",
-        whitespace = "  ",
-      },
-    })
-  end,
+      markdown = { "Interface" },
+    },
+    -- 明示的に設定してnilエラーを防ぐ
+    ignore = {
+      unlisted_buffers = false,
+      diff_windows = true,
+      filetypes = {},
+      buftypes = "special",
+      wintypes = "special",
+    },
+    manage_folds = false,
+    link_tree_to_folds = true,
+    link_folds_to_tree = false,
+    guides = {
+      mid_item = "├─",
+      last_item = "└─",
+      nested_top = "│ ",
+      whitespace = "  ",
+    },
+  },
 }
