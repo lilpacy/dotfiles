@@ -1,5 +1,7 @@
--- Treesitter非同期パースを無効化（markdown クラッシュ回避）
-vim.g._ts_force_sync_parsing = true
+-- Treesitter非同期パース設定
+-- 注: 以前はmarkdownクラッシュ回避のため同期パースを強制していたが、
+-- nvim-treesitter.configsベースの設定に移行したため無効化して様子見
+-- vim.g._ts_force_sync_parsing = true
 
 -- Neovim 0.11+のデフォルトMenuPopup Autocmdを無効化
 -- nvim_clear_autocmdsはgroup未指定だとグループなしのautocmdしか消さないため、

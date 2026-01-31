@@ -1,31 +1,24 @@
 return {
   "nvim-treesitter/nvim-treesitter",
   build = ":TSUpdate",
-  lazy = false,
+  event = { "BufReadPost", "BufNewFile" },
   config = function()
     require("nvim-treesitter").setup({
       install_dir = vim.fn.stdpath("data") .. "/site",
     })
 
-    -- パーサーをインストール
-    require("nvim-treesitter").install({
-      "markdown",
-      "markdown_inline",
-      "lua",
-      "vim",
-      "vimdoc",
-      "javascript",
-      "typescript",
-      "python",
-      "bash",
-      "json",
-      "yaml",
-      "toml",
-      "html",
-      "css",
-    })
+    -- パーサーを非同期でインストール（未インストールの場合のみ）
+    local parsers = {
+      "markdown", "markdown_inline", "lua", "vim", "vimdoc",
+      "javascript", "typescript", "tsx", "python", "bash",
+      "json", "yaml", "toml", "html", "css",
+    }
 
-    -- Treesitterハイライトを有効化
+    vim.schedule(function()
+      require("nvim-treesitter").install(parsers)
+    end)
+
+    -- Treesitterハイライト・インデントを有効化
     vim.api.nvim_create_autocmd("FileType", {
       pattern = "*",
       callback = function(args)
