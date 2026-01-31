@@ -56,5 +56,21 @@ return {
       nested_top = "│ ",
       whitespace = "  ",
     },
+    -- シンボルに階層的な連番を付ける (1. func → 1.1 var)
+    post_add_all_symbols = function(bufnr, items, ctx)
+      local function number_nodes(nodes, prefix)
+        prefix = prefix or ""
+        for i, item in ipairs(nodes) do
+          local num = prefix == "" and tostring(i) or (prefix .. "." .. i)
+          item.name = string.format("%s. %s", num, item.name)
+          if item.children and #item.children > 0 then
+            number_nodes(item.children, num)
+          end
+        end
+      end
+      number_nodes(items)
+
+      return items
+    end,
   },
 }
