@@ -3,6 +3,16 @@
 
 local map = vim.keymap.set
 
+-- バッファを閉じる（ウィンドウだけでなくバッファも削除）
+map("n", "<leader>q", function()
+  require("bufdelete").bufdelete(0, false)
+end, { desc = "Close buffer" })
+
+-- :Q コマンドでもバッファ削除
+vim.api.nvim_create_user_command("Q", function()
+  require("bufdelete").bufdelete(0, false)
+end, { desc = "Close buffer" })
+
 -- ファイルパス系コピー（ノーマルモード）
 -- ファイル名のみ
 map("n", "<leader>yf", function()
