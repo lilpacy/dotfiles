@@ -156,6 +156,7 @@ return {
           "tailwindcss",     -- Tailwind CSS (Next.jsでよく使う)
           "eslint",          -- ESLint
           "jsonls",          -- JSON (package.json, tsconfig.jsonなど)
+          "rust_analyzer",   -- Rust
         },
         -- mason-lspconfig v2: 自動有効化を無効にし、vim.lsp.enable()で明示的に管理
         automatic_enable = false,
@@ -167,6 +168,7 @@ return {
           "prettierd",       -- Prettier daemon (高速版)
           "prettier",        -- Prettier (フォールバック用)
           "stylua",          -- Lua formatter
+          "rustfmt",         -- Rust formatter
         },
         auto_update = false,
         run_on_start = true,
@@ -212,8 +214,27 @@ return {
         cmd = { 'clangd', '--background-index' },
       })
 
+      -- Rust (rust-analyzer)
+      vim.lsp.config('rust_analyzer', {
+        on_attach = M.on_attach,
+        capabilities = capabilities,
+        settings = {
+          ['rust-analyzer'] = {
+            check = {
+              command = 'clippy',  -- cargo check の代わりに clippy を使用
+            },
+            cargo = {
+              allFeatures = true,
+            },
+            procMacro = {
+              enable = true,
+            },
+          },
+        },
+      })
+
       -- LSPサーバーを有効化 (ts_ls は typescript-tools.nvim に移行)
-      vim.lsp.enable({ 'lua_ls', 'tailwindcss', 'eslint', 'jsonls', 'clangd' })
+      vim.lsp.enable({ 'lua_ls', 'tailwindcss', 'eslint', 'jsonls', 'clangd', 'rust_analyzer' })
 
       -- on_attachをグローバルに公開（typescript-tools.nvimで再利用するため）
       _G.lsp_on_attach = M.on_attach

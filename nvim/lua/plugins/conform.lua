@@ -12,6 +12,7 @@ return {
         json = { "prettierd", "prettier", stop_after_first = true },
         jsonc = { "prettierd", "prettier", stop_after_first = true },
         lua = { "stylua" },
+        rust = { "rustfmt" },
       },
 
       -- 保存時自動フォーマット

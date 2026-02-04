@@ -11,7 +11,7 @@ return {
     local parsers = {
       "markdown", "markdown_inline", "lua", "vim", "vimdoc",
       "javascript", "typescript", "tsx", "python", "bash",
-      "json", "yaml", "toml", "html", "css",
+      "json", "yaml", "toml", "html", "css", "rust",
     }
 
     vim.schedule(function()
