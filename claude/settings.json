@@ -133,6 +133,11 @@
     "type": "command",
     "command": "bash -c '\"/Users/lilpacy/.asdf/shims/bun\" \"$(ls -td ~/.claude/plugins/cache/claude-hud/claude-hud/*/ 2>/dev/null | head -1)src/index.ts\"'"
   },
+  "enabledPlugins": {
+    "claude-mem@thedotmack": true,
+    "clangd-lsp@claude-plugins-official": true,
+    "claude-hud@claude-hud": true
+  },
   "spinnerVerbs": {
     "mode": "replace",
     "verbs": [
@@ -438,11 +443,6 @@
       "repellent pouches → 忌避剤入りポーチ",
       "bsf → best friends"
     ]
-  },
-  "enabledPlugins": {
-    "claude-mem@thedotmack": true,
-    "clangd-lsp@claude-plugins-official": true,
-    "claude-hud@claude-hud": true
   },
   "alwaysThinkingEnabled": true
 }
