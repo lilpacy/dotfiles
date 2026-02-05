@@ -36,31 +36,6 @@ return {
     local telescope = require("telescope")
     local actions = require("telescope.actions")
     local lga_actions = require("telescope-live-grep-args.actions")
-    local action_state = require("telescope.actions.state")
-
-    -- フラグを追加するカスタム関数（既存フラグを保持）
-    local function append_flag(flag)
-      return function(prompt_bufnr)
-        local picker = action_state.get_current_picker(prompt_bufnr)
-        local prompt = picker:_get_prompt()
-
-        -- 既にそのフラグがあれば何もしない
-        if prompt:find(flag, 1, true) then
-          return
-        end
-
-        -- クォートされていなければクォートする
-        if not prompt:match('^"') then
-          prompt = '"' .. prompt .. '"'
-        end
-
-        -- フラグを末尾に追加
-        prompt = prompt .. " " .. flag
-
-        -- プロンプトを更新
-        picker:set_prompt(prompt)
-      end
-    end
 
     telescope.setup({
       defaults = {
@@ -96,11 +71,11 @@ return {
           mappings = {
             i = {
               -- VSCode風の検索オプション切り替え（複数組み合わせ可能）
-              ["<C-k>"] = lga_actions.quote_prompt(),              -- クォートで囲む
-              ["<C-s>"] = append_flag("--case-sensitive"),         -- 大文字小文字を区別 (Aa ON)
-              ["<C-i>"] = append_flag("--ignore-case"),            -- 大文字小文字を無視 (Aa OFF)
-              ["<C-w>"] = append_flag("-w"),                       -- 単語完全一致 (Ab| ON)
-              ["<C-f>"] = append_flag("-F"),                       -- リテラル検索 (.* OFF)
+              ["<C-k>"] = lga_actions.quote_prompt(),                            -- クォートで囲む
+              ["<C-s>"] = lga_actions.quote_prompt({ postfix = " --case-sensitive" }), -- 大文字小文字を区別 (Aa ON)
+              ["<C-i>"] = lga_actions.quote_prompt({ postfix = " --ignore-case" }),    -- 大文字小文字を無視 (Aa OFF)
+              ["<C-w>"] = lga_actions.quote_prompt({ postfix = " -w" }),               -- 単語完全一致 (Ab| ON)
+              ["<C-f>"] = lga_actions.quote_prompt({ postfix = " -F" }),               -- リテラル検索 (.* OFF)
             },
           },
         },
