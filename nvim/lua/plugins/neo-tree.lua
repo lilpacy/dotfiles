@@ -299,6 +299,9 @@ return {
       callback = function()
         vim.cmd("setlocal winfixwidth")
 
+        -- グローバルの/マッピングを解除してneo-treeのfilter_on_submitを有効にする
+        pcall(function() vim.keymap.del('n', '/', { buffer = 0 }) end)
+
         -- シングルクリックでファイルを開く（exprマッピング）
         local buf = vim.api.nvim_get_current_buf()
         vim.keymap.set('n', '<LeftRelease>', function()
