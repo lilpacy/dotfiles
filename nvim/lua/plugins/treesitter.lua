@@ -25,5 +25,8 @@ return {
         pcall(vim.treesitter.start, args.buf)
       end,
     })
+
+    -- Treesitter構文木表示（:InspectTree）
+    vim.keymap.set("n", "<leader>ti", vim.treesitter.inspect_tree, { desc = "Treesitter InspectTree" })
   end,
 }
