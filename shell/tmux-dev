@@ -1,0 +1,30 @@
+#!/bin/bash
+# tmux-dev: 開発用4ペインレイアウトを作成
+
+SESSION="${1:-dev}"
+DIR="${2:-$(pwd)}"
+
+# 既存セッションがあればアタッチ
+if tmux has-session -t "$SESSION" 2>/dev/null; then
+    tmux attach-session -t "$SESSION"
+    exit 0
+fi
+
+# 新規セッション作成（左上ペイン）
+tmux new-session -d -s "$SESSION" -c "$DIR"
+
+# 左右分割（左60%）
+tmux split-window -h -l 40% -c "$DIR"
+
+# 左ペインを上下分割（上70%）
+tmux select-pane -t 0
+tmux split-window -v -l 30% -c "$DIR"
+
+# 右ペインを上下分割（上80%）
+tmux select-pane -t 2
+tmux split-window -v -l 20% -c "$DIR"
+
+# 左上ペイン（nvim）にフォーカス
+tmux select-pane -t 0
+
+tmux attach-session -t "$SESSION"

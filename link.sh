@@ -26,5 +26,6 @@ ln -sf ~/dotfiles/ghostty ~/.config/ghostty/config
 
 sudo ln -sf ~/dotfiles/shell/task_cal /usr/local/bin/task_cal
 sudo ln -sf ~/dotfiles/shell/sssh /usr/local/bin/sssh
+sudo ln -sf ~/dotfiles/shell/tmux-dev /usr/local/bin/tmux-dev
 find shell | xargs -p chmod 700
 

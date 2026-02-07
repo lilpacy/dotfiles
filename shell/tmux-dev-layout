@@ -1,0 +1,18 @@
+#!/bin/bash
+# tmux-dev-layout: 現在のウィンドウに開発用4ペインレイアウトを作成
+
+DIR="#{pane_current_path}"
+
+# 左右分割（左60%）
+tmux split-window -h -l 40% -c "$DIR"
+
+# 左ペインを上下分割（上70%）
+tmux select-pane -t 0
+tmux split-window -v -l 20% -c "$DIR"
+
+# 右ペインを上下分割（上80%）
+tmux select-pane -t 2
+tmux split-window -v -l 20% -c "$DIR"
+
+# 左上ペイン（nvim）にフォーカス
+tmux select-pane -t 0
