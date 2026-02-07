@@ -118,9 +118,7 @@ return {
         indent = {
           indent_size = 2,
           padding = 1,
-          with_expanders = true,
-          expander_collapsed = "",
-          expander_expanded = "",
+          with_expanders = false,
           -- インデントマーカーで階層を明確化
           with_markers = true,
           indent_marker = "│",
@@ -161,6 +159,18 @@ return {
 
       -- Gitステータスのハイライト色
       renderers = {
+        directory = {
+          { "indent" },
+          { "icon" },
+          { "current_filter" },
+          {
+            "container",
+            content = {
+              { "name", zindex = 10 },
+              { "git_status", zindex = 30, align = "right", hide_when_expanded = true },
+            },
+          },
+        },
         file = {
           { "indent" },
           { "icon" },
@@ -284,6 +294,13 @@ return {
 
       -- パフォーマンス最適化
       event_handlers = {
+        {
+          event = "neo_tree_window_after_open",
+          handler = function()
+            -- インデントマーカーの色を見やすく（Nordのコメント色より明るく）
+            vim.api.nvim_set_hl(0, "NeoTreeIndentMarker", { fg = "#616E88" })
+          end,
+        },
         {
           event = "neo_tree_buffer_enter",
           handler = function()
