@@ -3,15 +3,56 @@
 
 local map = vim.keymap.set
 
--- バッファを閉じる（ウィンドウだけでなくバッファも削除）
+-- :q でバッファが複数あれば現在のバッファだけ閉じる（VSCodeライクな挙動）
+local function smart_quit(bang)
+  -- 1. 同一タブにウィンドウが複数ある → 素の :q（ウィンドウを閉じる）
+  local wins = vim.api.nvim_tabpage_list_wins(0)
+  if #wins > 1 then
+    vim.cmd(bang and "q!" or "q")
+    return
+  end
+
+  -- 2. 特殊バッファ（help, quickfix, terminal等） → 素の :q
+  local bt = vim.bo.buftype
+  if bt ~= "" and bt ~= "acwrite" then
+    vim.cmd(bang and "q!" or "q")
+    return
+  end
+
+  -- 3. 通常バッファの数をカウント
+  local listed = vim.fn.getbufinfo({ buflisted = 1 })
+  local normal_count = 0
+  for _, info in ipairs(listed) do
+    local bt_i = vim.bo[info.bufnr].buftype
+    if bt_i == "" or bt_i == "acwrite" then
+      normal_count = normal_count + 1
+    end
+  end
+
+  if normal_count > 1 then
+    -- 複数バッファあり → 現在のバッファだけ閉じる
+    require("bufdelete").bufdelete(0, bang)
+  else
+    -- 最後の1つ → Neovim終了
+    vim.cmd(bang and "q!" or "q")
+  end
+end
+
 map("n", "<leader>q", function()
-  require("bufdelete").bufdelete(0, false)
+  smart_quit(false)
 end, { desc = "Close buffer" })
 
--- :Q コマンドでもバッファ削除
-vim.api.nvim_create_user_command("Q", function()
-  require("bufdelete").bufdelete(0, false)
-end, { desc = "Close buffer" })
+vim.api.nvim_create_user_command("Bq", function(opts)
+  smart_quit(opts.bang)
+end, { bang = true, desc = "Close buffer or quit if last" })
+
+-- :q → :Bq に変換（:qa, :wq 等には影響しない）
+vim.cmd([[cnoreabbrev <expr> q getcmdtype() == ':' && getcmdline() ==# 'q' ? 'Bq' : 'q']])
+
+-- :Q もsmart_quitに統一
+vim.api.nvim_create_user_command("Q", function(opts)
+  smart_quit(opts.bang)
+end, { bang = true, desc = "Close buffer or quit if last" })
 
 -- ファイルパス系コピー（ノーマルモード）
 -- ファイル名のみ

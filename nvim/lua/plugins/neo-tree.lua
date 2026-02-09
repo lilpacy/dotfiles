@@ -3,7 +3,6 @@ return {
   branch = "v3.x",
   dependencies = {
     "nvim-lua/plenary.nvim",
-    "nvim-tree/nvim-web-devicons",
     "MunifTanjim/nui.nvim",
   },
 
@@ -124,13 +123,6 @@ return {
           indent_marker = "│",
           last_indent_marker = "└",
           highlight = "NeoTreeIndentMarker",
-        },
-        icon = {
-          folder_closed = "",
-          folder_open = "",
-          folder_empty = "",
-          folder_empty_open = "",
-          default = "",
         },
         modified = {
           symbol = "●",
@@ -292,15 +284,7 @@ return {
         },
       },
 
-      -- パフォーマンス最適化
       event_handlers = {
-        {
-          event = "neo_tree_window_after_open",
-          handler = function()
-            -- インデントマーカーの色を見やすく（Nordのコメント色より明るく）
-            vim.api.nvim_set_hl(0, "NeoTreeIndentMarker", { fg = "#616E88" })
-          end,
-        },
         {
           event = "neo_tree_buffer_enter",
           handler = function()
