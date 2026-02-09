@@ -394,6 +394,16 @@ return {
       end,
     })
 
+    -- git操作後にneo-treeのgitステータスを自動更新
+    vim.api.nvim_create_autocmd({ "FocusGained", "BufWritePost", "TermLeave" }, {
+      callback = function()
+        local ok, events = pcall(require, "neo-tree.events")
+        if ok then
+          events.fire_event("git_event")
+        end
+      end,
+    })
+
     -- 手動で変更した幅をリセットしてデフォルト(30)に戻すコマンド
     vim.api.nvim_create_user_command("NeoTreeResetWidth", function()
       _G.neo_tree_manual_width = 30
