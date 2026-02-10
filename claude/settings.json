@@ -51,7 +51,7 @@
       "Read(~/.ssh/**)",
       "Read(~/.aws/**)",
       "Read(./config/credentials.json)",
-      "Read(./build)",
+      "Read(./build/**)",
       "Edit(./.env)",
       "Edit(./.env.*)",
       "Edit(./**/.env)",
@@ -60,14 +60,12 @@
       "Edit(~/.ssh/**)",
       "Edit(~/.aws/**)",
       "Edit(./config/credentials.json)",
-      "Edit(./build)",
+      "Edit(./build/**)",
       "Bash(sudo:*)",
       "Bash(rm -rf:*)",
       "Bash(git push:*)",
       "Bash(git reset:*)",
-      "Bash(git rebase:*)",
-      "Read(.env*)",
-      "Edit(.env*)"
+      "Bash(git rebase:*)"
     ]
   },
   "model": "opus",
