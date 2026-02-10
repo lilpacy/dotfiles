@@ -10,7 +10,12 @@
   },
   "sandbox": {
     "enabled": true,
-    "autoAllowBashIfSandboxed": true
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": false,
+    "excludedCommands": ["docker", "docker-compose"],
+    "network": {
+      "allowedDomains": ["github.com", "*.npmjs.org", "registry.npmjs.org"]
+    }
   },
   "permissions": {
     "allow": [
