@@ -8,6 +8,10 @@
     "MAX_THINKING_TOKENS": "1024",
     "MCP_TOOL_TIMEOUT": "900000"
   },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
+  },
   "permissions": {
     "allow": [
       "Read(~/**)",
