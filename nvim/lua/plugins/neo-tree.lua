@@ -197,7 +197,14 @@ return {
           ["q"] = "close_window",
           ["R"] = "refresh",
           ["?"] = "show_help",
-          ["P"] = "toggle_preview",
+          ["P"] = {
+            "toggle_preview",
+            config = {
+              use_float = true,
+              use_snacks_image = true,
+              use_image_nvim = false,
+            },
+          },
 
           -- ファイルを開く
           ["t"] = "open_tabnew",
