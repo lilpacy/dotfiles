@@ -44,6 +44,9 @@ Read individual rule files for detailed explanations and code examples:
 - [rules/cli.md](rules/cli.md) - manimgl command, flags (-w, -o, -se, -l, -h), rendering options
 - [rules/config.md](rules/config.md) - custom_config.yml, directories, camera settings, quality presets
 
+### Project Workflow
+- [rules/multi-scene-workflow.md](rules/multi-scene-workflow.md) - Multi-scene render/concat/main script separation pattern
+
 ## Working Examples
 
 Complete, tested example files demonstrating common patterns:

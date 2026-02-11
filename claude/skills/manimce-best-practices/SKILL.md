@@ -49,6 +49,9 @@ Read individual rule files for detailed explanations and code examples:
 - [rules/cli.md](rules/cli.md) - Command-line interface, rendering options, quality flags
 - [rules/config.md](rules/config.md) - Configuration system, manim.cfg, settings
 
+### Project Workflow
+- [rules/multi-scene-workflow.md](rules/multi-scene-workflow.md) - Multi-scene render/concat/main script separation pattern
+
 ### Shapes & Geometry
 - [rules/shapes.md](rules/shapes.md) - Circle, Square, Rectangle, Polygon, and geometric primitives
 - [rules/lines.md](rules/lines.md) - Line, Arrow, Vector, DashedLine, and connectors
