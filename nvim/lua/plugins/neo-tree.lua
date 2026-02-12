@@ -386,12 +386,15 @@ return {
     })
 
     -- git操作後にneo-treeのgitステータスを自動更新
-    vim.api.nvim_create_autocmd({ "FocusGained", "BufWritePost", "TermLeave" }, {
+    vim.api.nvim_create_autocmd({ "FocusGained", "BufWritePost", "TermLeave", "TermClose" }, {
       callback = function()
-        local ok, events = pcall(require, "neo-tree.events")
-        if ok then
-          events.fire_event("git_event")
-        end
+        -- tmux popup（lazygit等）からの復帰時、イベントループ安定後にリフレッシュ
+        vim.defer_fn(function()
+          local ok, events = pcall(require, "neo-tree.events")
+          if ok then
+            events.fire_event(events.GIT_EVENT)
+          end
+        end, 200)
       end,
     })
 
