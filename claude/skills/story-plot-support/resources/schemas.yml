@@ -1,0 +1,98 @@
+# plot.yml の推奨スキーマ（必要なとこだけ使えばOK）
+
+project:
+  slug: TBD
+  format: series|novel|film|tv
+  genre_tags: []   # ensemble, mystery, conspiracy, sf, coming-of-age, etc.
+  north_star:
+    logline: TBD
+    end_state_paragraph: TBD
+  constraints:
+    length:
+      volumes: TBD
+      episodes: TBD
+      chapters: TBD
+
+world_bible:
+  rules:
+    - id: R001
+      text: TBD
+      status: confirmed|tentative|hold
+  prohibitions:
+    - TBD
+
+strands:
+  - id: STR_A
+    name: main
+    description: TBD
+
+timeline:
+  objective:   # A
+    - id: E001
+      time: TBD
+      place: TBD
+      event: TBD
+      known_by: [TBD]
+      change: TBD
+      evidence_scene_ids: [SC001]
+  presented:   # B
+    - id: P001
+      order: 1
+      reveals_event_id: E001
+      what_reader_learns: TBD
+      misdirection: TBD
+      evidence_scene_ids: [SC001]
+
+foreshadows:
+  - id: F001
+    type: clue|red_herring|setup|rule
+    plant:
+      chapter_id: CH01
+      scene_id: SC001
+      form: dialogue|prop|description
+      text: TBD
+    payoff:
+      chapter_id: CH10
+      scene_id: SC120
+      proof: dialogue|visual|action
+      text: TBD
+    intended_misread: TBD
+
+mid_term:
+  sequences:
+    - id: SQ1
+      opening_state: TBD
+      mini_goal: TBD
+      obstacle: TBD
+      turn: TBD
+      next_problem: TBD
+  structure_checks:
+    three_act:
+      beginning: TBD
+      end: TBD
+      plot_point_1: TBD
+      plot_point_2: TBD
+      midpoint: TBD
+    stc_pillars:
+      catalyst: TBD
+      break_into_two: TBD
+      midpoint: TBD
+      all_is_lost: TBD
+      finale: TBD
+
+chapters:
+  - id: CH01
+    title: TBD
+    advances_strands: [STR_A]
+    scenes: [SC001, SC002]
+
+scenes:
+  - id: SC001
+    header: "INT/EXT PLACE - TIME"
+    pov: TBD
+    goal: TBD
+    conflict: TBD
+    turn: TBD
+    button: TBD
+    value_shift: "trust->distrust"
+    foreshadow_ids: [F001]
