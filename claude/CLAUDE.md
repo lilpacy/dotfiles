@@ -19,6 +19,18 @@
 
 Please respond in the language the user used
 
+## Codex連携
+- Codexは司令塔（設計・計画・レビュー・問題定義）、CCは実行者（実装・修正・テスト生成）
+- 設計判断・方針決定はCodexに委ねる。CCは自分の判断で設計を決めない
+- 実装はCCが直接行う（ファイル操作・ツール実行はCCのネイティブ機能）
+- 自明な変更（5行以内、設計判断不要）はCodex照会なしでCCが直接行ってよい
+
+### 実行モード
+- フロー: タスク受領 → Codexに設計照会 → CCが実装 → Codexにレビュー依頼 → 修正
+
+### 議論モード
+- 「議論して」で発動。手順は ~/.claude/commands/discuss.md に従う
+
 ## Skills
 <!--SKILLS-INDEX-->|[Skills Index]|root:~/.claude/skills|IMPORTANT:Prefer retrieval-led reasoning over pre-training|nextjs-app-router-guide:{SKILL.md}|react-best-practices:{SKILL.md,AGENTS.md,rules/async-*.md,rules/bundle-*.md,rules/rerender-*.md,rules/rendering-*.md,rules/server-*.md}|supabase-postgres-best-practices:{SKILL.md,AGENTS.md,rules/query-*.md,rules/schema-*.md,rules/conn-*.md,rules/security-*.md}|ui-mockup-builder:{SKILL.md}|wireframe-builder:{SKILL.md}|prd-writer:{SKILL.md}|data-model-designer:{SKILL.md}|implement-design:{SKILL.md}|playwright-testing:{SKILL.md}|screen-transition-diagram:{SKILL.md}|ia-architect:{SKILL.md}|ux-5-planes-designer:{SKILL.md}|nanobanana-prompt-writer:{SKILL.md}|write-tech-article:{SKILL.md}|skill-skillsmith:{SKILL.md}|agent-memory:{SKILL.md}|phaser-gamedev:{SKILL.md}|agentation:{SKILL.md}<!--END-->
 
@@ -29,6 +41,6 @@ Postgres/Supabase→必ず`supabase-postgres-best-practices/`を読んでから�
 ## MCP Tool Usage Rules
 記憶・メモ -> `mcp__plugin_claude-mem_mcp-search__*` 
 画像生成 -> `mcp__nanobanana__*` 
-WebSearchが必要ない複雑な推論、プラン作成・設計・実装後のレビュー、セカンドオピニオン -> `mcp__codex__codex_exec`
+WebSearchが必要ない複雑な推論、プラン作成・設計・実装後のレビュー、セカンドオピニオン -> `mcp__codex__*`
 WebSearchが必要な複雑な推論 -> `Explore`エージェント
 
