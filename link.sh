@@ -19,6 +19,7 @@ ln -sfn ~/dotfiles/nvim ~/.config/nvim
 ln -sf ~/dotfiles/claude/settings.json ~/.claude/settings.json
 ln -sfn ~/dotfiles/claude/skills ~/.claude/skills
 ln -sfn ~/dotfiles/claude/commands ~/.claude/commands
+ln -sf ~/dotfiles/claude/CLAUDE.md ~/.claude/CLAUDE.md
 ln -sf ~/dotfiles/.gitignore_global ~/.config/git/ignore
 ln -sf ~/dotfiles/.config/lazygit/config.yml "$HOME/Library/Application Support/lazygit/config.yml"
 ln -sf ~/dotfiles/.aerospace.toml ~/.aerospace.toml
