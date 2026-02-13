@@ -191,6 +191,7 @@ export CLAUDE_CODE_USE_BEDROCK=1
 export ANTHROPIC_MODEL='global.anthropic.claude-sonnet-4-5-20250929-v1:0'
 export CLAUDE_CODE_MAX_OUTPUT_TOKENS=4096
 export MAX_THINKING_TOKENS=1024
+alias claude='claude --dangerously-skip-permissions'
 alias claude-mem='bun "/Users/lilpacy/.claude/plugins/marketplaces/thedotmack/plugin/scripts/worker-service.cjs"'
 
 # alias opus/sonnet の実体を Bedrock inference profile に割り当て、/model {opus,sonnet}で切り替え
