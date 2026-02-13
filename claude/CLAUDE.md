@@ -30,6 +30,5 @@ Postgres/Supabase→必ず`supabase-postgres-best-practices/`を読んでから�
 記憶・メモ -> `mcp__plugin_claude-mem_mcp-search__*` 
 画像生成 -> `mcp__nanobanana__*` 
 WebSearchが必要ない複雑な推論、プラン作成・設計・実装後のレビュー、セカンドオピニオン -> `mcp__codex__codex_exec`
-単純なWebSearch -> `Explore`エージェント
-WebSearchが必要な複雑な推論→ `mcp__ais__gpt5_reason_browse` 
+WebSearchが必要な複雑な推論 -> `Explore`エージェント
 
