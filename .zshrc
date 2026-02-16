@@ -58,6 +58,13 @@ function peco-src() {
 }
 zle -N peco-src
 
+# git worktree x peco
+gwt() {
+  local dir
+  dir=$(git worktree list | peco | awk '{print $1}')
+  [ -n "$dir" ] && cd "$dir"
+}
+
 # bun completions
 [ -s "/Users/lilpacy/.bun/_bun" ] && source "/Users/lilpacy/.bun/_bun"
 
