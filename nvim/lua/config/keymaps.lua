@@ -76,6 +76,35 @@ map("n", "<leader>ya", function()
   print("Copied absolute path: " .. filepath)
 end, { desc = "Yank absolute path" })
 
+-- lazygit: eでfloatを隠してファイルを通常バッファで開く。<leader>ggで復帰
+function _G._lazygit_edit(filename, line)
+  local term = _G._lazygit_term
+  if term and term.hide then
+    term:hide()
+  end
+  vim.cmd("edit " .. vim.fn.fnameescape(filename))
+  if line and line > 0 then
+    pcall(vim.api.nvim_win_set_cursor, 0, { line, 0 })
+  end
+end
+
+map("n", "<leader>gg", function()
+  local dir = vim.fn.expand("%:p:h")
+  local toplevel = vim.fn.systemlist("git -C " .. vim.fn.shellescape(dir) .. " rev-parse --show-toplevel")[1]
+  if vim.v.shell_error ~= 0 then
+    toplevel = vim.fn.getcwd()
+  end
+  _G._lazygit_term = Snacks.lazygit({
+    cwd = toplevel,
+    config = {
+      os = {
+        edit = [[nvim --server "$NVIM" --remote-expr "execute('lua _G._lazygit_edit(\"{{filename}}\", 0)')"]],
+        editAtLine = [[nvim --server "$NVIM" --remote-expr "execute('lua _G._lazygit_edit(\"{{filename}}\", {{line}})')"]],
+      },
+    },
+  })
+end, { desc = "Lazygit" })
+
 -- Visual選択範囲のファイルパス:行番号をクリップボードにコピー
 map("v", "<leader>yc", function()
   local start_line = vim.fn.line("v")
