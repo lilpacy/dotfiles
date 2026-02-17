@@ -39,8 +39,14 @@ React/Next.jsパフォーマンス→必ず`react-best-practices/`を読んで�
 Postgres/Supabase→必ず`supabase-postgres-best-practices/`を読んでから回答
 
 ## MCP Tool Usage Rules
-記憶・メモ -> `mcp__plugin_claude-mem_mcp-search__*` 
-画像生成 -> `mcp__nanobanana__*` 
-WebSearchが必要ない複雑な推論、プラン作成・設計・実装後のレビュー、セカンドオピニオン -> `mcp__codex__*`
-WebSearchが必要な複雑な推論 -> `Explore`エージェント
+記憶・メモ -> `mcp__plugin_claude-mem_mcp-search__*`
+画像生成 -> `mcp__nanobanana__*`
+単純なWebSearch -> `Explore`エージェント
+複雑な推論、プラン作成・設計・実装後のレビュー、セカンドオピニオン -> `mcp__codex__*`
+
+### Codex sandbox ルール
+- `mcp__codex__codex_exec` 呼び出し時、`sandbox` パラメータでCodexの実行権限を制御する
+- デフォルト（省略時）: `read-only` — コード読解・設計・レビュー等、インターネット不要のタスク
+- `workspace-write` — ワークスペースへの書き込みが必要な場合
+- `danger-full-access` — **Web検索・外部API・最新情報取得が必要な場合のみ**明示指定する
 
