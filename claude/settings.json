@@ -8,15 +8,6 @@
     "MAX_THINKING_TOKENS": "1024",
     "MCP_TOOL_TIMEOUT": "900000"
   },
-  "sandbox": {
-    "enabled": true,
-    "autoAllowBashIfSandboxed": true,
-    "allowUnsandboxedCommands": false,
-    "excludedCommands": ["docker", "docker-compose"],
-    "network": {
-      "allowedDomains": ["github.com", "*.npmjs.org", "registry.npmjs.org"]
-    }
-  },
   "permissions": {
     "allow": [
       "Read(~/**)",
@@ -150,6 +141,22 @@
     "claude-mem@thedotmack": true,
     "clangd-lsp@claude-plugins-official": true,
     "claude-hud@claude-hud": true
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": false,
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "*.npmjs.org",
+        "registry.npmjs.org"
+      ]
+    },
+    "excludedCommands": [
+      "docker",
+      "docker-compose"
+    ]
   },
   "spinnerVerbs": {
     "mode": "replace",
@@ -457,5 +464,7 @@
       "bsf → best friends"
     ]
   },
-  "alwaysThinkingEnabled": true
+  "alwaysThinkingEnabled": true,
+  "skipDangerousModePermissionPrompt": true,
+  "effortLevel": "medium"
 }
