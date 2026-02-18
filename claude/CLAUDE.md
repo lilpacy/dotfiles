@@ -39,7 +39,6 @@ React/Next.jsパフォーマンス→必ず`react-best-practices/`を読んで�
 Postgres/Supabase→必ず`supabase-postgres-best-practices/`を読んでから回答
 
 ## MCP Tool Usage Rules
-記憶・メモ -> `mcp__plugin_claude-mem_mcp-search__*`
 画像生成 -> `mcp__nanobanana__*`
 単純なWebSearch -> `Explore`エージェント
 複雑な推論、プラン作成・設計・実装後のレビュー、セカンドオピニオン -> `mcp__codex__*`
