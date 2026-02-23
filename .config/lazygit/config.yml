@@ -2,3 +2,8 @@ gui:
   language: en
   theme:
     lightTheme: false
+customCommands:
+  - key: 'C'
+    command: 'git commit'
+    context: 'files'
+    output: terminal
