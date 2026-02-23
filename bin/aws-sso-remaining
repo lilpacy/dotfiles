@@ -96,14 +96,17 @@ def parse_expires_at(s: str) -> dt.datetime:
 
 
 def format_delta(delta: dt.timedelta) -> str:
-    """残り時間を h/m 形式でフォーマット"""
+    """残り時間を d/h/m 形式でフォーマット"""
     sec = int(delta.total_seconds())
     if sec <= 0:
         return "expired"
 
-    h, rem = divmod(sec, 3600)
+    d, rem = divmod(sec, 86400)
+    h, rem = divmod(rem, 3600)
     m, _ = divmod(rem, 60)
-    if h > 0:
+    if d > 0:
+        return f"{d}d{h:02d}h{m:02d}m"
+    elif h > 0:
         return f"{h}h{m:02d}m"
     else:
         return f"{m}m"
@@ -134,11 +137,20 @@ def main():
 
     # 有効期限の計算
     try:
-        expires = parse_expires_at(data["expiresAt"])
         now = dt.datetime.now(dt.timezone.utc)
-        delta = expires - now
 
-        # 残り時間を出力（starship用にシンプルに）
+        if data.get("refreshToken"):
+            # 新形式: refreshTokenがある場合はファイル作成日時 + 7日をセッション期限とする
+            # （ポータルセッション期間=7日がハードコード）
+            PORTAL_SESSION_DAYS = 7
+            birthtime = os.stat(cache_path).st_birthtime
+            created = dt.datetime.fromtimestamp(birthtime, tz=dt.timezone.utc)
+            expires = created + dt.timedelta(days=PORTAL_SESSION_DAYS)
+        else:
+            # レガシー形式: expiresAtをそのまま使う
+            expires = parse_expires_at(data["expiresAt"])
+
+        delta = expires - now
         print(format_delta(delta))
     except Exception:
         # エラーの場合は何も出力しない
