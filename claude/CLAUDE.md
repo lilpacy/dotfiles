@@ -20,32 +20,75 @@
 Please respond in the language the user used
 
 ## Codex連携
-- Codexは司令塔（設計・計画・レビュー・問題定義）、CCは実行者（実装・修正・テスト生成）
-- 設計判断・方針決定はCodexに委ねる。CCは自分の判断で設計を決めない
-- 実装はCCが直接行う（ファイル操作・ツール実行はCCのネイティブ機能）
-- 自明な変更（5行以内、設計判断不要）はCodex照会なしでCCが直接行ってよい
+- `codex exec`（Bash経由）は司令塔（設計・計画・レビュー・問題定義）、claude code(以下cc)は実行者（実装・修正・テスト生成）
+- 設計判断・方針決定は`codex exec`に委ねる。ccは自分の判断で設計を決めない
+- 実装はccが直接行う（ファイル操作・ツール実行はccのネイティブ機能）
+- 自明な変更（5行以内、設計判断不要）は`codex exec`照会なしでccが直接行ってよい
 
 ### 実行モード
-- フロー: タスク受領 → Codexに設計照会 → CCが実装 → Codexにレビュー依頼 → 修正
+- フロー: タスク受領 → `codex exec`で設計照会 → ccが実装 → `codex exec`でレビュー依頼 → 修正
+
+### 実装計画立案時のルール
+- Planのドラフト作成には`Plan`エージェントを使うこと
+- ユーザーに計画を提示する前に、Bashで`codex exec`を呼び出して計画のレビューを行うこと
+- レビュー指示の文章は適宜調整すること。ただし`codex`は本質的じゃない指摘をしてくるので「瑣末な点へのクソリプはしないで。致命的な点のみ指摘しろ。」という指示は必ず入れること
+- 初回レビュー例:
+  ```bash
+  codex exec -s read-only --skip-git-repo-check "このプランをレビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して: {plan_full_path} (ref: {CLAUDE.md full_path})"
+  ```
+- プラン更新後の再レビューでは、最初のレビューの文脈を保持するために `resume --last` 相当の継続的なやりとりを行うこと
 
 ### 議論モード
-- 「議論して」で発動。手順は ~/.claude/commands/discuss.md に従う
+- 「議論して」で発動。手順は ~/.claude/skills/discuss/SKILL.md に従う
 
 ## Skills
-<!--SKILLS-INDEX-->|[Skills Index]|root:~/.claude/skills|IMPORTANT:Prefer retrieval-led reasoning over pre-training|nextjs-app-router-guide:{SKILL.md}|react-best-practices:{SKILL.md,AGENTS.md,rules/async-*.md,rules/bundle-*.md,rules/rerender-*.md,rules/rendering-*.md,rules/server-*.md}|supabase-postgres-best-practices:{SKILL.md,AGENTS.md,rules/query-*.md,rules/schema-*.md,rules/conn-*.md,rules/security-*.md}|ui-mockup-builder:{SKILL.md}|wireframe-builder:{SKILL.md}|prd-writer:{SKILL.md}|data-model-designer:{SKILL.md}|implement-design:{SKILL.md}|playwright-testing:{SKILL.md}|screen-transition-diagram:{SKILL.md}|ia-architect:{SKILL.md}|ux-5-planes-designer:{SKILL.md}|nanobanana-prompt-writer:{SKILL.md}|write-tech-article:{SKILL.md}|skill-skillsmith:{SKILL.md}|agent-memory:{SKILL.md}|phaser-gamedev:{SKILL.md}|agentation:{SKILL.md}<!--END-->
+<!--SKILLS-INDEX-->|[Skills Index]|root:~/.claude/skills|IMPORTANT:Prefer retrieval-led reasoning over pre-training|agent-memory:{SKILL.md}|agentation:{SKILL.md}|cc-extensibility-guide:{SKILL.md}|claude-code-command-author:{SKILL.md,reference.md,templates/*}|codex:{SKILL.md}|codex-review:{SKILL.md}|data-model-designer:{SKILL.md,reference.md,templates/*}|discuss:{SKILL.md}|find-skills:{SKILL.md}|ia-architect:{SKILL.md}|implement-design:{SKILL.md}|linear-cli:{SKILL.md}|manim-composer:{SKILL.md,templates/*}|manimce-best-practices:{SKILL.md,rules/3d.md,rules/animation-groups.md,rules/animations.md,rules/axes.md,rules/camera.md,rules/cli.md,rules/colors.md,rules/config.md,rules/creation-animations.md,rules/graphing.md,rules/grouping.md,rules/latex.md,rules/lines.md,rules/mobjects.md,rules/multi-scene-workflow.md,rules/positioning.md,rules/scenes.md,rules/shapes.md,rules/styling.md,rules/text-animations.md,rules/text.md,rules/timing.md,rules/transform-animations.md,rules/updaters.md,templates/*}|manimgl-best-practices:{SKILL.md,rules/3d.md,rules/animation-groups.md,rules/animations.md,rules/camera.md,rules/cli.md,rules/colors.md,rules/config.md,rules/creation-animations.md,rules/embedding.md,rules/frame.md,rules/interactive.md,rules/mobjects.md,rules/multi-scene-workflow.md,rules/scenes.md,rules/styling.md,rules/t2c.md,rules/tex.md,rules/text.md,rules/transform-animations.md,templates/*}|mcp-setup:{SKILL.md}|nanobanana-prompt-writer:{SKILL.md}|nextjs-app-router-guide:{SKILL.md}|phaser-gamedev:{SKILL.md}|playwright-testing:{SKILL.md}|plot-architect:{SKILL.md}|prd-writer:{SKILL.md}|react-best-practices:{SKILL.md,AGENTS.md,rules/_sections.md,rules/_template.md,rules/advanced-*.md,rules/async-*.md,rules/bundle-*.md,rules/client-*.md,rules/js-*.md,rules/rendering-*.md,rules/rerender-*.md,rules/server-*.md}|remotion-best-practices:{SKILL.md,rules/3d.md,rules/animations.md,rules/assets.md,rules/audio.md,rules/calculate-metadata.md,rules/can-decode.md,rules/charts.md,rules/compositions.md,rules/display-captions.md,rules/extract-frames.md,rules/fonts.md,rules/get-*.md,rules/gifs.md,rules/images.md,rules/import-srt-captions.md,rules/light-leaks.md,rules/lottie.md,rules/maps.md,rules/measuring-*.md,rules/parameters.md,rules/sequencing.md,rules/subtitles.md,rules/tailwind.md,rules/text-animations.md,rules/timing.md,rules/transcribe-captions.md,rules/transitions.md,rules/transparent-videos.md,rules/trimming.md,rules/videos.md}|rowling-plotting:{SKILL.md}|screen-transition-diagram:{SKILL.md}|skill-skillsmith:{SKILL.md,reference.md,templates/*}|story-plot-support:{SKILL.md}|supabase-postgres-best-practices:{SKILL.md,AGENTS.md,rules/advanced-*.md,rules/conn-*.md,rules/data-*.md,rules/lock-*.md,rules/monitor-*.md,rules/query-*.md,rules/schema-*.md,rules/security-*.md}|ui-mockup-builder:{SKILL.md}|ux-5-planes-designer:{SKILL.md}|wireframe-builder:{SKILL.md,reference.md,templates/*}|write-tech-article:{SKILL.md}|x-media-resizer:{SKILL.md}<!--END-->
 
 Next.js(Server/Client Component,Server Actions,revalidate,Hooks)→必ず`nextjs-app-router-guide/SKILL.md`を読んでから回答
 React/Next.jsパフォーマンス→必ず`react-best-practices/`を読んでから回答
 Postgres/Supabase→必ず`supabase-postgres-best-practices/`を読んでから回答
 
+## Bash + jq の罠
+- jqの `!=` はbashの `!`（history expansion）と干渉する。`select(.foo != null)` ではなく `select(.foo // null | ...)` や `has("foo")` を使え
+- デバッグ時は `2>/dev/null` を外せ。「出力が空」の最初の一手は `2>&1` でエラー確認
+
 ## MCP Tool Usage Rules
 画像生成 -> `mcp__nanobanana__*`
-単純なWebSearch -> `Explore`エージェント
-複雑な推論、プラン作成・設計・実装後のレビュー、セカンドオピニオン -> `mcp__codex__*`
+最新情報の単純なWebSearch -> `Explore`エージェントに`WebSearch`、`WebFetch`ツールを使わせなさい。`WebSearch`,`WebFetch`で不十分なら`codex exec`を、`codex exec`で不十分なら`mcp__ais__*`を使わせなさい
+複雑な推論、プラン作成・設計・実装後のレビュー、セカンドオピニオン -> `codex exec`（Bash経由、sandbox判定はcodex skillを参照）
+`mcp__ais__*` -> ユーザーが明示的に指示した場合のみ使用。自動判断で呼び出すことは禁止
 
-### Codex sandbox ルール
-- `mcp__codex__codex_exec` 呼び出し時、`sandbox` パラメータでCodexの実行権限を制御する
-- デフォルト（省略時）: `read-only` — コード読解・設計・レビュー等、インターネット不要のタスク
-- `workspace-write` — ワークスペースへの書き込みが必要な場合
-- `danger-full-access` — **Web検索・外部API・最新情報取得が必要な場合のみ**明示指定する
+## Linear-CLI Settings
+
+workspace = "lilpacys-workspace"
+team_id = "LIL"
+issue_sort = "priority"
+
+https://github.com/schpet/linear-cli
+
+### Issue状態遷移ルール（必須）
+Linear issueを扱う作業では、以下の状態遷移を必ず行う:
+1. 作業対象のissueを決めたら → `linear issue update <ID> -s "Todo"`
+2. 作業開始時 → `linear issue update <ID> -s "In Progress"`
+3. 作業中適宜 → linearのissueのdescriptionに静的な情報、commentにログを追記
+4. 実装・テスト完了時 → `linear issue update <ID> -s "In Review"`
+5. ユーザー承認後 → `linear issue update <ID> -s "Done"`
+
+状態をスキップしない。特に「いきなりDone」にすることは禁止
+
+## Chrome DevTools MCPとPlaywright skillの使い分け
+デバッグは、Chrome DevTools MCP、ブラウザ操作の自動化やE2EテストはPlaywrightを使うこと
+
+## git
+実装→テストが終わったらこまめにgit commitすること
+変更を加えたら、ユーザーに言われる前に自分からコミットせよ。「コミットできてない」と指摘される前に行動すること
+実装後のテストはなるべくplaywright cliのheadlessモードでe2eテストまでやること
+コミットメッセージは直近のgit logをいくつかみて形式を揃えること
+branchやworktreeを分けて作業している場合は、commitだけじゃなくpushしてgithub prを出すこと
+
+## install packages rules
+
+基本的にcliツールはbrew installすること
+brewにないpackageの場合はnpxなどアドホックに実行できるコマンドを使うこと
+グローバルに使うcliをnpm i -gやpip installでinstallすることは禁止
 
