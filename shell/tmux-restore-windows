@@ -1,0 +1,24 @@
+#!/bin/bash
+session=$(tmux display-message -p '#S')
+state_file="$HOME/.tmux/window-state-$session.txt"
+
+if [ ! -f "$state_file" ]; then
+  tmux display-message "No saved state for session '$session'"
+  exit 1
+fi
+
+first=true
+while IFS='::' read -r name path; do
+  [ -d "$path" ] || path="$HOME"
+
+  if $first; then
+    tmux rename-window "$name"
+    tmux send-keys "cd $(printf %q "$path")" C-m
+    first=false
+  else
+    tmux new-window -n "$name" -c "$path"
+  fi
+done < "$state_file"
+
+tmux select-window -t :0
+tmux display-message "Restored windows for session '$session'"

@@ -1,0 +1,46 @@
+#!/bin/bash
+# tmux-claude-indicator: Check claude working/waiting flags with process validation
+# Usage: tmux-claude-indicator <window_id>
+# Called from tmux window-status-format via #(...)
+
+window_id="$1"
+[ -z "$window_id" ] && exit 0
+
+working=false
+waiting=false
+
+while IFS= read -r line; do
+  pane_id=$(echo "$line" | cut -d: -f1)
+  flag_working=$(echo "$line" | cut -d: -f2)
+  flag_waiting=$(echo "$line" | cut -d: -f3)
+  pane_pid=$(echo "$line" | cut -d: -f4)
+
+  needs_check=false
+  [ "$flag_working" = "1" ] && needs_check=true
+  [ "$flag_waiting" = "1" ] && needs_check=true
+
+  if $needs_check; then
+    # Check if claude process exists as a child of the pane's shell
+    claude_running=false
+    if [ -n "$pane_pid" ]; then
+      if ps -eo pid,ppid,comm 2>/dev/null | awk -v ppid="$pane_pid" 'BEGIN{f=0} $2==ppid && $3~/claude/{f=1} END{exit(1-f)}'; then
+        claude_running=true
+      fi
+    fi
+
+    if $claude_running; then
+      [ "$flag_working" = "1" ] && working=true
+      [ "$flag_waiting" = "1" ] && waiting=true
+    else
+      # Stale flag — reset it
+      [ "$flag_working" = "1" ] && tmux set -p -t "$pane_id" @claude_working 0 2>/dev/null
+      [ "$flag_waiting" = "1" ] && tmux set -p -t "$pane_id" @claude_waiting 0 2>/dev/null
+    fi
+  fi
+done < <(tmux list-panes -t "$window_id" -F '#{pane_id}:#{@claude_working}:#{@claude_waiting}:#{pane_pid}' 2>/dev/null)
+
+if $waiting; then
+  printf '⏳'
+elif $working; then
+  printf '🔄'
+fi

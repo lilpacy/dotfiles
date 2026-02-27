@@ -1,0 +1,22 @@
+#!/bin/bash
+# tmux-dev-layout2: 上下2分割(4:1)、上を3等分、下を6:4で分割
+
+DIR="#{pane_current_path}"
+
+# 上下分割（下20%）
+tmux split-window -v -l 20% -c "$DIR"
+
+# 上ペイン(pane 0)を3等分: まず右67%を切り出し
+tmux select-pane -t 0
+tmux split-window -h -l 67% -c "$DIR"
+
+# 右側(pane 1, 67%)を半分に分割 → 各33%
+tmux select-pane -t 1
+tmux split-window -h -l 50% -c "$DIR"
+
+# 下ペイン(pane 3)を6:4に分割
+tmux select-pane -t 3
+tmux split-window -h -l 50% -c "$DIR"
+
+# 左上ペインにフォーカス
+tmux select-pane -t 0

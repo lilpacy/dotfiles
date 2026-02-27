@@ -1,0 +1,8 @@
+#!/bin/bash
+session=$(tmux display-message -p '#S')
+state_dir="$HOME/.tmux"
+mkdir -p "$state_dir"
+state_file="$state_dir/window-state-$session.txt"
+tmux list-windows -t "$session" -F '#{window_name}::#{pane_current_path}' \
+  > "$state_file"
+tmux display-message "Saved $(wc -l < "$state_file" | tr -d ' ') windows"
