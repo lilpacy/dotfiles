@@ -32,7 +32,7 @@
       "Bash(npx tsc:*)",
       "Bash(git show:*)",
       "mcp__ais__gpt5_reason_browse",
-      "mcp__codex__codex_exec",
+      "Bash(codex exec:*)",
       "WebFetch(domain:registry.npmjs.org)",
       "WebFetch(domain:eu-central-1-1.aws.cloud2.influxdata.com)",
       "WebFetch(domain:formulae.brew.sh)",
@@ -49,6 +49,7 @@
       "Read(~/.aws/**)",
       "Read(./config/credentials.json)",
       "Read(./build/**)",
+      "Read(~/.claude.json)",
       "Edit(./.env)",
       "Edit(./.env.*)",
       "Edit(./**/.env)",
@@ -58,14 +59,16 @@
       "Edit(~/.aws/**)",
       "Edit(./config/credentials.json)",
       "Edit(./build/**)",
+      "Edit(~/.claude.json)",
       "Bash(sudo:*)",
       "Bash(rm -rf:*)",
-      "Bash(git push:*)",
-      "Bash(git reset:*)",
-      "Bash(git rebase:*)"
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push --force-with-lease:*)",
+      "Bash(git reset:*)"
     ]
   },
-  "model": "opus",
+  "model": "sonnet",
   "hooks": {
     "Notification": [
       {
@@ -78,7 +81,7 @@
           },
           {
             "type": "command",
-            "command": "tmux set -p -t $TMUX_PANE @claude_waiting 1",
+            "command": "[ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 1; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 0; true",
             "timeout": 5
           }
         ]
@@ -90,7 +93,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Blow.aiff && tmux set -p -t $TMUX_PANE @claude_waiting 1",
+            "command": "afplay /System/Library/Sounds/Blow.aiff; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 1; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 0; true",
             "timeout": 5
           }
         ]
@@ -102,7 +105,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "tmux set -p -t $TMUX_PANE @claude_waiting 0",
+            "command": "[ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 0; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 1; true",
             "timeout": 5
           }
         ]
@@ -114,7 +117,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "tmux set -p -t $TMUX_PANE @claude_waiting 0",
+            "command": "[ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 0; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 1; true",
             "timeout": 5
           }
         ]
@@ -126,7 +129,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "tmux set -p -t $TMUX_PANE @claude_waiting 0",
+            "command": "[ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 0; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 0; true",
             "timeout": 5
           }
         ]
@@ -139,8 +142,11 @@
   },
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true,
-    "claude-hud@claude-hud": true
+    "claude-hud@claude-hud": true,
+    "linear-cli@linear-cli": true,
+    "skill-creator@claude-plugins-official": true
   },
+  "outputStyle": "verbose",
   "sandbox": {
     "enabled": false,
     "autoAllowBashIfSandboxed": true,
