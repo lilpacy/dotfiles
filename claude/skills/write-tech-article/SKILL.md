@@ -1,7 +1,7 @@
 ---
 description: lilpacyのスタイルで技術記事を執筆・レビュー・改善する
 location: user
-allowed-tools: Read, Write, Edit, Grep, Glob, WebFetch, WebSearch
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
 ---
 
 # 技術記事執筆スキル
@@ -12,6 +12,38 @@ allowed-tools: Read, Write, Edit, Grep, Glob, WebFetch, WebSearch
 - 返信は最大80行
 - 出力が長くなる場合は途中で止めて「CONTINUE」とだけ書く
 - 続きはユーザーが「continue」と言ったら出す
+
+## 重要：長いファイルの書き出し方法
+- Writeツールで200行超のファイルを一括書き出すとClaude Codeがフリーズすることがある
+- **記事の書き出しにはBashの `cat <<'EOF'` 形式を使い、セクションごとに分割して追記すること**
+  - 最初のセクションは `>` で新規作成、以降は `>>` で追記
+  - 1チャンクあたり50〜80行を目安にする
+- 例:
+  ```bash
+  # 最初のチャンク（フロントマター + TL;DR）
+  cat <<'SECTION1' > path/to/article.mdx
+  ---
+  title: '...'
+  ...
+  ---
+  ## TL;DR
+  ...
+  SECTION1
+
+  # 2番目以降のチャンク
+  cat <<'SECTION2' >> path/to/article.mdx
+  ## 本文セクション
+  ...
+  SECTION2
+  ```
+
+## 重要：公開記事の秘匿化チェック
+- 記事を書き終えたら、公開前に以下の秘匿化チェックを必ず行うこと:
+  - **個人名（同僚・上司・取引先・パートナー等）** → 「ある経営者」「共同創業者」「当時の代表」等に匿名化
+  - **社名・プロジェクト名** → 「あるNFTプロジェクト」「あるDeFiプロジェクト群」等に抽象化
+  - **個人のチャットURL・内部URL** → 削除
+  - **GitHub上のリポジトリ数など、アカウント特定につながる具体的な数値** → 削除または曖昧化
+  - **公知の事例（Apple, Slack, Quibi等）の引用** → そのままでOK
 
 ## 技術的背景と専門分野
 
