@@ -1,15 +1,9 @@
 ---
+name: codex-review
 description: codex CLIを使ってコードをレビューする
+allowed-tools: Bash(codex *), Bash(git diff*), Bash(git ls-files*), Bash(git rev-parse*), Bash(find *), Bash(test *), Bash(cat *)
 context: fork
 argument-hint: <diff target or file/folder path>
-allowed-tools:
-  - Bash(git diff*)
-  - Bash(git ls-files*)
-  - Bash(git rev-parse*)
-  - Bash(find *)
-  - Bash(test *)
-  - Bash(cat *)
-  - mcp__codex__codex_exec
 ---
 
 # Codex Code Review
@@ -58,8 +52,8 @@ allowed-tools:
 
 1. diff内容を取得:
    - 引数が空の場合: 上記 Context セクションで取得済みの diff を使用
-   - 引数がある場合: `git diff $ARGUMENTS` を実行
-2. `mcp__codex__codex_exec` ツールを呼び出し、prompt に以下を渡す:
+   - 引数がある場合: `git diff $ARGUMENTS` をBashで実行
+2. Bashツールで `codex exec` を実行（timeout: 600000）。prompt に以下を渡す:
 
 ```
 以下のgit diffをコードレビューしてください。バグ、セキュリティ問題、パフォーマンス問題、可読性の観点でレビューし、重要度（Critical/Warning/Info）を付けて指摘してください。良い点も挙げてください。
@@ -67,12 +61,17 @@ allowed-tools:
 （diff内容をここに埋め込む）
 ```
 
+コマンド:
+```bash
+codex exec -s read-only --skip-git-repo-check "<prompt>"
+```
+
 ### ファイルレビューモード
 
 1. 引数の各パスについて:
    - ファイルの場合: `cat` で内容を取得
    - ディレクトリの場合: `find <dir> -type f` で再帰的にファイル一覧を取得し、各ファイルを `cat`
-2. `mcp__codex__codex_exec` ツールを呼び出し、prompt に以下を渡す:
+2. Bashツールで `codex exec` を実行（timeout: 600000）。prompt に以下を渡す:
 
 ```
 以下のコードをレビューしてください。バグ、セキュリティ問題、パフォーマンス問題、可読性の観点でレビューし、重要度（Critical/Warning/Info）を付けて指摘してください。良い点も挙げてください。
@@ -84,11 +83,26 @@ allowed-tools:
 （ファイル内容）
 ```
 
+コマンド:
+```bash
+codex exec -s read-only --skip-git-repo-check "<prompt>"
+```
+
+### アーカイブ保存
+
+codex exec 実行後、別のBash呼び出しでレスポンスをアーカイブ保存する:
+
+```bash
+DIR=~/.claude/codex-responses/$(date +%Y-%m-%d) && mkdir -p "$DIR"
+# レビュー結果をファイルに保存
+```
+
 ## sandbox
 
-コードレビューはインターネットアクセス不要のため、`sandbox` パラメータは省略する（= `read-only`）。
+コードレビューはインターネットアクセス不要のため、常に `-s read-only` を使用する。
 
 ## Constraints
+
 - ファイル編集は禁止。レビュー結果の表示のみ
 - codex exec の出力をそのまま伝えること（要約や改変しない）
 - codex exec がエラーになった場合はエラー内容を伝えること
