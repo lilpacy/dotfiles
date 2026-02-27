@@ -229,8 +229,12 @@ if.app-id = 'com.nordvpn.osx'
 run = 'layout floating'
 
 [[on-window-detected]]
-if.app-id = 'com.anthropic.claude'
-run = 'layout floating'
+if.app-id = 'com.anthropic.claudefordesktop'
+run = ['move-node-to-workspace 5']
+
+[[on-window-detected]]
+if.app-id = 'com.linear'
+run = ['move-node-to-workspace 5']
 
 [[on-window-detected]]
 if.app-id = 'com.tinyspeck.slackmacgap'
