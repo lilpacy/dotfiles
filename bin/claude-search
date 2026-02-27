@@ -1,0 +1,175 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+COPY_MODE=false
+RG_CASE_OPTS=()
+while getopts "cisSF" opt; do
+  case "$opt" in
+    c) COPY_MODE=true ;;
+    i) RG_CASE_OPTS+=("-i") ;;
+    s) RG_CASE_OPTS+=("-s") ;;
+    S) RG_CASE_OPTS+=("-S") ;;
+    F) RG_CASE_OPTS+=("-F") ;;
+    *) echo "Usage: claude-search [-c] [-i|-s|-S] [-F] <keyword>" >&2; exit 1 ;;
+  esac
+done
+shift $((OPTIND - 1))
+
+if [[ $# -eq 0 ]]; then
+  echo "Usage: claude-search [-c] [-i|-s|-S] [-F] <keyword>" >&2
+  exit 1
+fi
+
+KEYWORD="$1"
+CLAUDE_DIR="$HOME/.claude/projects"
+
+# --- helpers ---
+decode_path() {
+  echo "$1" | sed 's/^-/\//; s/-/\//g'
+}
+
+session_label() {
+  local file="$1"
+  local ts first_msg project_name decoded
+  ts=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$file" 2>/dev/null || echo "unknown")
+  # extract project name from path
+  project_name=$(echo "$file" | sed "s|$CLAUDE_DIR/||" | cut -d/ -f1)
+  decoded=$(decode_path "$project_name")
+  first_msg=$(jq -r '
+    select(.type == "human" or .type == "user")
+    | .message.content
+    | if type == "array" then
+        map(select(.type == "text") | .text) | join(" ")
+      elif type == "string" then .
+      else ""
+      end
+  ' "$file" 2>/dev/null | head -1 | cut -c1-60)
+  echo "$ts  $decoded  ${first_msg:-(no message)}"
+}
+
+extract_conversation() {
+  jq -r '
+    if .type == "human" or .type == "user" then
+      .timestamp as $ts
+      | .message.content
+      | (if type == "array" then
+           map(select(.type == "text") | .text) | join("\n")
+         elif type == "string" then .
+         else ""
+         end) as $text
+      | "--- [\($ts)] user ---\n\($text)\n"
+    elif .type == "assistant" then
+      .timestamp as $ts
+      | [.message.content // [] | .[] | select(.type == "text") | .text] | join("\n")
+      | if . == "" then empty
+        else "--- [\($ts)] assistant ---\n\(.)\n"
+        end
+    else empty
+    end
+  ' "$1" 2>/dev/null
+}
+
+# --- main ---
+
+if [[ ! -d "$CLAUDE_DIR" ]]; then
+  echo "No Claude projects found at $CLAUDE_DIR" >&2
+  exit 1
+fi
+
+# 1. rg search across all JSONL files
+mapfile -t matched_files < <(rg -l "${RG_CASE_OPTS[@]}" --glob '*.jsonl' -- "$KEYWORD" "$CLAUDE_DIR" 2>/dev/null | xargs ls -1t)
+
+if [[ ${#matched_files[@]} -eq 0 ]]; then
+  echo "No sessions found matching: $KEYWORD" >&2
+  exit 1
+fi
+
+# 2. Build file list with labels
+file_list=""
+for f in "${matched_files[@]}"; do
+  label=$(session_label "$f")
+  file_list+="$f	$label"$'\n'
+done
+
+# 3. fzf selection with rg preview
+preview_script=$(mktemp /tmp/cs-preview.XXXXXX)
+cat > "$preview_script" << 'PREVIEW_EOF'
+#!/usr/bin/env bash
+file="$1"
+keyword="$2"
+echo "file: $file"
+echo "keyword: $keyword"
+echo "---"
+# Extract conversation text, highlight keyword if present (but always show content)
+output=$(jq -r '
+  if .type == "human" or .type == "user" then
+    .timestamp as $ts
+    | .message.content
+    | (if type == "array" then
+         map(select(.type == "text") | .text) | join("\n")
+       elif type == "string" then .
+       else ""
+       end)
+    | "[\($ts)] user: \(.)"
+  elif .type == "assistant" then
+    .timestamp as $ts
+    | [.message.content // [] | .[] | select(.type == "text") | .text] | join("\n")
+    | if . == "" then empty
+      else "[\($ts)] assistant: \(.)"
+      end
+  else empty
+  end
+' "$file" 2>/dev/null)
+
+if [ -z "$output" ]; then
+  echo "(no conversation text)"
+  exit 0
+fi
+
+highlighted=$(echo "$output" | grep --color=always -i -C999 -- "$keyword" 2>/dev/null)
+if [ -n "$highlighted" ]; then
+  echo "$highlighted" | head -80
+else
+  echo "$output" | head -40
+fi
+PREVIEW_EOF
+chmod +x "$preview_script"
+trap "rm -f '$preview_script'" EXIT
+
+if command -v fzf >/dev/null 2>&1; then
+  selected=$(echo -n "$file_list" | \
+    fzf --height=70% --reverse --ansi \
+        --delimiter=$'\t' --with-nth=2 \
+        --preview="bash $preview_script {1} $(printf '%q' "$KEYWORD") ${RG_CASE_OPTS[*]}" \
+        --preview-window=right:55%:wrap \
+        --bind='ctrl-d:preview-half-page-down,ctrl-u:preview-half-page-up' \
+        --prompt="[$KEYWORD] Session> " \
+        --header="$(echo "${#matched_files[@]} sessions matched")" \
+    | awk -F'\t' '{print $1}')
+elif command -v peco >/dev/null 2>&1; then
+  selected=$(echo -n "$file_list" | \
+    awk -F'\t' '{print $1 "\t" $2}' | column -t -s $'\t' | \
+    env TERM=screen-256color command peco | awk '{print $1}')
+else
+  echo "Error: fzf or peco required" >&2
+  exit 1
+fi
+
+if [[ -z "$selected" ]]; then
+  exit 0
+fi
+
+# 4. Display conversation
+output=$(extract_conversation "$selected")
+
+if [[ -z "$output" ]]; then
+  echo "No conversation content found."
+  exit 0
+fi
+
+if $COPY_MODE; then
+  echo "$output" | pbcopy
+  echo "Copied to clipboard ($(echo "$output" | wc -l | tr -d ' ') lines)"
+else
+  echo "$output" | less -R
+fi

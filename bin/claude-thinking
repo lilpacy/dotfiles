@@ -1,0 +1,167 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+COPY_MODE=false
+while getopts "c" opt; do
+  case "$opt" in
+    c) COPY_MODE=true ;;
+    *) echo "Usage: claude-thinking [-c]" >&2; exit 1 ;;
+  esac
+done
+
+CLAUDE_DIR="$HOME/.claude/projects"
+
+JQ_THINKING='select(.message.content // null | type == "array") | .message.content[] | select(.type == "thinking")'
+
+# --- helpers ---
+decode_path() {
+  # -Users-lilpacy-foo → /Users/lilpacy/foo
+  echo "$1" | sed 's/^-/\//; s/-/\//g'
+}
+
+extract_thinking() {
+  jq -r "$JQ_THINKING"' | .thinking' "$1" 2>/dev/null
+}
+
+extract_thinking_with_ts() {
+  jq -r '
+    select(.message.content // null | type == "array")
+    | .timestamp as $ts
+    | .message.content[]
+    | select(.type == "thinking")
+    | "--- [\($ts)] ---\n\(.thinking)\n"
+  ' "$1" 2>/dev/null
+}
+
+session_label() {
+  local file="$1"
+  local ts first_msg
+  ts=$(stat -f "%Sm" -t "%Y-%m-%d %H:%M" "$file" 2>/dev/null || date -r "$file" "+%Y-%m-%d %H:%M" 2>/dev/null || echo "unknown")
+  first_msg=$(jq -r '
+    select(.type == "human")
+    | .message.content
+    | if type == "array" then
+        map(select(.type == "text") | .text) | join(" ")
+      elif type == "string" then .
+      else ""
+      end
+  ' "$file" 2>/dev/null | head -1 | cut -c1-80)
+  echo "$ts  ${first_msg:-(no message)}"
+}
+
+select_with_fzf() {
+  fzf --height=40% --reverse --ansi "$@"
+}
+
+select_with_peco() {
+  env TERM=screen-256color command peco
+}
+
+selector() {
+  if command -v fzf >/dev/null 2>&1; then
+    select_with_fzf "$@"
+  elif command -v peco >/dev/null 2>&1; then
+    select_with_peco
+  else
+    echo "Error: fzf or peco required" >&2
+    exit 1
+  fi
+}
+
+# --- main ---
+
+# 1. Select project
+if [[ ! -d "$CLAUDE_DIR" ]]; then
+  echo "No Claude projects found at $CLAUDE_DIR" >&2
+  exit 1
+fi
+
+projects=()
+while IFS= read -r dir; do
+  projects+=("$dir")
+done < <(ls -1dt "$CLAUDE_DIR"/*/ 2>/dev/null)
+
+if [[ ${#projects[@]} -eq 0 ]]; then
+  echo "No projects found" >&2
+  exit 1
+fi
+
+project_list=""
+for p in "${projects[@]}"; do
+  name=$(basename "$p")
+  decoded=$(decode_path "$name")
+  project_list+="$name	$decoded"$'\n'
+done
+
+selected_project=$(echo -n "$project_list" | column -t -s $'\t' | selector --prompt="Project> " | awk '{print $1}')
+if [[ -z "$selected_project" ]]; then
+  exit 0
+fi
+
+project_path="$CLAUDE_DIR/$selected_project"
+
+# 2. Select session
+sessions=()
+while IFS= read -r f; do
+  sessions+=("$f")
+done < <(ls -1t "$project_path"/*.jsonl 2>/dev/null)
+
+if [[ ${#sessions[@]} -eq 0 ]]; then
+  echo "No sessions found in $selected_project" >&2
+  exit 1
+fi
+
+# Build session list: "filepath<TAB>label"
+session_list=""
+for s in "${sessions[@]}"; do
+  label=$(session_label "$s")
+  session_list+="$s	$label"$'\n'
+done
+
+# Create a temp script for fzf preview
+preview_script=$(mktemp /tmp/ct-preview.XXXXXX)
+cat > "$preview_script" << 'PREVIEW_EOF'
+#!/usr/bin/env bash
+file=$(echo "$1" | awk -F'\t' '{print $1}')
+jq -r 'select(.message.content // null | type == "array") | .message.content[] | select(.type == "thinking") | .thinking' "$file" 2>/dev/null | head -40
+if [ $? -ne 0 ] || [ -z "$(jq -r 'select(.message.content // null | type == "array") | .message.content[] | select(.type == "thinking") | .thinking' "$file" 2>/dev/null | head -1)" ]; then
+  echo "(no thinking blocks)"
+fi
+PREVIEW_EOF
+chmod +x "$preview_script"
+
+if command -v fzf >/dev/null 2>&1; then
+  selected_session=$(echo -n "$session_list" | \
+    fzf --height=60% --reverse --ansi \
+        --delimiter=$'\t' --with-nth=2 \
+        --preview="bash $preview_script {}" \
+        --preview-window=right:50%:wrap \
+        --bind='ctrl-d:preview-half-page-down,ctrl-u:preview-half-page-up' \
+        --prompt="Session> " | awk -F'\t' '{print $1}')
+else
+  selected_session=$(echo -n "$session_list" | \
+    awk -F'\t' '{print $1 "\t" $2}' | \
+    column -t -s $'\t' | \
+    selector | awk '{print $1}')
+fi
+
+rm -f "$preview_script"
+
+if [[ -z "$selected_session" ]]; then
+  exit 0
+fi
+
+# 3. Extract and display thinking blocks
+output=$(extract_thinking_with_ts "$selected_session")
+
+if [[ -z "$output" ]]; then
+  echo "No thinking blocks found in this session."
+  exit 0
+fi
+
+if $COPY_MODE; then
+  echo "$output" | pbcopy
+  echo "Copied to clipboard ($(echo "$output" | wc -l | tr -d ' ') lines)"
+else
+  echo "$output" | less -R
+fi
