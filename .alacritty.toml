@@ -1,15 +1,22 @@
+[general]
+import = ["~/.config/alacritty/catppuccin-frappe.toml"]
+
 [window]
 decorations = "none"
 dynamic_padding = true
+padding = { x = 2, y = 2 }
+
+[font]
+size = 13.0
 
 [font.normal]
-family = "Hack Nerd Font"
+family = "UDEV Gothic 35"
 style = "Regular"
 
 [font.bold]
-family = "Hack Nerd Font"
+family = "UDEV Gothic 35"
 style = "Bold"
 
 [font.italic]
-family = "Hack Nerd Font"
+family = "UDEV Gothic 35"
 style = "Italic"
