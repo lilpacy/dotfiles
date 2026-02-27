@@ -18,6 +18,10 @@ return {
       require("nvim-treesitter").install(parsers)
     end)
 
+    -- mdx: filetype を markdown.mdx にし、markdown パーサーを割り当て
+    vim.filetype.add({ extension = { mdx = "markdown.mdx" } })
+    vim.treesitter.language.register("markdown", "markdown.mdx")
+
     -- Treesitterハイライト・インデントを有効化
     vim.api.nvim_create_autocmd("FileType", {
       pattern = "*",
