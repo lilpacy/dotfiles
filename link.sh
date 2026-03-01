@@ -19,6 +19,7 @@ ln -sf ~/dotfiles/.alacritty.toml ~/.alacritty.toml
 ln -sfn ~/dotfiles/nvim ~/.config/nvim
 ln -sf ~/dotfiles/claude/settings.json ~/.claude/settings.json
 ln -sfn ~/dotfiles/claude/skills ~/.claude/skills
+ln -sfn ~/dotfiles/claude/agents ~/.claude/agents
 ln -sfn ~/dotfiles/claude/commands ~/.claude/commands
 ln -sf ~/dotfiles/claude/CLAUDE.md ~/.claude/CLAUDE.md
 ln -sf ~/dotfiles/.gitignore_global ~/.config/git/ignore
