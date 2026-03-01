@@ -140,11 +140,11 @@ def main():
         now = dt.datetime.now(dt.timezone.utc)
 
         if data.get("refreshToken"):
-            # 新形式: refreshTokenがある場合はファイル作成日時 + 7日をセッション期限とする
+            # 新形式: refreshTokenがある場合はファイル更新日時 + 7日をセッション期限とする
             # （ポータルセッション期間=7日がハードコード）
             PORTAL_SESSION_DAYS = 7
-            birthtime = os.stat(cache_path).st_birthtime
-            created = dt.datetime.fromtimestamp(birthtime, tz=dt.timezone.utc)
+            mtime = os.stat(cache_path).st_mtime
+            created = dt.datetime.fromtimestamp(mtime, tz=dt.timezone.utc)
             expires = created + dt.timedelta(days=PORTAL_SESSION_DAYS)
         else:
             # レガシー形式: expiresAtをそのまま使う
