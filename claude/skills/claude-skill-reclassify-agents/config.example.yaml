@@ -1,0 +1,41 @@
+# Copy to config.yaml and edit as needed.
+# If a path doesn't exist, the script will try auto-detection.
+
+paths:
+  # Typical Claude Code agent directories (subagents)
+  agents_dirs:
+    - .claude/agents
+    - .claude/subagents
+    - agents
+    - subagents
+
+  # Typical skill directories
+  skills_dirs:
+    - .claude/skills
+    - skills
+
+  # Where to write migrated agents
+  target_agents_dir: .claude/agents
+
+  # Where to write migrated skills (each skill becomes a folder with SKILL.md)
+  target_skills_dir: .claude/skills
+
+  # Extra folders to scan for references to update
+  reference_scan_dirs:
+    - .
+
+behavior:
+  # What to do when confidence is low (0-1):
+  # - convert: still convert, but annotate low-confidence in the output
+  # - skip: do not convert low-confidence items; keep report + TODO list
+  low_confidence_policy: convert
+
+  # Thresholds
+  convert_threshold: 0.55
+  low_confidence_threshold: 0.65
+
+  # Reference update is best-effort; set false to disable.
+  update_references: true
+
+  # Keep a copy of original content inside the new file as an appendix
+  embed_original_as_appendix: true
