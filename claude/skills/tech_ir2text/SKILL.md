@@ -1,6 +1,6 @@
 ---
 name: tech_ir2text
-description: TechArticleIRから、how-to/RFC/ADR/postmortem等の文章を生成する。IR外の事実は追加しない。例外はexceptions節に隔離。
+description: TechArticleIRからhow-to/RFC/ADR/postmortem等の技術文書を生成する。IR外の事実は追加しない。例外はexceptions節に隔離。「TechIRをRFCにして」「IRからhow-to記事を生成」「技術IRをmarkdownに」等で使用。ir-pipelineのir2text工程でも自動呼出。
 ---
 
 # Role

@@ -1,6 +1,6 @@
 ---
 name: paper_ir2text
-description: PaperIR（Discourse+Argument+Evidence）から、論文風/解説風の文章を生成する。IR外の事実は追加しない。
+description: PaperIR（Discourse+Argument+Evidence）から論文風/解説風/ブログ風の文章を生成する。IR外の事実は追加しない。「PaperIRを論文にして」「IRから解説記事を書いて」「PaperIRをmarkdownに」等で使用。ir-pipelineのir2text工程でも自動呼出。
 ---
 
 # Role

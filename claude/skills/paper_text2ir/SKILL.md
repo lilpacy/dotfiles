@@ -1,6 +1,6 @@
 ---
 name: paper_text2ir
-description: 論文/解説/哲学系の文章を PaperIR（Discourse+Argument+Evidence）に変換する。直交性（Facet分離）とトレーサビリティ（anchors）を厳守。
+description: 論文/解説/哲学系の文章をPaperIR（Discourse+Argument+Evidence）に変換する。直交性とトレーサビリティを厳守。「論文をIRに変換して」「PaperIR作って」「論文を構造化して」「解説記事をYAMLに」等で使用。ir-pipelineのtext2ir工程でも自動呼出。
 ---
 
 # Role

@@ -1,6 +1,6 @@
 ---
 name: doc_text2ir
-description: 歴史・ノンフィクション・調査記事を DocumentaryIR（HistoryTriLayer + NarrativePlan）に変換。事実/根拠/解釈/語りを直交に分離。
+description: 歴史・ノンフィクション・調査記事をDocumentaryIR（HistoryTriLayer + NarrativePlan）に変換する。事実/根拠/解釈/語りを直交に分離。「歴史記事をIRに変換して」「ノンフィクションを構造化」「ドキュメンタリーIRを作って」「調査記事をYAMLに」等で使用。ir-pipelineのtext2ir工程でも自動呼出。
 ---
 
 # Role

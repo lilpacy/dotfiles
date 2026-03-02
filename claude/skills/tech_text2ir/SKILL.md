@@ -1,6 +1,6 @@
 ---
 name: tech_text2ir
-description: 技術記事/RFC/ADR/ポストモーテム等を TechArticleIR（Procedure/Design+Evidence+Discourse）に変換する。手順・意思決定・落とし穴を直交に抽出。
+description: 技術記事/RFC/ADR/ポストモーテム等をTechArticleIR（Procedure/Design+Evidence+Discourse）に変換する。手順・意思決定・落とし穴を直交に抽出。「技術記事をIRに変換して」「TechIR作って」「RFCを構造化」「ADRをYAMLに」等で使用。ir-pipelineのtext2ir工程でも自動呼出。
 ---
 
 # Role

@@ -1,6 +1,6 @@
 ---
 name: ir_lint_validator
-description: PaperIR/TechIR/DocumentaryIR のYAMLを検査し、直交性・非重複性（SoT）・適粒度+高凝集・必須anchor・参照整合性の違反をレポートする
+description: PaperIR/TechIR/DocumentaryIRのYAMLを検査し、直交性・非重複性（SoT）・適粒度+高凝集・必須anchor・参照整合性の違反をレポートする。「IRをlintして」「IR検証して」「YAMLのバリデーション」「IRの品質チェック」等で使用。ir-pipelineのlint工程でも自動呼出。
 ---
 
 # Role

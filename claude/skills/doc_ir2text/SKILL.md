@@ -1,6 +1,6 @@
 ---
 name: doc_ir2text
-description: DocumentaryIRから、年代順/ミステリー開示/テーゼ先出し等の文章を生成。事実・解釈・不確実性を分離して書く。
+description: DocumentaryIRから、年代順/ミステリー開示/テーゼ先出し等の文章を生成する。事実・解釈・不確実性を分離して書く。「DocumentaryIRを文章にして」「IRから歴史記事を生成」「ドキュメンタリーIRをmarkdownに」等で使用。ir-pipelineのir2text工程でも自動呼出。
 ---
 
 # Role
