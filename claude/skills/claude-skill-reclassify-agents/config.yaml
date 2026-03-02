@@ -1,0 +1,16 @@
+paths:
+  agents_dirs:
+    - claude/agents
+  skills_dirs:
+    - claude/skills
+  target_agents_dir: claude/agents
+  target_skills_dir: claude/skills
+  reference_scan_dirs:
+    - claude
+
+behavior:
+  low_confidence_policy: convert
+  convert_threshold: 0.55
+  low_confidence_threshold: 0.65
+  update_references: true
+  embed_original_as_appendix: true

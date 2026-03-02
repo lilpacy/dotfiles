@@ -61,17 +61,17 @@ def is_skill_folder(p: Path) -> bool:
 
 def is_probably_agent_file(p: Path) -> bool:
     txt = read_text(p)
-    if re.search(r"^##\\s*(Role|役割)\\b", txt, re.M):
+    if re.search(r"^##\s*(Role|役割)\b", txt, re.M):
         return True
-    if re.search(r"\\bsubagent\\b", txt, re.I):
+    if re.search(r"\bsubagent\b", txt, re.I):
         return True
     return False
 
 def is_probably_skill_file(p: Path) -> bool:
     txt = read_text(p)
-    if re.search(r"^##\\s*(Procedure|手順|Inputs|Outputs)\\b", txt, re.M):
+    if re.search(r"^##\s*(Procedure|手順|Inputs|Outputs)\b", txt, re.M):
         return True
-    if re.search(r"\\bchecklist\\b|\\btemplate\\b|\\blint\\b", txt, re.I):
+    if re.search(r"\bchecklist\b|\btemplate\b|\blint\b", txt, re.I):
         return True
     if p.name.upper() == "SKILL.MD":
         return True
@@ -83,17 +83,17 @@ def is_probably_skill_file(p: Path) -> bool:
 # ---------------------------
 
 SKILL_MARKERS = [
-    r"\\bprocedure\\b", r"\\bstep[s]?\\b", r"\\bchecklist\\b", r"\\btemplate\\b",
-    r"\\binputs?\\b", r"\\boutputs?\\b", r"\\bformat\\b", r"\\bschema\\b",
-    r"\\blint\\b", r"\\bconvert\\b", r"\\bgenerate\\b", r"\\bscaffold\\b",
-    r"\\bzip\\b", r"\\bexport\\b", r"\\bvalidate\\b",
-    r"^##\\s*(Procedure|手順|Inputs|Outputs|ガードレール|Guardrails)\\b",
+    r"\bprocedure\b", r"\bstep[s]?\b", r"\bchecklist\b", r"\btemplate\b",
+    r"\binputs?\b", r"\boutputs?\b", r"\bformat\b", r"\bschema\b",
+    r"\blint\b", r"\bconvert\b", r"\bgenerate\b", r"\bscaffold\b",
+    r"\bzip\b", r"\bexport\b", r"\bvalidate\b",
+    r"^##\s*(Procedure|手順|Inputs|Outputs|ガードレール|Guardrails)\b",
 ]
 AGENT_MARKERS = [
-    r"\\brole\\b", r"\\bprinciple[s]?\\b", r"\\bhow i think\\b",
-    r"\\btrade-?off\\b", r"\\bpriorit(ize|ise)\\b", r"\\bcritique\\b",
-    r"\\breview(er)?\\b", r"\\bpersona\\b", r"\\bjudge\\b", r"\\bexplore\\b",
-    r"^##\\s*(Role|役割|Operating principles|原則|How to respond|応答)\\b",
+    r"\brole\b", r"\bprinciple[s]?\b", r"\bhow i think\b",
+    r"\btrade-?off\b", r"\bpriorit(ize|ise)\b", r"\bcritique\b",
+    r"\breview(er)?\b", r"\bpersona\b", r"\bjudge\b", r"\bexplore\b",
+    r"^##\s*(Role|役割|Operating principles|原則|How to respond|応答)\b",
 ]
 
 @dataclass
@@ -126,17 +126,17 @@ def score_text(text: str) -> Tuple[float, float, List[str]]:
     agent_score = float(len(agent_hits))
 
     # heading boosts
-    if re.search(r"^##\\s*(Procedure|手順)\\b", text, re.M):
+    if re.search(r"^##\s*(Procedure|手順)\b", text, re.M):
         skill_score += 2.0
-    if re.search(r"^##\\s*(Role|役割)\\b", text, re.M):
+    if re.search(r"^##\s*(Role|役割)\b", text, re.M):
         agent_score += 2.0
 
     # code fences / CLI instructions tend to be skill-ish
-    if re.search(r"```(bash|sh|zsh|powershell|python|js|ts)\\b", text, re.I):
+    if re.search(r"```(bash|sh|zsh|powershell|python|js|ts)\b", text, re.I):
         skill_score += 1.0
 
     # evaluative language tends to be agent-ish
-    if re.search(r"\\bshould\\b|\\bconsider\\b|\\btrade-?off\\b", text, re.I):
+    if re.search(r"\bshould\b|\bconsider\b|\btrade-?off\b", text, re.I):
         agent_score += 0.5
 
     rationale = []
@@ -315,9 +315,9 @@ def update_references(repo: Path, scan_dirs: List[str], rename_map: Dict[str, st
         new = txt
         for old, new_id in rename_map.items():
             # conservative replacements
-            new = re.sub(rf"@{re.escape(old)}\\b", f"@{new_id}", new)
-            new = re.sub(rf"^(#{1,6}\\s+){re.escape(old)}\\b", rf"\\1{new_id}", new, flags=re.M)
-            new = re.sub(rf"\\b{re.escape(old)}\\b", new_id, new)
+            new = re.sub(rf"@{re.escape(old)}\b", f"@{new_id}", new)
+            new = re.sub(rf"^(#{{1,6}}\s+){re.escape(old)}\b", rf"\1{new_id}", new, flags=re.M)
+            new = re.sub(rf"\b{re.escape(old)}\b", new_id, new)
 
         if new != txt:
             write_text(f, new)

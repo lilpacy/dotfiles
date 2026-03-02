@@ -8,18 +8,20 @@
 
 ## Contents
 - `.claude/agents/`:
-  - `ir_pipeline_coordinator.md`（司令塔）
-  - `paper_text2ir.md`, `paper_ir2text.md`
-  - `tech_text2ir.md`, `tech_ir2text.md`
-  - `doc_text2ir.md`, `doc_ir2text.md`
-  - `ir_lint_validator.md`（lint subagent）
+  - `ir_pipeline_coordinator.md`（司令塔 - agent）
+- `.claude/skills/`:
+  - `paper_text2ir/SKILL.md`, `paper_ir2text/SKILL.md`
+  - `tech_text2ir/SKILL.md`, `tech_ir2text/SKILL.md`
+  - `doc_text2ir/SKILL.md`, `doc_ir2text/SKILL.md`
+  - `ir_lint_validator/SKILL.md`（lint skill）
 - `.claude/commands/ir-pipeline.md`（/ir-pipeline コマンド）
 - `scripts/ir_lint.py`（ローカル機械lint。PyYAMLがあればYAML対応）
 
 ## Install
 以下をグローバルにコピー：
 
-- `.claude/agents/` → `~/.claude/agents/`
+- `.claude/agents/` → `~/.claude/agents/`（coordinatorのみ）
+- `.claude/skills/` → `~/.claude/skills/`（7つのIR skill）
 - `.claude/commands/` → `~/.claude/commands/`
 - `scripts/ir_lint.py` はskill配下 (`~/.claude/skills/ir-pipeline-skill/scripts/`) に同梱済み
 
