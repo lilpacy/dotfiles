@@ -1,7 +1,12 @@
 source ${ZDOTDIR:-$HOME}/dotfiles/common.sh
 
+# Conductorではtmux自動アタッチしない
+if [[ -n "$CONDUCTOR_WORKSPACE_PATH" || -n "$CONDUCTOR_ROOT_PATH" ]]; then
+	export DISABLE_AUTO_TMUX=1
+fi
+
 # tmux
-	if [[ -z "$TMUX" ]] && [[ ! "$TERM" =~ "screen" ]]; then
+	if [[ -z "$TMUX" && -z "$DISABLE_AUTO_TMUX" ]] && [[ ! "$TERM" =~ "screen" ]]; then
 		tmux attach -t default || tmux new -s default
 	fi
 
