@@ -28,8 +28,8 @@ ln -sf ~/dotfiles/.aerospace.toml ~/.aerospace.toml
 ln -sf ~/dotfiles/ghostty ~/.config/ghostty/config
 ln -sf ~/dotfiles/alacritty/catppuccin-frappe.toml ~/.config/alacritty/catppuccin-frappe.toml
 
-sudo ln -sf ~/dotfiles/shell/task_cal /usr/local/bin/task_cal
-sudo ln -sf ~/dotfiles/shell/sssh /usr/local/bin/sssh
-sudo ln -sf ~/dotfiles/shell/tmux-dev /usr/local/bin/tmux-dev
-find shell | xargs -p chmod 700
+sudo ln -sf ~/dotfiles/bin/task_cal /usr/local/bin/task_cal
+sudo ln -sf ~/dotfiles/bin/sssh /usr/local/bin/sssh
+sudo ln -sf ~/dotfiles/bin/tmux-dev /usr/local/bin/tmux-dev
+find bin -type f | xargs chmod 755
 
