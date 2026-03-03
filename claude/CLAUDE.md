@@ -88,7 +88,9 @@ Linear issueを扱う作業では、以下の状態遷移を必ず行う:
 状態をスキップしない。特に「いきなりDone」にすることは禁止
 
 ## Chrome DevTools MCPとPlaywright skillの使い分け
-デバッグは、Chrome DevTools MCP、ブラウザ操作の自動化やE2EテストはPlaywrightを使うこと
+- 調査・リサーチには**WebSearchとWebFetchを使う**（Exploreエージェント経由）。CDPをリサーチ目的で使うことは禁止
+- デバッグは Chrome DevTools MCP
+- ブラウザ操作の自動化やE2EテストはPlaywrightを使うこと
 
 ## git
 実装→テストが終わったらこまめにgit commitすること
