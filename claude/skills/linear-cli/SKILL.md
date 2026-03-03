@@ -59,6 +59,12 @@ linear issue comment add ENG-123 --body-file /tmp/comment.md
 
 **Only use inline flags** (`--description`, `--body`) for simple, single-line content.
 
+## Issue Description vs Comment
+
+- **Never overwrite descriptions**: `linear issue update -d` / `--description-file` **replaces the entire description**. Existing content will be lost.
+- **Use comments (`linear issue comment add -b`) to add information or status updates** instead of updating the description.
+- If you must edit the description, first retrieve the current content with `linear issue view` and preserve it.
+
 ## Available Commands
 
 ```
