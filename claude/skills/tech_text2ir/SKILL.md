@@ -74,6 +74,7 @@ facets:
         kind: "Benchmark|Incident|Spec|Doc|Observation|Experiment"
         summary: ""
         anchors: ["A7"]
+        links: ["D?","P?"]
         measures:
           - metric: ""
             value: ""
@@ -93,6 +94,14 @@ facets:
         anchors: ["A8"]
         risk: "low|med|high"
 
+  uncertainty:
+    notes:
+      - id: "U1"
+        kind: "Unverified|NeedsTest|EnvDependent|Assumption"
+        statement: ""
+        anchors: ["A9"]
+        severity: "low|med|high"
+
 plan:
   surface_templates:
     - type: "howto|rfc|adr|postmortem|blog"
@@ -106,7 +115,7 @@ plan:
 
 validation:
   invariants:
-    - "Every decision/step/pitfall has >=1 anchor"
+    - "Every decision/step/pitfall/uncertainty has >=1 anchor"
     - "Evidence links must cite anchors"
     - "No duplicated decision text inside evidence/discourse; link by IDs"
 ```

@@ -106,6 +106,7 @@ plan:
 
 validation:
   invariants:
+    - "Every event/interpretation/evidence has >=1 anchor"
     - "Events contain no interpretation language; interpretations live in I* only"
     - "No duplicated event+interpretation statements across facets"
 ```

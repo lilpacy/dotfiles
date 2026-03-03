@@ -41,7 +41,7 @@ description: 文章↔IR（PaperIR/TechIR/DocumentaryIR）変換とIR lintをオ
 - IRにない固有名詞/数値/関係は追加しない。
 - anchors が不足している場合は uncertainty に落とし、断定しない。
 
-# Subagents used
+# Skills & agents used
 - paper_text2ir / paper_ir2text
 - tech_text2ir / tech_ir2text
 - doc_text2ir / doc_ir2text

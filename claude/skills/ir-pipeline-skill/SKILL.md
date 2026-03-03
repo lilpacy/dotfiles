@@ -7,9 +7,8 @@
 - 必要なら IR → 文章（UI向けの読み替え）
 
 ## Contents
-- `.claude/agents/`:
-  - `ir_pipeline_coordinator.md`（司令塔 - agent）
-- `.claude/skills/`:
+- `~/.claude/agents/ir_pipeline_coordinator.md`（司令塔 - agent）
+- `~/.claude/skills/` 配下の7スキル:
   - `paper_text2ir/SKILL.md`, `paper_ir2text/SKILL.md`
   - `tech_text2ir/SKILL.md`, `tech_ir2text/SKILL.md`
   - `doc_text2ir/SKILL.md`, `doc_ir2text/SKILL.md`
@@ -18,11 +17,11 @@
 - `scripts/ir_lint.py`（ローカル機械lint。PyYAMLがあればYAML対応）
 
 ## Install
-以下をグローバルにコピー：
+dotfiles管理の場合はsymlink経由で配置済み。手動の場合：
 
-- `.claude/agents/` → `~/.claude/agents/`（coordinatorのみ）
-- `.claude/skills/` → `~/.claude/skills/`（7つのIR skill）
-- `.claude/commands/` → `~/.claude/commands/`
+- coordinator → `~/.claude/agents/ir_pipeline_coordinator.md`
+- 7スキル → `~/.claude/skills/<name>/SKILL.md`
+- コマンド → `~/.claude/commands/ir-pipeline.md`
 - `scripts/ir_lint.py` はskill配下 (`~/.claude/skills/ir-pipeline-skill/scripts/`) に同梱済み
 
 ## Run
