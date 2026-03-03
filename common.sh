@@ -12,6 +12,7 @@ export PATH="$HOME/dotfiles/bin:$PATH"
 alias ll='ls -lh'
 alias la='ls -lah'
 alias hh='hardhat'
+alias obsidian='command obsidian 2>&1 | grep -v "FATAL:electron/shell/app/electron_main_delegate_mac.mm"'
 alias python='python3'
 
 # golang
