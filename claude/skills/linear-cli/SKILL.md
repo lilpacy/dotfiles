@@ -65,6 +65,24 @@ linear issue comment add ENG-123 --body-file /tmp/comment.md
 - **Use comments (`linear issue comment add -b`) to add information or status updates** instead of updating the description.
 - If you must edit the description, first retrieve the current content with `linear issue view` and preserve it.
 
+## Common Pitfalls
+
+### Always specify `--team` when creating issues
+
+`linear issue create` without `--team` fails with `Could not determine team key`. Always pass `--team <KEY>` explicitly (e.g. `--team LIL`). Check CLAUDE.md for the configured `team_id`.
+
+### `-p` flag conflict: `--parent` vs `--priority`
+
+Both `--parent` and `--priority` map to `-p`. Using `-p` twice causes an error. Always use the long form for at least one of them:
+
+```bash
+# Bad: -p used for both parent and priority
+linear issue create -t "title" -p LIL-220 -p 1
+
+# Good: use long form for priority
+linear issue create -t "title" -p LIL-220 --priority 1
+```
+
 ## Available Commands
 
 ```
