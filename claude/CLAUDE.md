@@ -8,7 +8,7 @@
 
 ## Languages
 
-Please respond in the language the user used
+Reply in the same language as the user.
 
 ## 出力スタイル
 
