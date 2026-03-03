@@ -88,6 +88,7 @@ Linear issueを扱う作業では、以下の状態遷移を必ず行う:
 3. 作業中適宜 → linearのissueのdescriptionに静的な情報、commentにログを追記
 4. 実装・テスト完了時 → `linear issue update <ID> -s "In Review"`
 5. ユーザー承認後 → `linear issue update <ID> -s "Done"`
+6. 完了レポート → `linear issue comment add <ID> -b "コメント本文"`
 
 状態をスキップしない。特に「いきなりDone」にすることは禁止
 
