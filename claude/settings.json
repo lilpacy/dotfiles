@@ -9,6 +9,10 @@
     "MCP_TOOL_TIMEOUT": "900000",
     "ENABLE_TOOL_SEARCH": "true"
   },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "permissions": {
     "allow": [
       "Read(~/**)",
@@ -405,10 +409,6 @@
       "repellent pouches → 忌避剤入りポーチ",
       "bsf → best friends"
     ]
-  },
-  "attribution": {
-    "commit": "",
-    "pr": ""
   },
   "alwaysThinkingEnabled": true,
   "skipDangerousModePermissionPrompt": true,
