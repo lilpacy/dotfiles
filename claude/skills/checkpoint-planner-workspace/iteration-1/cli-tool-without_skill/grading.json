@@ -1,0 +1,10 @@
+{
+  "expectations": [
+    {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "passed": false, "evidence": "No unknowns or what-I-don't-know section present"},
+    {"text": "Plan identifies a specific first proof or checkpoint (not a full project roadmap)", "passed": false, "evidence": "Has an 8-step implementation order covering the full build"},
+    {"text": "Plan is scoped to the next checkpoint, not an end-to-end plan", "passed": false, "evidence": "Plans everything end-to-end including cron setup and future extensions"},
+    {"text": "A markdown plan file was actually written to the outputs directory", "passed": true, "evidence": "File plan.md was written"},
+    {"text": "Plan specifies when to review progress (review point)", "passed": false, "evidence": "No review point specified"},
+    {"text": "Plan identifies what could make the plan wrong (risks section)", "passed": false, "evidence": "Has 'Risks and Mitigations' table but lists general risks, not what could make the plan itself wrong"}
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "eval_id": 1,
+  "eval_name": "auth-refactor-baseline",
+  "prompt": "Help me plan - I want to refactor our auth system but I'm not sure where to start",
+  "assertions": []
+}

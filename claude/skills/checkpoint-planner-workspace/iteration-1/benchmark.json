@@ -1,0 +1,141 @@
+{
+  "metadata": {
+    "skill_name": "checkpoint-planner",
+    "skill_path": "/Users/lilpacy/.claude/skills/checkpoint-planner/SKILL.md",
+    "executor_model": "claude-opus-4-6",
+    "timestamp": "2026-03-07T08:50:00Z",
+    "evals_run": ["db-migration", "auth-refactor", "cli-tool"],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_name": "db-migration",
+      "configurations": {
+        "with_skill": {
+          "pass_rate": 1.0,
+          "passed": 6,
+          "total": 6,
+          "time_seconds": 98.4,
+          "tokens": 21839,
+          "expectations": [
+            {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "passed": true, "evidence": "Has 'What I Don't Know' section with 5 items and [CRITICAL] marker"},
+            {"text": "Plan identifies a specific first proof or checkpoint", "passed": true, "evidence": "Has 'First Proof (Checkpoint 1)' section: single table migration on staging"},
+            {"text": "Plan is scoped to the next checkpoint, not end-to-end", "passed": true, "evidence": "Plan emphasizes Checkpoint 1 as the focus; full checkpoint table is secondary"},
+            {"text": "A markdown plan file was actually written", "passed": true, "evidence": "checkpoint-postgres-multitenant-migration.md exists (103 lines)"},
+            {"text": "Plan specifies when to review progress", "passed": true, "evidence": "'Review Point' section: after Checkpoint 1, ~10-15% of total effort"},
+            {"text": "Plan identifies what could make the plan wrong", "passed": true, "evidence": "'What Could Make This Plan Wrong' section with 5 specific risks"}
+          ]
+        },
+        "without_skill": {
+          "pass_rate": 0.167,
+          "passed": 1,
+          "total": 6,
+          "time_seconds": 78.7,
+          "tokens": 12219,
+          "expectations": [
+            {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "passed": false, "evidence": "Has Risk Mitigation table but no explicit unknowns section"},
+            {"text": "Plan identifies a specific first proof or checkpoint", "passed": false, "evidence": "No first proof; goes straight to Phase 0-4 covering 10-12 weeks"},
+            {"text": "Plan is scoped to the next checkpoint, not end-to-end", "passed": false, "evidence": "Plans entire migration end-to-end across 4 phases"},
+            {"text": "A markdown plan file was actually written", "passed": true, "evidence": "plan.md exists (213 lines)"},
+            {"text": "Plan specifies when to review progress", "passed": false, "evidence": "No review point mentioned"},
+            {"text": "Plan identifies what could make the plan wrong", "passed": false, "evidence": "Has Risk Mitigation table but not framed as plan-invalidation risks"}
+          ]
+        }
+      }
+    },
+    {
+      "eval_name": "auth-refactor",
+      "configurations": {
+        "with_skill": {
+          "pass_rate": 1.0,
+          "passed": 6,
+          "total": 6,
+          "time_seconds": 74.3,
+          "tokens": 14480,
+          "expectations": [
+            {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "passed": true, "evidence": "Has 'What I Don't Know' section with 7 items and [CRITICAL] marker"},
+            {"text": "Plan identifies a specific first proof or checkpoint", "passed": true, "evidence": "'First Proof (Checkpoint 1)' is audit only, no code changes"},
+            {"text": "Plan is scoped to the next checkpoint, not end-to-end", "passed": true, "evidence": "Focuses on audit checkpoint; checkpoint table is secondary"},
+            {"text": "A markdown plan file was actually written", "passed": true, "evidence": "checkpoint-auth-refactor.md exists (91 lines)"},
+            {"text": "Plan specifies when to review progress", "passed": true, "evidence": "'Review Point' after Checkpoint 1, roughly 10-15% of total effort"},
+            {"text": "Plan identifies what could make the plan wrong", "passed": true, "evidence": "'What Could Make This Plan Wrong' with 4 specific risks"}
+          ]
+        },
+        "without_skill": {
+          "pass_rate": 0.167,
+          "passed": 1,
+          "total": 6,
+          "time_seconds": 71.6,
+          "tokens": 12096,
+          "expectations": [
+            {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "passed": false, "evidence": "Lists 'Current State (Problems)' but no unknowns"},
+            {"text": "Plan identifies a specific first proof or checkpoint", "passed": false, "evidence": "No first proof; goes into Phase 0-5 for 12-20 days"},
+            {"text": "Plan is scoped to the next checkpoint, not end-to-end", "passed": false, "evidence": "Plans entire refactor across 5 phases"},
+            {"text": "A markdown plan file was actually written", "passed": true, "evidence": "plan.md exists (196 lines)"},
+            {"text": "Plan specifies when to review progress", "passed": false, "evidence": "No review point"},
+            {"text": "Plan identifies what could make the plan wrong", "passed": false, "evidence": "Has 'Key Risks' section but not framed as plan-invalidation risks"}
+          ]
+        }
+      }
+    },
+    {
+      "eval_name": "cli-tool",
+      "configurations": {
+        "with_skill": {
+          "pass_rate": 1.0,
+          "passed": 6,
+          "total": 6,
+          "time_seconds": 79.0,
+          "tokens": 14685,
+          "expectations": [
+            {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "passed": true, "evidence": "Has 'What I Don't Know' section with 5 items and [CRITICAL] marker"},
+            {"text": "Plan identifies a specific first proof or checkpoint", "passed": true, "evidence": "'First Proof (Checkpoint 1)': auth + single issue fetch + write one .md file"},
+            {"text": "Plan is scoped to the next checkpoint, not end-to-end", "passed": true, "evidence": "Focuses on Checkpoint 1; checkpoint table present but emphasis on first step"},
+            {"text": "A markdown plan file was actually written", "passed": true, "evidence": "checkpoint-linear-md-sync.md exists (99 lines)"},
+            {"text": "Plan specifies when to review progress", "passed": true, "evidence": "'Review Point' after Checkpoint 1, roughly 10-15% of total effort"},
+            {"text": "Plan identifies what could make the plan wrong", "passed": true, "evidence": "'What Could Make This Plan Wrong' with 5 specific risks"}
+          ]
+        },
+        "without_skill": {
+          "pass_rate": 0.167,
+          "passed": 1,
+          "total": 6,
+          "time_seconds": 53.8,
+          "tokens": 11359,
+          "expectations": [
+            {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "passed": false, "evidence": "No unknowns section"},
+            {"text": "Plan identifies a specific first proof or checkpoint", "passed": false, "evidence": "No first proof; 8-step implementation covering full build"},
+            {"text": "Plan is scoped to the next checkpoint, not end-to-end", "passed": false, "evidence": "Plans everything including cron setup and future extensions"},
+            {"text": "A markdown plan file was actually written", "passed": true, "evidence": "plan.md exists (148 lines)"},
+            {"text": "Plan specifies when to review progress", "passed": false, "evidence": "No review point"},
+            {"text": "Plan identifies what could make the plan wrong", "passed": false, "evidence": "Has 'Risks and Mitigations' table but not plan-invalidation framing"}
+          ]
+        }
+      }
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": "1.000 +/- 0.000",
+      "time_seconds": "83.9 +/- 10.3",
+      "tokens": "17001 +/- 3283"
+    },
+    "without_skill": {
+      "pass_rate": "0.167 +/- 0.000",
+      "time_seconds": "68.0 +/- 10.5",
+      "tokens": "11891 +/- 358"
+    },
+    "delta": {
+      "pass_rate": "+0.833",
+      "time_seconds": "+15.9",
+      "tokens": "+5110"
+    }
+  },
+  "notes": [
+    "With-skill runs consistently produce all 6 structural elements (unknowns, first proof, scoped checkpoint, file output, review point, risk analysis)",
+    "Without-skill runs default to comprehensive end-to-end project plans - technically detailed but missing the checkpoint planning methodology",
+    "The 'file was written' assertion is non-discriminating (passes for both configurations)",
+    "Token/time overhead for with-skill is ~30% higher, which is expected given the interactive template structure",
+    "The baseline plans are not bad - they contain useful technical detail - but they plan everything at once rather than surfacing unknowns and focusing on the next checkpoint"
+  ]
+}

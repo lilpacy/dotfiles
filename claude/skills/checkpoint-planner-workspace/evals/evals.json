@@ -1,0 +1,47 @@
+{
+  "skill_name": "checkpoint-planner",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I need to plan migrating our database from Postgres to a new schema with zero downtime",
+      "expected_output": "A checkpoint plan markdown file that surfaces unknowns about migration risks, identifies the first proof checkpoint, and does NOT attempt to plan the entire migration end-to-end",
+      "files": [],
+      "assertions": [
+        {"text": "Plan explicitly lists unknowns or 'what I don't know' section"},
+        {"text": "Plan identifies a specific first proof or checkpoint (not a full project roadmap)"},
+        {"text": "Plan is scoped to the next checkpoint, not an end-to-end migration plan"},
+        {"text": "A markdown plan file was actually written to the outputs directory"},
+        {"text": "Plan specifies when to review progress (review point)"},
+        {"text": "Plan identifies what could make the plan wrong (risks section)"}
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Help me plan - I want to refactor our auth system but I'm not sure where to start",
+      "expected_output": "An interactive response that asks clarifying questions about the auth system before producing a focused checkpoint plan with unknowns surfaced",
+      "files": [],
+      "assertions": [
+        {"text": "Plan explicitly lists unknowns or 'what I don't know' section"},
+        {"text": "Plan identifies a specific first proof or checkpoint (not a full project roadmap)"},
+        {"text": "Plan is scoped to the next checkpoint, not an end-to-end refactor plan"},
+        {"text": "A markdown plan file was actually written to the outputs directory"},
+        {"text": "Plan specifies when to review progress (review point)"},
+        {"text": "Plan identifies what could make the plan wrong (risks section)"}
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Break this down: build a CLI tool that syncs Linear issues to a local markdown folder",
+      "expected_output": "A checkpoint plan that identifies the first proof (e.g., fetch one issue from Linear API), lists unknowns, and focuses on the immediate next step rather than the full build",
+      "files": [],
+      "assertions": [
+        {"text": "Plan explicitly lists unknowns or 'what I don't know' section"},
+        {"text": "Plan identifies a specific first proof or checkpoint (not a full project roadmap)"},
+        {"text": "Plan is scoped to the next checkpoint, not an end-to-end build plan"},
+        {"text": "A markdown plan file was actually written to the outputs directory"},
+        {"text": "Plan specifies when to review progress (review point)"},
+        {"text": "Plan identifies what could make the plan wrong (risks section)"}
+      ]
+    }
+  ]
+}

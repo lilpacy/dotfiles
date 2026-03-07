@@ -1,0 +1,10 @@
+{
+  "expectations": [
+    {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "passed": false, "evidence": "Lists 'Current State (Problems)' but no unknowns section"},
+    {"text": "Plan identifies a specific first proof or checkpoint (not a full project roadmap)", "passed": false, "evidence": "Has Phase 0-5 covering full 12-20 day refactor"},
+    {"text": "Plan is scoped to the next checkpoint, not an end-to-end plan", "passed": false, "evidence": "Plans the entire refactor end-to-end with all 5 phases"},
+    {"text": "A markdown plan file was actually written to the outputs directory", "passed": true, "evidence": "File plan.md was written"},
+    {"text": "Plan specifies when to review progress (review point)", "passed": false, "evidence": "No explicit review point"},
+    {"text": "Plan identifies what could make the plan wrong (risks section)", "passed": false, "evidence": "Has 'Key Risks' section but it lists general risks, not what could make the plan itself wrong"}
+  ]
+}

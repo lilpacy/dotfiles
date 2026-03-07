@@ -1,0 +1,10 @@
+{
+  "expectations": [
+    {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "passed": true, "evidence": "Has 'What I Don't Know' section with [CRITICAL] marker"},
+    {"text": "Plan identifies a specific first proof or checkpoint (not a full project roadmap)", "passed": true, "evidence": "Has 'First Proof (Checkpoint 1)' - auth + single issue fetch"},
+    {"text": "Plan is scoped to the next checkpoint, not an end-to-end plan", "passed": true, "evidence": "First checkpoint is clearly the focus with review point after it"},
+    {"text": "A markdown plan file was actually written to the outputs directory", "passed": true, "evidence": "File checkpoint-linear-md-sync.md was written"},
+    {"text": "Plan specifies when to review progress (review point)", "passed": true, "evidence": "Has 'Review Point' section at 'roughly 10-15% of total effort'"},
+    {"text": "Plan identifies what could make the plan wrong (risks section)", "passed": true, "evidence": "Has 'What Could Make This Plan Wrong' section"}
+  ]
+}

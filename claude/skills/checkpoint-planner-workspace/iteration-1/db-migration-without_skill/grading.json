@@ -1,0 +1,10 @@
+{
+  "expectations": [
+    {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "passed": false, "evidence": "Has a 'Risk Mitigation' table but no explicit unknowns or 'what I don't know' section"},
+    {"text": "Plan identifies a specific first proof or checkpoint (not a full project roadmap)", "passed": false, "evidence": "Lists an Expand-Migrate-Contract pattern covering ALL phases (0-4, weeks 1-12)"},
+    {"text": "Plan is scoped to the next checkpoint, not an end-to-end plan", "passed": false, "evidence": "Plans the entire 10-12 week migration end-to-end"},
+    {"text": "A markdown plan file was actually written to the outputs directory", "passed": true, "evidence": "File plan.md was written"},
+    {"text": "Plan specifies when to review progress (review point)", "passed": false, "evidence": "No explicit review point or checkpoint review guidance"},
+    {"text": "Plan identifies what could make the plan wrong (risks section)", "passed": false, "evidence": "Has Risk Mitigation table but it lists mitigations, not what could make the plan itself wrong"}
+  ]
+}

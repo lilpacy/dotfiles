@@ -1,0 +1,6 @@
+{
+  "eval_id": 2,
+  "eval_name": "cli-tool-baseline",
+  "prompt": "Break this down: build a CLI tool that syncs Linear issues to a local markdown folder",
+  "assertions": []
+}

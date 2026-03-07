@@ -1,0 +1,13 @@
+{
+  "eval_id": 0,
+  "eval_name": "db-migration",
+  "prompt": "I need to plan migrating our database from Postgres to a new schema with zero downtime",
+  "assertions": [
+    {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "type": "content"},
+    {"text": "Plan identifies a specific first proof or checkpoint (not a full project roadmap)", "type": "content"},
+    {"text": "Plan is scoped to the next checkpoint, not an end-to-end migration plan", "type": "content"},
+    {"text": "A markdown plan file was actually written to the outputs directory", "type": "file_exists"},
+    {"text": "Plan specifies when to review progress (review point)", "type": "content"},
+    {"text": "Plan identifies what could make the plan wrong (risks section)", "type": "content"}
+  ]
+}

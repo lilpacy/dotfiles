@@ -1,0 +1,13 @@
+{
+  "eval_id": 1,
+  "eval_name": "auth-refactor",
+  "prompt": "Help me plan - I want to refactor our auth system but I'm not sure where to start",
+  "assertions": [
+    {"text": "Plan explicitly lists unknowns or 'what I don't know' section", "type": "content"},
+    {"text": "Plan identifies a specific first proof or checkpoint (not a full project roadmap)", "type": "content"},
+    {"text": "Plan is scoped to the next checkpoint, not an end-to-end refactor plan", "type": "content"},
+    {"text": "A markdown plan file was actually written to the outputs directory", "type": "file_exists"},
+    {"text": "Plan specifies when to review progress (review point)", "type": "content"},
+    {"text": "Plan identifies what could make the plan wrong (risks section)", "type": "content"}
+  ]
+}

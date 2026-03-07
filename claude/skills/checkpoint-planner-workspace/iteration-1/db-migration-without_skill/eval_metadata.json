@@ -1,0 +1,6 @@
+{
+  "eval_id": 0,
+  "eval_name": "db-migration-baseline",
+  "prompt": "I need to plan migrating our database from Postgres to a new schema with zero downtime",
+  "assertions": []
+}
