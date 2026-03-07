@@ -1,0 +1,193 @@
+Evaluating: ALWAYS use this skill when a user needs to plan, organize, or break down any non-trivial task — especially migrations, refactors, new feature builds, infrastructure changes, or multi-step projects. This skill produces checkpoint-based plans that surface unknowns early, identify risks, and write structured markdown plan files the user can reference while working. Trigger on ANY of these signals: the user says "plan", "help me plan", "break this down", "where do I start", "what should I do first", "make a plan", "think through", "figure out", "organize this", "I'm overwhelmed", "I don't know where to begin", or describes a complex task and asks for help structuring it. Also trigger when the user mentions refactoring, migrating, redesigning, setting up CI/CD, switching providers, implementing SSO, compliance work, or any multi-week engineering effort. If the user's request involves planning or sequencing work of any kind, use this skill. When in doubt about whether to trigger, trigger — it is far worse to miss a planning request than to unnecessarily consult this skill.
+Results: 15/20 passed
+  [PASS] rate=1/1 expected=True: I keep starting projects and then realizing halfway through that I mis
+  [PASS] rate=1/1 expected=True: plan this: we need to switch from Stripe to a custom billing system be
+  [PASS] rate=1/1 expected=True: break this down for me - I want to add real-time notifications to our 
+  [PASS] rate=1/1 expected=True: ok so I need to migrate our monolith to microservices but honestly I h
+  [PASS] rate=1/1 expected=True: I want to checkpoint plan migrating our iOS app from UIKit to SwiftUI.
+  [PASS] rate=1/1 expected=True: I'm overwhelmed. I need to set up CI/CD for our team's 12 repos, add t
+  [FAIL] rate=0/1 expected=True: help me think through refactoring our data pipeline. it's a mess of cr
+  [PASS] rate=1/1 expected=True: make a plan for implementing SSO across our 3 internal tools. we're us
+  [PASS] rate=1/1 expected=True: so my team just got told we need to be SOC2 compliant by Q3. I've neve
+  [PASS] rate=0/1 expected=False: write a python script that reads a CSV file and outputs a summary of e
+  [PASS] rate=1/1 expected=True: I've been procrastinating on redesigning our API because the scope kee
+  [PASS] rate=0/1 expected=False: can you review this PR? it changes the auth middleware to support API 
+  [FAIL] rate=1/1 expected=False: write a PRD for our new dashboard feature. it should include success m
+  [PASS] rate=0/1 expected=False: fix the bug in my React component - the useEffect is causing an infini
+  [FAIL] rate=1/1 expected=False: explain the difference between Server Components and Client Components
+  [PASS] rate=0/1 expected=False: create a Mermaid diagram showing the screen transitions for our onboar
+  [FAIL] rate=1/1 expected=False: I need to create a data model for our e-commerce app. we have products
+  [PASS] rate=0/1 expected=False: deploy this to production. run the tests first, then build the docker 
+  [PASS] rate=0/1 expected=False: refactor this function to use async/await instead of callbacks. here's
+  [FAIL] rate=1/1 expected=False: optimize this postgres query, it's taking 12 seconds: SELECT * FROM or
+{
+  "skill_name": "checkpoint-planner",
+  "description": "ALWAYS use this skill when a user needs to plan, organize, or break down any non-trivial task \u2014 especially migrations, refactors, new feature builds, infrastructure changes, or multi-step projects. This skill produces checkpoint-based plans that surface unknowns early, identify risks, and write structured markdown plan files the user can reference while working. Trigger on ANY of these signals: the user says \"plan\", \"help me plan\", \"break this down\", \"where do I start\", \"what should I do first\", \"make a plan\", \"think through\", \"figure out\", \"organize this\", \"I'm overwhelmed\", \"I don't know where to begin\", or describes a complex task and asks for help structuring it. Also trigger when the user mentions refactoring, migrating, redesigning, setting up CI/CD, switching providers, implementing SSO, compliance work, or any multi-week engineering effort. If the user's request involves planning or sequencing work of any kind, use this skill. When in doubt about whether to trigger, trigger \u2014 it is far worse to miss a planning request than to unnecessarily consult this skill.",
+  "results": [
+    {
+      "query": "I keep starting projects and then realizing halfway through that I missed something critical. can you help me plan building a chrome extension that auto-fills forms from our CRM?",
+      "should_trigger": true,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "plan this: we need to switch from Stripe to a custom billing system because Stripe's fees are killing us. ~5000 active subscriptions, 3 pricing tiers, annual and monthly billing",
+      "should_trigger": true,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "break this down for me - I want to add real-time notifications to our app. we're using Next.js and Supabase, and I'm thinking SSE or websockets but not sure which. what should I do first?",
+      "should_trigger": true,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "ok so I need to migrate our monolith to microservices but honestly I have no idea where to even start. there's like 200k lines of code and 40 engineers touching it daily. help me plan this out?",
+      "should_trigger": true,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "I want to checkpoint plan migrating our iOS app from UIKit to SwiftUI. we have 80 screens and can't stop shipping features during the migration",
+      "should_trigger": true,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "I'm overwhelmed. I need to set up CI/CD for our team's 12 repos, add testing, linting, and deploy to AWS. where do I even begin? what's the first thing I should tackle?",
+      "should_trigger": true,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "help me think through refactoring our data pipeline. it's a mess of cron jobs and bash scripts that ETL data from 5 different sources into postgres. breaks every other week",
+      "should_trigger": true,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 1,
+      "pass": false
+    },
+    {
+      "query": "make a plan for implementing SSO across our 3 internal tools. we're using Auth0 but each tool has its own user table and session management right now",
+      "should_trigger": true,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "so my team just got told we need to be SOC2 compliant by Q3. I've never done compliance before. planning this feels impossible, there's so many unknowns",
+      "should_trigger": true,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "write a python script that reads a CSV file and outputs a summary of each column's statistics including mean, median, and standard deviation",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "I've been procrastinating on redesigning our API because the scope keeps growing in my head. can you help me break it down into something I can actually start on?",
+      "should_trigger": true,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "can you review this PR? it changes the auth middleware to support API keys in addition to JWT tokens. here's the diff: ...",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "write a PRD for our new dashboard feature. it should include success metrics, user stories, and technical requirements",
+      "should_trigger": false,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": false
+    },
+    {
+      "query": "fix the bug in my React component - the useEffect is causing an infinite re-render loop. here's the code: const [data, setData] = useState([]); useEffect(() => { fetch('/api').then(r => setData(r)) }, [data])",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "explain the difference between Server Components and Client Components in Next.js App Router. when should I use each?",
+      "should_trigger": false,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": false
+    },
+    {
+      "query": "create a Mermaid diagram showing the screen transitions for our onboarding flow: splash -> login -> profile setup -> tutorial -> home",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "I need to create a data model for our e-commerce app. we have products, orders, customers, and inventory. can you design the ER diagram?",
+      "should_trigger": false,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": false
+    },
+    {
+      "query": "deploy this to production. run the tests first, then build the docker image, push to ECR, and update the ECS service",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "refactor this function to use async/await instead of callbacks. here's the current code: function getData(cb) { db.query('SELECT * FROM users', (err, rows) => { cb(err, rows) }) }",
+      "should_trigger": false,
+      "trigger_rate": 0.0,
+      "triggers": 0,
+      "runs": 1,
+      "pass": true
+    },
+    {
+      "query": "optimize this postgres query, it's taking 12 seconds: SELECT * FROM orders JOIN order_items ON orders.id = order_items.order_id WHERE orders.created_at > '2025-01-01' ORDER BY total DESC",
+      "should_trigger": false,
+      "trigger_rate": 1.0,
+      "triggers": 1,
+      "runs": 1,
+      "pass": false
+    }
+  ],
+  "summary": {
+    "total": 20,
+    "passed": 15,
+    "failed": 5
+  }
+}
