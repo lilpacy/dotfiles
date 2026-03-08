@@ -54,18 +54,15 @@ def get_sso_start_url_and_region(profile: str):
 
 
 def find_sso_cache(start_url: str, region: str):
-    """startUrl & region が一致する最新のキャッシュファイルを探す（最適化版）"""
+    """startUrl & region が一致し、expiresAtが最も新しいキャッシュファイルを探す"""
     if not SSO_CACHE_DIR.is_dir():
         return None, None
 
-    # mtime降順でソート（新しいファイルから探す）
-    paths = sorted(
-        SSO_CACHE_DIR.glob("*.json"),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True,
-    )
+    best_path = None
+    best_data = None
+    best_expires_at = None
 
-    for path in paths:
+    for path in SSO_CACHE_DIR.glob("*.json"):
         try:
             with path.open() as f:
                 data = json.load(f)
@@ -73,15 +70,24 @@ def find_sso_cache(start_url: str, region: str):
             continue
 
         if (
-            data.get("startUrl") == start_url
-            and data.get("region") == region
-            and data.get("accessToken")
-            and data.get("expiresAt")
+            data.get("startUrl") != start_url
+            or data.get("region") != region
+            or not data.get("accessToken")
+            or not data.get("expiresAt")
         ):
-            # 見つかった時点で即return
-            return path, data
+            continue
 
-    return None, None
+        try:
+            expires_at = parse_expires_at(data["expiresAt"])
+        except Exception:
+            continue
+
+        if best_expires_at is None or expires_at > best_expires_at:
+            best_path = path
+            best_data = data
+            best_expires_at = expires_at
+
+    return best_path, best_data
 
 
 def parse_expires_at(s: str) -> dt.datetime:
@@ -92,7 +98,10 @@ def parse_expires_at(s: str) -> dt.datetime:
     elif s.endswith("Z"):
         s = s.replace("Z", "+00:00")
 
-    return dt.datetime.fromisoformat(s)
+    parsed = dt.datetime.fromisoformat(s)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=dt.timezone.utc)
+    return parsed
 
 
 def format_delta(delta: dt.timedelta) -> str:
@@ -138,22 +147,10 @@ def main():
     # 有効期限の計算
     try:
         now = dt.datetime.now(dt.timezone.utc)
-
-        if data.get("refreshToken"):
-            # 新形式: refreshTokenがある場合はファイル更新日時 + 7日をセッション期限とする
-            # （ポータルセッション期間=7日がハードコード）
-            PORTAL_SESSION_DAYS = 7
-            mtime = os.stat(cache_path).st_mtime
-            created = dt.datetime.fromtimestamp(mtime, tz=dt.timezone.utc)
-            expires = created + dt.timedelta(days=PORTAL_SESSION_DAYS)
-        else:
-            # レガシー形式: expiresAtをそのまま使う
-            expires = parse_expires_at(data["expiresAt"])
-
+        expires = parse_expires_at(data["expiresAt"])
         delta = expires - now
         print(format_delta(delta))
     except Exception:
-        # エラーの場合は何も出力しない
         sys.exit(0)
 
 
