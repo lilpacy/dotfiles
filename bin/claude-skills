@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+COPY_MODE=false
+while getopts "c" opt; do
+  case "$opt" in
+    c) COPY_MODE=true ;;
+    *) echo "Usage: claude-skills [-c]" >&2; exit 1 ;;
+  esac
+done
+
+SKILLS_DIR="$HOME/.claude/skills"
+
+if [[ ! -d "$SKILLS_DIR" ]]; then
+  echo "No skills directory found at $SKILLS_DIR" >&2
+  exit 1
+fi
+
+# Build list: filepath<TAB>skill-name, sorted by mtime
+skill_list=""
+while IFS= read -r f; do
+  name=$(basename "$(dirname "$f")")
+  skill_list+="$f	$name"$'\n'
+done < <(ls -1t "$SKILLS_DIR"/*/SKILL.md 2>/dev/null)
+
+if [[ -z "$skill_list" ]]; then
+  echo "No SKILL.md files found" >&2
+  exit 1
+fi
+
+if ! command -v fzf >/dev/null 2>&1; then
+  echo "Error: fzf required" >&2
+  exit 1
+fi
+
+selected=$(echo -n "$skill_list" | \
+  fzf --height=80% --reverse --ansi \
+      --delimiter=$'\t' --with-nth=2 \
+      --preview='cat {1}' \
+      --preview-window=right:60%:wrap \
+      --bind='ctrl-d:preview-half-page-down,ctrl-u:preview-half-page-up' \
+      --prompt="Skill> " \
+      --header="$(echo -n "$skill_list" | grep -c '^') skills" \
+  | awk -F'\t' '{print $1}')
+
+if [[ -z "$selected" ]]; then
+  exit 0
+fi
+
+if $COPY_MODE; then
+  cat "$selected" | pbcopy
+  lines=$(wc -l < "$selected" | tr -d ' ')
+  echo "Copied to clipboard ($lines lines)"
+else
+  less -R "$selected"
+fi
