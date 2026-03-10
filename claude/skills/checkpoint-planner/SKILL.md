@@ -1,14 +1,15 @@
 ---
 name: checkpoint-planner
 description: >
-  Helps users plan tasks by breaking them into small checkpoints that fail early,
-  rather than trying to create one perfect big plan. Guides users through surfacing
-  unknowns, identifying risks, and writing plans down as markdown files they can
-  check while working. Use this skill whenever the user says "plan this", "help me plan",
-  "break this down", "checkpoint plan", "what should I do first", "make a plan",
-  "planning", or asks for help organizing a task that feels overwhelming or complex.
-  Also trigger when the user seems stuck on where to start, or mentions they keep
-  forgetting important things during planning.
+  Use this skill when a user explicitly asks to plan or break down a multi-step project.
+  Produces checkpoint-based plans that surface unknowns early, identify risks, and write
+  structured markdown plan files. Trigger phrases: "plan this", "help me plan", "make a
+  plan", "break this down", "checkpoint plan", "where do I start", "what should I do first",
+  "I'm overwhelmed", "I don't know where to begin". Also trigger when the user describes a
+  large effort (migration, multi-service refactor, compliance project, infrastructure
+  overhaul) and asks for help structuring or sequencing the work. Do NOT trigger for
+  single-task requests like writing a script, fixing a bug, creating a diagram, writing
+  a document, or optimizing a query — those are execution tasks, not planning tasks.
 ---
 
 # Checkpoint Planner
