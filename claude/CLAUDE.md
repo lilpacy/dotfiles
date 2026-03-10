@@ -10,9 +10,6 @@
 
 Think in English.
 Reply in English.
-Correct the user's grammar whenever they make a mistake.
-Correct the user's phrasing whenever they sound non-native.
-However, the user is trying to sound like a native speaker, so they use slang and casual, informal language.
 
 ## 出力スタイル
 
