@@ -247,7 +247,7 @@ return {
       -- ファイルシステムソース
       filesystem = {
         filtered_items = {
-          visible = false,
+          visible = true,
           hide_dotfiles = false,
           hide_gitignored = true,  -- gitignoreされたファイルを非表示
           hide_by_name = {
