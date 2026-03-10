@@ -42,6 +42,7 @@
       "Bash(echo:*)",
       "Bash(npx tsc:*)",
       "Bash(git show:*)",
+      "Bash(git reset --soft:*)",
       "mcp__ais__gpt5_reason_browse",
       "Bash(codex exec:*)",
       "WebFetch(domain:registry.npmjs.org)",
@@ -130,6 +131,32 @@
             "type": "command",
             "command": "[ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 0; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 1; true",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/lilpacy/go/src/github.com/lilpacy/claude-otel/hooks/subagent-otel.sh",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/lilpacy/go/src/github.com/lilpacy/claude-otel/hooks/subagent-otel.sh",
+            "timeout": 5,
+            "async": true
           }
         ]
       }
