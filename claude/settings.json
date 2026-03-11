@@ -161,6 +161,18 @@
         ]
       }
     ],
+    "InstructionsLoaded": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/lilpacy/go/src/github.com/lilpacy/claude-otel/hooks/log-instructions-loaded.sh",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
     "SessionEnd": [
       {
         "matcher": "",
