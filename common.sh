@@ -195,15 +195,6 @@ export MAX_THINKING_TOKENS=1024
 alias claude='claude --dangerously-skip-permissions'
 alias claude-mem='bun "/Users/lilpacy/.claude/plugins/marketplaces/thedotmack/plugin/scripts/worker-service.cjs"'
 
-# codex
-codex() {
-    command codex -m gpt-5.4 \
-      -c model_context_window=1000000 \
-      -c model_auto_compact_token_limit=955000 \
-      --enable fast_mode \
-      "$@"
-}
-
 # alias opus/sonnet の実体を Bedrock inference profile に割り当て、/model {opus,sonnet}で切り替え
 export ANTHROPIC_DEFAULT_OPUS_MODEL='global.anthropic.claude-opus-4-5-20251101-v1:0'
 export ANTHROPIC_DEFAULT_SONNET_MODEL='jp.anthropic.claude-sonnet-4-5-20250929-v1:0'
