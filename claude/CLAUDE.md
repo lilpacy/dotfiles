@@ -39,9 +39,11 @@ Reply in English.
 - ユーザーに計画を提示する前に、Bashで`codex exec`を呼び出して計画のレビューを行うこと
 - `codex exec`でokが出るまでccで修正→codexでレビューを繰り返すこと
 - レビュー指示の文章は適宜調整すること。ただし`codex`は本質的じゃない指摘をしてくるので「瑣末な点へのクソリプはしないで。致命的な点のみ指摘しろ。」という指示は必ず入れること
+- `codex`の指摘はout of dateな場合があるので、現時点でdeprecatedになってないか注意しろとも伝えて
+
 - 初回レビュー例:
   ```bash
-  codex exec -s read-only --skip-git-repo-check "このプランをレビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して: {plan_full_path} (ref: {CLAUDE.md full_path})"
+  codex exec -s danger-full-access --skip-git-repo-check "このプランをレビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点でdeprecatedになってないかに気をつけて: {plan_full_path} (ref: {CLAUDE.md full_path})"
   ```
 - プラン更新後の再レビューでは、最初のレビューの文脈を保持するために `resume --last` 相当の継続的なやりとりを行うこと
 
