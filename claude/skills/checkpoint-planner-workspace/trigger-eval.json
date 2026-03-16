@@ -1,0 +1,82 @@
+[
+  {
+    "query": "ok so I need to migrate our monolith to microservices but honestly I have no idea where to even start. there's like 200k lines of code and 40 engineers touching it daily. help me plan this out?",
+    "should_trigger": true
+  },
+  {
+    "query": "break this down for me - I want to add real-time notifications to our app. we're using Next.js and Supabase, and I'm thinking SSE or websockets but not sure which. what should I do first?",
+    "should_trigger": true
+  },
+  {
+    "query": "I keep starting projects and then realizing halfway through that I missed something critical. can you help me plan building a chrome extension that auto-fills forms from our CRM?",
+    "should_trigger": true
+  },
+  {
+    "query": "plan this: we need to switch from Stripe to a custom billing system because Stripe's fees are killing us. ~5000 active subscriptions, 3 pricing tiers, annual and monthly billing",
+    "should_trigger": true
+  },
+  {
+    "query": "I'm overwhelmed. I need to set up CI/CD for our team's 12 repos, add testing, linting, and deploy to AWS. where do I even begin? what's the first thing I should tackle?",
+    "should_trigger": true
+  },
+  {
+    "query": "help me think through refactoring our data pipeline. it's a mess of cron jobs and bash scripts that ETL data from 5 different sources into postgres. breaks every other week",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to checkpoint plan migrating our iOS app from UIKit to SwiftUI. we have 80 screens and can't stop shipping features during the migration",
+    "should_trigger": true
+  },
+  {
+    "query": "make a plan for implementing SSO across our 3 internal tools. we're using Auth0 but each tool has its own user table and session management right now",
+    "should_trigger": true
+  },
+  {
+    "query": "so my team just got told we need to be SOC2 compliant by Q3. I've never done compliance before. planning this feels impossible, there's so many unknowns",
+    "should_trigger": true
+  },
+  {
+    "query": "I've been procrastinating on redesigning our API because the scope keeps growing in my head. can you help me break it down into something I can actually start on?",
+    "should_trigger": true
+  },
+  {
+    "query": "write a python script that reads a CSV file and outputs a summary of each column's statistics including mean, median, and standard deviation",
+    "should_trigger": false
+  },
+  {
+    "query": "can you review this PR? it changes the auth middleware to support API keys in addition to JWT tokens. here's the diff: ...",
+    "should_trigger": false
+  },
+  {
+    "query": "fix the bug in my React component - the useEffect is causing an infinite re-render loop. here's the code: const [data, setData] = useState([]); useEffect(() => { fetch('/api').then(r => setData(r)) }, [data])",
+    "should_trigger": false
+  },
+  {
+    "query": "write a PRD for our new dashboard feature. it should include success metrics, user stories, and technical requirements",
+    "should_trigger": false
+  },
+  {
+    "query": "explain the difference between Server Components and Client Components in Next.js App Router. when should I use each?",
+    "should_trigger": false
+  },
+  {
+    "query": "create a Mermaid diagram showing the screen transitions for our onboarding flow: splash -> login -> profile setup -> tutorial -> home",
+    "should_trigger": false
+  },
+  {
+    "query": "I need to create a data model for our e-commerce app. we have products, orders, customers, and inventory. can you design the ER diagram?",
+    "should_trigger": false
+  },
+  {
+    "query": "deploy this to production. run the tests first, then build the docker image, push to ECR, and update the ECS service",
+    "should_trigger": false
+  },
+  {
+    "query": "refactor this function to use async/await instead of callbacks. here's the current code: function getData(cb) { db.query('SELECT * FROM users', (err, rows) => { cb(err, rows) }) }",
+    "should_trigger": false
+  },
+  {
+    "query": "optimize this postgres query, it's taking 12 seconds: SELECT * FROM orders JOIN order_items ON orders.id = order_items.order_id WHERE orders.created_at > '2025-01-01' ORDER BY total DESC",
+    "should_trigger": false
+  }
+]
