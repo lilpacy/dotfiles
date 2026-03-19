@@ -1,8 +1,7 @@
 -- ============================================
 -- Code Folding Cheatsheet
 -- ============================================
--- Tab        : toggle fold under cursor
--- Shift+Tab  : toggle all folds (open/close)
+-- Ctrl+Enter : toggle fold under cursor
 -- K          : peek folded lines (or LSP hover)
 --
 -- Standard z-commands also work:
@@ -25,15 +24,8 @@ return {
     local ufo = require("ufo")
     local map = vim.keymap.set
 
-    -- Intuitive shortcuts
-    map("n", "<Tab>", "za", { desc = "Toggle fold" })
-    map("n", "<S-Tab>", function()
-      if vim.wo.foldlevel == 0 then
-        ufo.openAllFolds()
-      else
-        ufo.closeAllFolds()
-      end
-    end, { desc = "Toggle all folds" })
+    map("n", "<C-CR>", "za", { desc = "Toggle fold" })
+
     map("n", "K", function()
       local winid = ufo.peekFoldedLinesUnderCursor()
       if not winid then
