@@ -1,6 +1,12 @@
 -- true color対応
 vim.opt.termguicolors = true
 
+-- 折りたたみ設定（nvim-ufo用）
+vim.o.foldcolumn = "1"
+vim.o.foldlevel = 99
+vim.o.foldlevelstart = 99
+vim.o.foldenable = true
+
 -- クリップボード連携を有効化
 vim.opt.clipboard = "unnamedplus"
 
