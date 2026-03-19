@@ -70,6 +70,17 @@ return {
           auto_quoting = true,
           mappings = {
             i = {
+              -- 検索結果を開いた時に該当行にジャンプする（autocmdとの競合回避）
+              ["<CR>"] = function(prompt_bufnr)
+                local action_state = require("telescope.actions.state")
+                local entry = action_state.get_selected_entry()
+                actions.select_default(prompt_bufnr)
+                if entry and entry.lnum then
+                  vim.schedule(function()
+                    pcall(vim.api.nvim_win_set_cursor, 0, { entry.lnum, (entry.col or 1) - 1 })
+                  end)
+                end
+              end,
               -- VSCode風の検索オプション切り替え（複数組み合わせ可能）
               ["<C-k>"] = lga_actions.quote_prompt(),                            -- クォートで囲む
               ["<C-s>"] = lga_actions.quote_prompt({ postfix = " --case-sensitive" }), -- 大文字小文字を区別 (Aa ON)
