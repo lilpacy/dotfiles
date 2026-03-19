@@ -57,6 +57,9 @@ return {
             ["<C-j>"] = actions.move_selection_next,
             ["<C-k>"] = actions.move_selection_previous,
             ["<C-u>"] = false,  -- Clear line like VSCode
+            ["<D-v>"] = function()
+              vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<C-r>+', true, true, true), 'n', false)
+            end,
           },
         },
       },
