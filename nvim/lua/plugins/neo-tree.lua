@@ -99,6 +99,7 @@ return {
       close_if_last_window = true,
       popup_border_style = "rounded",
       enable_git_status = true,
+      git_status_async = false,
       enable_diagnostics = true,
       sort_case_insensitive = true,
 
