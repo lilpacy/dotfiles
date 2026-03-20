@@ -7,6 +7,15 @@ email = revivedtomorrow@gmail.com
 autocrlf = input
 quotepath = false
 sshCommand = ssh -i ~/.ssh/id_ed25519
+pager = delta
+[interactive]
+diffFilter = delta --color-only
+[delta]
+navigate = true
+line-numbers = true
+side-by-side = false
+[merge]
+conflictStyle = zdiff3
 [alias]
 ac = !git add -A && aicommits -a
 ignore = "!gi() { curl -L -s https://www.gitignore.io/api/$@ ;}; gi"

@@ -2,6 +2,9 @@ gui:
   language: en
   theme:
     lightTheme: false
+git:
+  paging:
+    pager: delta --paging=never --line-numbers --hyperlinks --hyperlinks-file-link-format="lazygit-edit://{path}:{line}"
 customCommands:
   - key: 'C'
     command: 'git commit'
