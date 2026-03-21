@@ -47,12 +47,12 @@ Reply in English.
   ```bash
   codex exec -s danger-full-access --skip-git-repo-check "このプランをレビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点でout of date/deprecatedになってないかに気をつけて: {plan_full_path} (ref: {CLAUDE.md full_path})"
   ```
-- プラン更新後の再レビューでは、最初のレビューの文脈を保持するために `codex exec resume --last "..."` で前回セッションを継続すること
+- プラン更新後の再レビューでは、最初のレビューの文脈を保持するために `codex exec resume <SESSION_ID> "..."` で前回セッションを継続すること
 
 ### codex exec resume（前回の codex exec セッション継続）
-- `codex exec resume --last "next instruction"` — カレントディレクトリ内の直前の `codex exec` セッションを継続
 - `codex exec resume <SESSION_ID> "next instruction"` — 特定の `codex exec` セッションを継続
-- `--last` はカレントディレクトリにスコープされる
+- `codex exec resume --last` — カレントディレクトリ内の直前のセッションを**プロンプトなしで**再開
+- **注意**: `--last` と `[PROMPT]` の併用は不可（CLIが PROMPT を SESSION_ID として解釈するバグ）。プロンプト付きで再開する場合は必ず初回実行時のログからセッションIDを控えておき `codex exec resume <SESSION_ID> "prompt"` を使うこと
 - `--all` を付けるとディレクトリ制限を外せる
 
 ### 議論モード
