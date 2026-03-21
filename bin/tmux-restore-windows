@@ -3,22 +3,36 @@ session=$(tmux display-message -p '#S')
 state_file="$HOME/.tmux/window-state-$session.txt"
 
 if [ ! -f "$state_file" ]; then
-  tmux display-message "No saved state for session '$session'"
-  exit 1
+  [ "$1" != "--auto" ] && tmux display-message "No saved state for session '$session'"
+  exit 0
 fi
 
-first=true
-while IFS='::' read -r name path; do
-  [ -d "$path" ] || path="$HOME"
+# Auto mode: skip if already restored or multiple windows exist
+if [ "$1" = "--auto" ]; then
+  restored=$(tmux show-option -gqv @window_state_restored 2>/dev/null)
+  [ "$restored" = "1" ] && exit 0
+  win_count=$(tmux list-windows -t "$session" | wc -l | tr -d ' ')
+  [ "$win_count" -gt 1 ] && exit 0
+fi
 
-  if $first; then
-    tmux rename-window "$name"
-    tmux send-keys "cd $(printf %q "$path")" C-m
-    first=false
-  else
-    tmux new-window -n "$name" -c "$path"
-  fi
+# Set guard flag to prevent save hooks from firing during restore
+tmux set-option -g @window_state_restoring 1
+
+# Remember original window to kill later
+original_window=$(tmux display-message -p '#{window_id}')
+
+while IFS=$'\t' read -r name path; do
+  [ -z "$name" ] && continue
+  [ -d "$path" ] || path="$HOME"
+  tmux new-window -n "$name" -c "$path"
 done < "$state_file"
 
+# Kill the original placeholder window
+tmux kill-window -t "$original_window" 2>/dev/null
 tmux select-window -t :0
-tmux display-message "Restored windows for session '$session'"
+
+# Clear guard flag, mark as restored
+tmux set-option -g @window_state_restoring 0
+tmux set-option -g @window_state_restored 1
+
+[ "$1" != "--auto" ] && tmux display-message "Restored windows for session '$session'"

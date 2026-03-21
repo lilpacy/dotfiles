@@ -1,8 +1,20 @@
 #!/bin/bash
+# Auto-save: skip if restore is in progress
+if [ "$1" = "--auto" ]; then
+  restoring=$(tmux show-option -gqv @window_state_restoring 2>/dev/null)
+  [ "$restoring" = "1" ] && exit 0
+fi
+
 session=$(tmux display-message -p '#S')
 state_dir="$HOME/.tmux"
 mkdir -p "$state_dir"
 state_file="$state_dir/window-state-$session.txt"
-tmux list-windows -t "$session" -F '#{window_name}::#{pane_current_path}' \
-  > "$state_file"
-tmux display-message "Saved $(wc -l < "$state_file" | tr -d ' ') windows"
+tmp_file="$state_file.tmp"
+
+# Write to temp file then atomically replace
+tmux list-windows -t "$session" -F "#{window_name}$(printf '\t')#{pane_current_path}" \
+  > "$tmp_file" && mv "$tmp_file" "$state_file"
+
+if [ "$1" != "--auto" ]; then
+  tmux display-message "Saved $(wc -l < "$state_file" | tr -d ' ') windows"
+fi
