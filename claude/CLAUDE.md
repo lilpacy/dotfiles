@@ -47,10 +47,11 @@ Reply in English.
   ```
 - プラン更新後の再レビューでは、最初のレビューの文脈を保持するために `codex exec resume --last "..."` で前回セッションを継続すること
 
-### codex exec resume（前回セッション継続）
-- `codex exec resume --last "next instruction"` — 直前の `codex exec` セッションを継続
-- `codex exec resume <SESSION_ID> "next instruction"` — 特定セッションを継続
+### codex exec resume（前回の codex exec セッション継続）
+- `codex exec resume --last "next instruction"` — カレントディレクトリ内の直前の `codex exec` セッションを継続
+- `codex exec resume <SESSION_ID> "next instruction"` — 特定の `codex exec` セッションを継続
 - `--last` はカレントディレクトリにスコープされる
+- `--all` を付けるとディレクトリ制限を外せる
 
 ### 議論モード
 - 「議論して」で発動。手順は ~/.claude/skills/discuss/SKILL.md に従う
