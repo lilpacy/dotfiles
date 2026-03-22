@@ -1,3 +1,8 @@
+---
+name: ir-pipeline
+description: Text↔IR↔Textパイプライン（PaperIR/TechIR/DocumentaryIR）を一貫して実行する。文章→IR変換、IR→Lint検証、IR→文章生成を同一手順で回す。「IRパイプライン」「text2ir」「ir2text」「IRに変換して」「IRをlintして」「文章をIR化」「論文/技術記事/歴史記事を構造化」「/ir-pipeline」などで使用。
+---
+
 # IR Pipeline Skill (PaperIR / TechIR / DocumentaryIR)
 
 このスキルは、以下のパイプラインを **同一手順・最小コンテキスト**で回すための “Coordinator + Subagents + Lint” パッケージです。
