@@ -1,0 +1,27 @@
+#!/bin/zsh
+set -euo pipefail
+
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+
+LOGFILE="$HOME/Library/Logs/discord-bd-launch.log"
+LOCKDIR="${TMPDIR:-/tmp}/discord-bd-launch.lock"
+
+if ! mkdir "$LOCKDIR" 2>/dev/null; then
+  exit 0
+fi
+trap 'rmdir "$LOCKDIR"' EXIT
+
+{
+  echo "=== $(date '+%Y-%m-%d %H:%M:%S') ==="
+
+  osascript -e 'tell application "Discord" to quit' >/dev/null 2>&1 || true
+  sleep 1
+  pkill -x Discord >/dev/null 2>&1 || true
+  sleep 1
+
+  # discover を使わず、そのまま Stable に再適用
+  bdcli install --channel stable || \
+  bdcli install --path "/Applications/Discord.app"
+
+  open -na "Discord"
+} >> "$LOGFILE" 2>&1
