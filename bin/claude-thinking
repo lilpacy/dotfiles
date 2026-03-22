@@ -50,7 +50,7 @@ session_label() {
 }
 
 select_with_fzf() {
-  fzf --height=40% --reverse --ansi "$@"
+  fzf --height=100% --reverse --ansi "$@"
 }
 
 select_with_peco() {
@@ -132,7 +132,7 @@ chmod +x "$preview_script"
 
 if command -v fzf >/dev/null 2>&1; then
   selected_session=$(echo -n "$session_list" | \
-    fzf --height=60% --reverse --ansi \
+    fzf --height=100% --reverse --ansi \
         --delimiter=$'\t' --with-nth=2 \
         --preview="bash $preview_script {}" \
         --preview-window=right:50%:wrap \
