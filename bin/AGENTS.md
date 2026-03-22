@@ -61,10 +61,6 @@ Interactive ECS Exec helper (by [yuki777](https://github.com/yuki777)). Walks th
 - `sssh --port 8080 --local-port 8080` — port forwarding mode
 - Requires: `aws`, `session-manager-plugin`, `jq`, `peco`
 
-## task_cal
-
-Interactive calculator that compares total time with/without doing a prerequisite Task A before N repetitive tasks. Prompts for time values and reports whether doing Task A first is beneficial.
-
 ## tmux-claude-indicator
 
 Shows Claude Code status icon in tmux window-status. Called from `.tmux.conf` via `#(~/dotfiles/bin/tmux-claude-indicator '#{window_id}')`.
