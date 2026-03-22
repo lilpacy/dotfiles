@@ -52,5 +52,5 @@ if $COPY_MODE; then
   lines=$(wc -l < "$selected" | tr -d ' ')
   echo "Copied to clipboard ($lines lines)"
 else
-  glow -p "$selected"
+  nvim "$selected"
 fi
