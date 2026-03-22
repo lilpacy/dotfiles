@@ -123,7 +123,7 @@ preview_script=$(mktemp /tmp/ct-preview.XXXXXX)
 cat > "$preview_script" << 'PREVIEW_EOF'
 #!/usr/bin/env bash
 file=$(echo "$1" | awk -F'\t' '{print $1}')
-jq -r 'select(.message.content // null | type == "array") | .message.content[] | select(.type == "thinking") | .thinking' "$file" 2>/dev/null | head -40
+jq -r 'select(.message.content // null | type == "array") | .message.content[] | select(.type == "thinking") | .thinking' "$file" 2>/dev/null | head -40 | bat --color=always --style=plain --language=md --wrap=character 2>/dev/null || cat
 if [ $? -ne 0 ] || [ -z "$(jq -r 'select(.message.content // null | type == "array") | .message.content[] | select(.type == "thinking") | .thinking' "$file" 2>/dev/null | head -1)" ]; then
   echo "(no thinking blocks)"
 fi
@@ -163,5 +163,8 @@ if $COPY_MODE; then
   echo "$output" | pbcopy
   echo "Copied to clipboard ($(echo "$output" | wc -l | tr -d ' ') lines)"
 else
-  echo "$output" | less -R
+  tmpfile=$(mktemp /tmp/ct-view.XXXXXX.md)
+  echo "$output" > "$tmpfile"
+  nvim "$tmpfile"
+  rm -f "$tmpfile"
 fi

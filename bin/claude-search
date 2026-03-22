@@ -128,9 +128,9 @@ fi
 
 highlighted=$(echo "$output" | grep --color=always -i -C999 -- "$keyword" 2>/dev/null)
 if [ -n "$highlighted" ]; then
-  echo "$highlighted" | head -80
+  echo "$highlighted" | head -80 | bat --color=always --style=plain --language=md --wrap=character 2>/dev/null || echo "$highlighted" | head -80
 else
-  echo "$output" | head -40
+  echo "$output" | head -40 | bat --color=always --style=plain --language=md --wrap=character 2>/dev/null || echo "$output" | head -40
 fi
 PREVIEW_EOF
 chmod +x "$preview_script"
@@ -171,5 +171,8 @@ if $COPY_MODE; then
   echo "$output" | pbcopy
   echo "Copied to clipboard ($(echo "$output" | wc -l | tr -d ' ') lines)"
 else
-  echo "$output" | less -R
+  tmpfile=$(mktemp /tmp/cs-view.XXXXXX.md)
+  echo "$output" > "$tmpfile"
+  nvim "$tmpfile"
+  rm -f "$tmpfile"
 fi
