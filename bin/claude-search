@@ -138,7 +138,7 @@ trap "rm -f '$preview_script'" EXIT
 
 if command -v fzf >/dev/null 2>&1; then
   selected=$(echo -n "$file_list" | \
-    fzf --height=70% --reverse --ansi \
+    fzf --height=100% --reverse --ansi \
         --delimiter=$'\t' --with-nth=2 \
         --preview="bash $preview_script {1} $(printf '%q' "$KEYWORD") ${RG_CASE_OPTS[*]}" \
         --preview-window=right:55%:wrap \
