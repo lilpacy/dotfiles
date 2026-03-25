@@ -13,7 +13,8 @@
     "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
     "OTEL_LOG_TOOL_DETAILS": "1",
     "OTEL_SERVICE_NAME": "claude-code",
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "CLAUDE_CODE_TEAMMATE_COMMAND": "/Users/lilpacy/dotfiles/bin/claude-bedrock-wrapper"
   },
   "attribution": {
     "commit": "",
