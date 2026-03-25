@@ -1,8 +1,9 @@
 {
   "env": {
     "CLAUDE_CODE_USE_BEDROCK": "1",
+    "AWS_REGION": "us-east-1",
     "ANTHROPIC_MODEL": "global.anthropic.claude-opus-4-6-v1",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "jp.anthropic.claude-sonnet-4-5-20250929-v1:0",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "16384",
     "MAX_THINKING_TOKENS": "1024",
     "MCP_TOOL_TIMEOUT": "900000",
@@ -13,8 +14,7 @@
     "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
     "OTEL_LOG_TOOL_DETAILS": "1",
     "OTEL_SERVICE_NAME": "claude-code",
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "CLAUDE_CODE_TEAMMATE_COMMAND": "/Users/lilpacy/dotfiles/bin/claude-bedrock-wrapper"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "attribution": {
     "commit": "",
@@ -81,7 +81,7 @@
       "Bash(git reset:*)"
     ]
   },
-  "model": "sonnet",
+  "model": "opus",
   "hooks": {
     "Notification": [
       {
@@ -202,9 +202,16 @@
     "enabled": false,
     "autoAllowBashIfSandboxed": true,
     "network": {
-      "allowedDomains": ["github.com", "*.npmjs.org", "registry.npmjs.org"]
+      "allowedDomains": [
+        "github.com",
+        "*.npmjs.org",
+        "registry.npmjs.org"
+      ]
     },
-    "excludedCommands": ["docker", "docker-compose"]
+    "excludedCommands": [
+      "docker",
+      "docker-compose"
+    ]
   },
   "spinnerVerbs": {
     "mode": "replace",
@@ -450,6 +457,6 @@
     ]
   },
   "alwaysThinkingEnabled": true,
-  "skipDangerousModePermissionPrompt": true,
-  "effortLevel": "medium"
+  "effortLevel": "medium",
+  "skipDangerousModePermissionPrompt": true
 }
