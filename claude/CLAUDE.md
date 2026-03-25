@@ -55,9 +55,6 @@ Reply in English.
 - **注意**: `--last` と `[PROMPT]` の併用は不可（CLIが PROMPT を SESSION_ID として解釈するバグ）。プロンプト付きで再開する場合は必ず初回実行時のログからセッションIDを控えておき `codex exec resume <SESSION_ID> "prompt"` を使うこと
 - `--all` を付けるとディレクトリ制限を外せる
 
-### 議論モード
-- 「議論して」で発動。手順は ~/.claude/skills/discuss/SKILL.md に従う
-
 ## Skills
 
 Next.js(Server/Client Component,Server Actions,revalidate,Hooks)→必ず`nextjs-app-router-guide/SKILL.md`を読んでから回答
