@@ -37,23 +37,27 @@ Reply in English.
 - フロー: タスク受領 → `codex exec`で設計照会 → ccが実装 → `codex exec`でレビュー依頼 → 修正
 
 ### 実装計画立案時のルール
-- Planのドラフト作成には`Plan`エージェントを使うこと
-- ユーザーに計画を提示する前に、Bashで`codex exec`を呼び出して計画のレビューを行うこと
-- `codex exec`でokが出るまでccで修正→codexでレビューを繰り返すこと
+- Plan のドラフト作成には `Plan` エージェントを使うこと
+- ユーザーに計画を提示する前に、Bash で `codex exec` を呼び出して計画のレビューを行うこと
+- `codex` のレビューは最大 3 回までとし、致命的な問題がなくなったら終了すること
 - レビュー指示の文章は適宜調整すること。ただし`codex`は本質的じゃない指摘をしてくるので「瑣末な点へのクソリプはしないで。致命的な点のみ指摘しろ。」という指示は必ず入れること
-- `codex`の指摘はout of dateな場合があるので、現時点でout of date/deprecatedになってないか注意しろとも伝えて
+- `codex` の指摘は out of date な場合があるので、現時点で out of date / deprecated になっていないか注意しろとも伝えること
+- 計画レビューは原則として `read-only` sandbox で実行すること。レビューのためだけに `danger-full-access` は使わないこと
+- Git リポジトリ外で実行する必要がある場合のみ `--skip-git-repo-check` を使うこと
 
 - 初回レビュー例:
   ```bash
-  codex exec -s danger-full-access --skip-git-repo-check "このプランをレビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点でout of date/deprecatedになってないかに気をつけて: {plan_full_path} (ref: {CLAUDE.md full_path})"
+  codex exec \
+    --sandbox read-only \
+    "このプランをレビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて: {plan_full_path} (ref: {CLAUDE_md_full_path})"
   ```
+
 - プラン更新後の再レビューでは、最初のレビューの文脈を保持するために `codex exec resume <SESSION_ID> "..."` で前回セッションを継続すること
 
 ### codex exec resume（前回の codex exec セッション継続）
 - `codex exec resume <SESSION_ID> "next instruction"` — 特定の `codex exec` セッションを継続
-- `codex exec resume --last` — カレントディレクトリ内の直前のセッションを**プロンプトなしで**再開
-- **注意**: `--last` と `[PROMPT]` の併用は不可（CLIが PROMPT を SESSION_ID として解釈するバグ）。プロンプト付きで再開する場合は必ず初回実行時のログからセッションIDを控えておき `codex exec resume <SESSION_ID> "prompt"` を使うこと
-- `--all` を付けるとディレクトリ制限を外せる
+- `codex exec resume --last "next instruction"` — カレントディレクトリ内の直前のセッションを継続
+- `codex exec resume --last --all "next instruction"` — ディレクトリ制限を外して直前セッションを継続
 
 ## Skills
 
