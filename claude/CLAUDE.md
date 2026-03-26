@@ -61,12 +61,6 @@ Reply in English.
 - `codex exec resume --last "next instruction"` — カレントディレクトリ内の直前のセッションを継続
 - `codex exec resume --last --all "next instruction"` — ディレクトリ制限を外して直前セッションを継続
 
-## Skills
-
-Next.js(Server/Client Component,Server Actions,revalidate,Hooks)→必ず`nextjs-app-router-guide/SKILL.md`を読んでから回答
-React/Next.jsパフォーマンス→必ず`react-best-practices/`を読んでから回答
-Postgres/Supabase→必ず`supabase-postgres-best-practices/`を読んでから回答
-
 ## Bash + jq の罠
 - jqの `!=` はbashの `!`（history expansion）と干渉する。`select(.foo != null)` ではなく `select(.foo // null | ...)` や `has("foo")` を使え
 - デバッグ時は `2>/dev/null` を外せ。「出力が空」の最初の一手は `2>&1` でエラー確認
