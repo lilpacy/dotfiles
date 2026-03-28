@@ -23,7 +23,7 @@ ln -sfn ~/dotfiles/claude/skills ~/.claude/skills
 ln -sfn ~/dotfiles/claude/agents ~/.claude/agents
 ln -sfn ~/dotfiles/claude/commands ~/.claude/commands
 ln -sf ~/dotfiles/claude/CLAUDE.md ~/.claude/CLAUDE.md
-ln -sf ~/dotfiles/AGENTS.md ~/.config/agents/AGENTS.md
+ln -sf ~/dotfiles/AGENTS.md ~/.codex/AGENTS.md
 ln -sf ~/dotfiles/.gitignore_global ~/.config/git/ignore
 ln -sf ~/dotfiles/.config/lazygit/config.yml "$HOME/Library/Application Support/lazygit/config.yml"
 ln -sf ~/dotfiles/.aerospace.toml ~/.aerospace.toml
