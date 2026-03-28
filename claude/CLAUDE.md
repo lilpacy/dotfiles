@@ -58,8 +58,6 @@ Reply in English.
 
 ### codex exec resume（前回の codex exec セッション継続）
 - `codex exec resume <SESSION_ID> "next instruction"` — 特定の `codex exec` セッションを継続
-- `codex exec resume --last "next instruction"` — カレントディレクトリ内の直前のセッションを継続
-- `codex exec resume --last --all "next instruction"` — ディレクトリ制限を外して直前セッションを継続
 
 ## Bash + jq の罠
 - jqの `!=` はbashの `!`（history expansion）と干渉する。`select(.foo != null)` ではなく `select(.foo // null | ...)` や `has("foo")` を使え

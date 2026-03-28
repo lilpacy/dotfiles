@@ -7,3 +7,4 @@
 「妥当」「同意」は結論であり、出発点ではない  
 迎合は合意ではない。早すぎる収束は思考の放棄である  
 
+read ~/.claude/CLAUDE.md before start working  
