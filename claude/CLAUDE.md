@@ -55,6 +55,11 @@ Reply in English.
   ```
 
 - プラン更新後の再レビューでは、最初のレビューの文脈を保持するために `codex exec resume <SESSION_ID> "..."` で前回セッションを継続すること
+- 2回目以降の再レビュー例:
+  ```bash
+  codex exec resume <SESSION_ID> \
+    "前回の指摘を反映してプランを更新した。もう一度レビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。新しく追加された問題がなければ、その旨を明示して: {plan_full_path} (ref: {CLAUDE_md_full_path})"
+  ```
 
 ### codex exec resume（前回の codex exec セッション継続）
 - `codex exec resume <SESSION_ID> "next instruction"` — 特定の `codex exec` セッションを継続
@@ -113,4 +118,3 @@ branchやworktreeを分けて作業している場合は、commitだけじゃな
 基本的にcliツールはbrew installすること
 brewにないpackageの場合はnpxなどアドホックに実行できるコマンドを使うこと
 グローバルに使うcliをnpm i -gやpip installでinstallすることは禁止
-
