@@ -108,11 +108,6 @@
             "type": "command",
             "command": "afplay /System/Library/Sounds/Blow.aiff; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 1; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 0; true",
             "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "/Users/lilpacy/dotfiles/claude/hooks/auto-commit.sh",
-            "timeout": 60
           }
         ]
       }
@@ -207,16 +202,9 @@
     "enabled": false,
     "autoAllowBashIfSandboxed": true,
     "network": {
-      "allowedDomains": [
-        "github.com",
-        "*.npmjs.org",
-        "registry.npmjs.org"
-      ]
+      "allowedDomains": ["github.com", "*.npmjs.org", "registry.npmjs.org"]
     },
-    "excludedCommands": [
-      "docker",
-      "docker-compose"
-    ]
+    "excludedCommands": ["docker", "docker-compose"]
   },
   "spinnerVerbs": {
     "mode": "replace",
