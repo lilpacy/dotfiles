@@ -162,12 +162,21 @@ return {
         automatic_enable = false,
       })
 
+      local mason_registry = require("mason-registry")
+
       -- フォーマッタの自動インストール
       require("mason-tool-installer").setup({
         ensure_installed = {
           "prettierd",       -- Prettier daemon (高速版)
           "prettier",        -- Prettier (フォールバック用)
           "stylua",          -- Lua formatter
+          {
+            "rustfmt",
+            -- Some registry snapshots fail to resolve rustfmt; skip instead of crashing startup.
+            condition = function()
+              return mason_registry.has_package("rustfmt")
+            end,
+          },
         },
         auto_update = false,
         run_on_start = true,
