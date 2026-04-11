@@ -168,7 +168,6 @@ return {
           "prettierd",       -- Prettier daemon (高速版)
           "prettier",        -- Prettier (フォールバック用)
           "stylua",          -- Lua formatter
-          "rustfmt",         -- Rust formatter
         },
         auto_update = false,
         run_on_start = true,
