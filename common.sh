@@ -66,8 +66,7 @@ export CPPFLAGS="-I/opt/homebrew/opt/openssl@3/include"
 export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig"
 
 # gcloud sdk
-#source /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc
-#source /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc
+export PATH="/opt/homebrew/share/google-cloud-sdk/bin:$PATH"
 
 # bookmark
 # https://threkk.medium.com/how-to-use-bookmarks-in-bash-zsh-6b8074e40774

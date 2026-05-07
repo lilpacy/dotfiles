@@ -93,3 +93,9 @@ export JAVA_HOME=$(/usr/libexec/java_home)
 export PATH=$JAVA_HOME/bin:$PATH
 export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
 export PATH=$PATH:$ANDROID_HOME/build-tools/latest
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/lilpacy/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/lilpacy/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/lilpacy/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/lilpacy/google-cloud-sdk/completion.zsh.inc'; fi
