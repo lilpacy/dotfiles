@@ -27,6 +27,21 @@ Reply in English.
 - 回避策: Bashの `cat <<'EOF' >> file` 形式で**分割して追記**する（1チャンクあたり50〜80行目安）
 - 最初のチャンクは `>` で新規作成、以降は `>>` で追記
 
+## 開発スタイル
+
+- yagniの原則を強く意識し要件にないものは実装・計画・出力しないでください  
+- TDD で開発する（探索 → Red → Green → Refactoring）。  
+- KPI やカバレッジ目標が与えられたら、達成するまで試行する。  
+- 不明瞭な指示は質問して明確にする。  
+
+## コード設計
+
+- 関心の分離を保つ
+- 状態とロジックを分離する
+- 可読性と保守性を重視する
+- コントラクト層（API/型）を厳密に定義し、実装層は再生成可能に保つ
+- 静的検査可能なルールはプロンプトではなく、その環境の linter か ast-grep で記述する
+
 ## Codex連携
 - `codex exec`（Bash経由）は司令塔（設計・計画・レビュー・問題定義）、claude code(以下cc)は実行者（実装・修正・テスト生成）
 - 設計判断・方針決定は`codex exec`に委ねる。ccは自分の判断で設計を決めない
@@ -103,6 +118,14 @@ Linear issueを扱う作業では、以下の状態遷移を必ず行う:
 - 調査・リサーチには**WebSearchとWebFetchを使う**（Exploreエージェント経由）。CDPをリサーチ目的で使うことは禁止
 - デバッグは Chrome DevTools MCP
 - ブラウザ操作の自動化やE2EテストはPlaywrightを使うこと
+
+## Chakra UI / Ark UI の Dialog 注意点
+- `Dialog` はデフォルトで modal であり、`body[data-inert]`, scroll lock, `pointer-events: none`, `aria-hidden` などのグローバル副作用を持つことを前提に設計せよ
+- 軽量なフィルタ picker や補助UIに modal dialog を使うな。必要がなければ `modal={false}` と `preventScroll={false}` を検討せよ
+- `Dialog` の `onOpenChange`, `onClose`, `CloseTrigger`, `onConfirm` の中で `router.push`, `router.replace`, query string 更新などの route navigation を直接呼ぶな
+- dialog close lifecycle と route navigation を同一イベントループ内で競合させると、`body[data-inert]` や `pointer-events: none` が残留して画面が実質フリーズすることがある
+- route変更は dialog の内部ではなく、親コンポーネント側で state として受け取り、dialog が閉じた後に `useEffect` など別フェーズで実行せよ
+- 「URLは更新されたが UI が固まる」場合は、`html` の `bprogress-busy` だけでなく、`body[data-inert]`, `data-scroll-lock`, `pointer-events: none`, `main[aria-hidden]` の残留をまず確認せよ
 
 ## git
 実装→テストが終わったらこまめにgit commitすること
