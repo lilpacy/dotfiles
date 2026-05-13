@@ -169,7 +169,7 @@ if.app-id = 'com.apple.systemsettings'
 run = 'layout floating'
 
 [[on-window-detected]]
-if.app-id = 'company.thebrowser.Browser'
+if.app-id = 'company.thebrowser.dia'
 run = ['move-node-to-workspace 1']
 
 [[on-window-detected]]
@@ -259,4 +259,3 @@ run = ['move-node-to-workspace 4']
 [[on-window-detected]]
 if.app-id = 'com.google.Chrome'
 run = ['move-node-to-workspace 6', 'layout floating']
-
