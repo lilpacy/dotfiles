@@ -11,14 +11,14 @@
 ## Languages
 
 Think in English.
-Reply in English.
+Reply in just the same language as the user used.
 
 ## 出力スタイル
 
 - **人間向けの説明テキスト**は、1回の返信あたり最大40行に収める。
 - ただし、以下は40行制限の対象外とする:
-  - Write, Edit, MultiEdit, Task などの**ツールに渡すコードやファイル内容**
-  - コードブロック内のコード
+- Write, Edit, MultiEdit, Task などの**ツールに渡すコードやファイル内容**
+- コードブロック内のコード
 - 大きなコードを生成・編集する場合は、ツール呼び出しを複数回に分割してよい。
 - コード生成の途中で出力が打ち切られそうな場合でも、ユーザーに continue を入力させず、自分で次のステップを提案してツールを呼び出して続行すること。
 
@@ -47,7 +47,7 @@ Reply in English.
 - 設計判断・方針決定は`codex exec`に委ねる。ccは自分の判断で設計を決めない
 - 実装はccが直接行う（ファイル操作・ツール実行はccのネイティブ機能）
 - 自明な変更（5行以内、設計判断不要）は`codex exec`照会なしでccが直接行ってよい
-- モデルはgpt-5.4を明示的に指定すること
+- モデルはgpt-5.5を明示的に指定すること
 
 ### 実行モード
 - フロー: タスク受領 → `codex exec`で設計照会 → ccが実装 → `codex exec`でレビュー依頼 → 修正
@@ -65,7 +65,10 @@ Reply in English.
   ```bash
   codex exec \
     --sandbox read-only \
-    --model gpt-5.4 \
+    --model gpt-5.5 \
+    -c model_reasoning_effort=high \
+    -c service_tier=fast \
+    -c features.fast_mode=true \
     "このプランをレビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて: {plan_full_path} (ref: {CLAUDE_md_full_path})"
   ```
 
@@ -79,9 +82,22 @@ Reply in English.
 ### codex exec resume（前回の codex exec セッション継続）
 - `codex exec resume <SESSION_ID> "next instruction"` — 特定の `codex exec` セッションを継続
 
-## Bash + jq の罠
-- jqの `!=` はbashの `!`（history expansion）と干渉する。`select(.foo != null)` ではなく `select(.foo // null | ...)` や `has("foo")` を使え
-- デバッグ時は `2>/dev/null` を外せ。「出力が空」の最初の一手は `2>&1` でエラー確認
+### codex exec / MCP error handling
+
+- `codex exec` may print MCP transport errors such as `http://127.0.0.1:8000/mcp` connection failures at startup.
+- Do not treat those logs alone as a `codex exec` failure.
+- If a final `codex` response is returned after the error, consider the run successful but degraded.
+- Only treat the run as failed when `codex exec` exits without a final `codex` answer or the requested review/result is not produced.
+- When reporting status to the user, distinguish between:
+  - MCP sidecar/transport failure
+  - actual `codex exec` failure
+- Never claim `codex exec` failed only because an MCP transport error appeared in stderr.
+
+### codex exec / timeout
+
+- For `codex exec`, wait for the final answer before reporting failure: use ~15s for trivial prompts, ~30-60s for light reviews, and ~180s for normal review tasks.
+- If `codex exec` is still emitting intermediate output, wait until the review ends instead of calling it failed early.
+- If `codex exec` starts and shows intermediate output but no final answer arrives within the wait budget, report it as `review started but final result not yet returned`, not `failed`.
 
 ## MCP Tool Usage Rules
 画像生成 -> `mcp__nanobanana__*`
@@ -89,6 +105,12 @@ Reply in English.
 googleはbotを弾くことが多いので、検索にはduckduckgoを使うこと
 複雑な推論、プラン作成・設計・実装後のレビュー、セカンドオピニオン -> `codex exec`（Bash経由、sandbox判定はcodex skillを参照）
 `mcp__ais__*` -> ユーザーが明示的に指示した場合のみ使用。自動判断で呼び出すことは禁止。常に `start_gpt5_job` → `get_gpt5_job_result` のペアで使うこと（MCP transportタイムアウト防止）。ポーリングは1分間隔で行うこと（頻繁に呼びすぎない）
+
+## Web Browsing
+
+When you read documents, never read html as it is.
+Use `npx curl.md` instead, like `npx curl.md https://example.com`.
+`npx curl.md` returns the whole page content as markdown so you don't waste your contexts.
 
 ## Linear-CLI Settings
 
@@ -118,14 +140,6 @@ Linear issueを扱う作業では、以下の状態遷移を必ず行う:
 - 調査・リサーチには**WebSearchとWebFetchを使う**（Exploreエージェント経由）。CDPをリサーチ目的で使うことは禁止
 - デバッグは Chrome DevTools MCP
 - ブラウザ操作の自動化やE2EテストはPlaywrightを使うこと
-
-## Chakra UI / Ark UI の Dialog 注意点
-- `Dialog` はデフォルトで modal であり、`body[data-inert]`, scroll lock, `pointer-events: none`, `aria-hidden` などのグローバル副作用を持つことを前提に設計せよ
-- 軽量なフィルタ picker や補助UIに modal dialog を使うな。必要がなければ `modal={false}` と `preventScroll={false}` を検討せよ
-- `Dialog` の `onOpenChange`, `onClose`, `CloseTrigger`, `onConfirm` の中で `router.push`, `router.replace`, query string 更新などの route navigation を直接呼ぶな
-- dialog close lifecycle と route navigation を同一イベントループ内で競合させると、`body[data-inert]` や `pointer-events: none` が残留して画面が実質フリーズすることがある
-- route変更は dialog の内部ではなく、親コンポーネント側で state として受け取り、dialog が閉じた後に `useEffect` など別フェーズで実行せよ
-- 「URLは更新されたが UI が固まる」場合は、`html` の `bprogress-busy` だけでなく、`body[data-inert]`, `data-scroll-lock`, `pointer-events: none`, `main[aria-hidden]` の残留をまず確認せよ
 
 ## git
 実装→テストが終わったらこまめにgit commitすること
