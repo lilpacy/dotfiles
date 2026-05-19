@@ -32,6 +32,7 @@ ln -sf ~/dotfiles/alacritty/catppuccin-frappe.toml ~/.config/alacritty/catppucci
 
 sudo ln -sf ~/dotfiles/bin/task_cal /usr/local/bin/task_cal
 sudo ln -sf ~/dotfiles/bin/sssh /usr/local/bin/sssh
+sudo ln -sf ~/dotfiles/bin/ecs-sh /usr/local/bin/ecs-sh
 sudo ln -sf ~/dotfiles/bin/tmux-dev /usr/local/bin/tmux-dev
 find bin -type f | xargs chmod 755
 

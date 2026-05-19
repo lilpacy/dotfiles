@@ -1,0 +1,112 @@
+#!/bin/bash
+
+set -euo pipefail
+
+PROFILE="${AWS_PROFILE:-production-management-prd}"
+REGION="${AWS_REGION:-ap-northeast-1}"
+COMMAND="${1:-/bin/sh}"
+
+if ! command -v aws >/dev/null 2>&1; then
+  echo "Error: aws command not found" >&2
+  exit 1
+fi
+
+if ! command -v fzf >/dev/null 2>&1; then
+  echo "Error: fzf command not found" >&2
+  echo "Install it with: brew install fzf" >&2
+  exit 1
+fi
+
+select_with_fzf() {
+  local prompt="$1"
+
+  if [ -t 0 ]; then
+    fzf --prompt="$prompt"
+  else
+    cat | fzf --prompt="$prompt"
+  fi
+}
+
+echo "Using AWS_PROFILE=$PROFILE"
+echo "Using AWS_REGION=$REGION"
+echo
+
+cluster=$(
+  AWS_PROFILE="$PROFILE" AWS_REGION="$REGION" \
+    aws ecs list-clusters \
+    --query 'clusterArns[]' \
+    --output text |
+    tr '\t' '\n' |
+    select_with_fzf "cluster> "
+)
+
+if [ -z "$cluster" ]; then
+  echo "No cluster selected" >&2
+  exit 1
+fi
+
+service=$(
+  AWS_PROFILE="$PROFILE" AWS_REGION="$REGION" \
+    aws ecs list-services \
+    --cluster "$cluster" \
+    --query 'serviceArns[]' \
+    --output text |
+    tr '\t' '\n' |
+    select_with_fzf "service> "
+)
+
+if [ -z "$service" ]; then
+  echo "No service selected" >&2
+  exit 1
+fi
+service_name="${service##*/}"
+
+task=$(
+  AWS_PROFILE="$PROFILE" AWS_REGION="$REGION" \
+    aws ecs list-tasks \
+    --cluster "$cluster" \
+    --service-name "$service_name" \
+    --desired-status RUNNING \
+    --query 'taskArns[]' \
+    --output text |
+    tr '\t' '\n' |
+    select_with_fzf "task> "
+)
+
+if [ -z "$task" ]; then
+  echo "No running task selected" >&2
+  exit 1
+fi
+
+container=$(
+  AWS_PROFILE="$PROFILE" AWS_REGION="$REGION" \
+    aws ecs describe-tasks \
+    --cluster "$cluster" \
+    --tasks "$task" \
+    --query 'tasks[0].containers[].name' \
+    --output text |
+    tr '\t' '\n' |
+    select_with_fzf "container> "
+)
+
+if [ -z "$container" ]; then
+  echo "No container selected" >&2
+  exit 1
+fi
+
+echo
+echo "Executing command in ECS container:"
+echo "  cluster:   $cluster"
+echo "  service:   $service"
+echo "  task:      $task"
+echo "  container: $container"
+echo "  command:   $COMMAND"
+echo
+
+AWS_PROFILE="$PROFILE" AWS_REGION="$REGION" \
+  aws ecs execute-command \
+    --cluster "$cluster" \
+    --task "$task" \
+    --container "$container" \
+    --interactive \
+    --command "$COMMAND"
