@@ -62,8 +62,9 @@ linear issue comment add ENG-123 --body-file /tmp/comment.md
 ## Issue Description vs Comment
 
 - **Never overwrite descriptions**: `linear issue update -d` / `--description-file` **replaces the entire description**. Existing content will be lost.
+- **Do not round-trip pasted images through `linear issue update`**: Linear stores pasted images in structured `descriptionData`, but the CLI only sends plain `description` markdown. Updating a description that contains pasted images can flatten those blocks into dead `uploads.linear.app` links or broken `![Image #1]` placeholders.
 - **Use comments (`linear issue comment add -b`) to add information or status updates** instead of updating the description.
-- If you must edit the description, first retrieve the current content with `linear issue view` and preserve it.
+- If you must edit the description, first retrieve the current content with `linear issue view` and preserve it. For issues with pasted images, prefer editing in the Linear UI, moving the screenshots to comments/documents, or using stable external image URLs instead.
 
 ## Common Pitfalls
 
@@ -127,6 +128,7 @@ To see available subcommands and flags, run `--help` on any command:
 linear --help
 linear issue --help
 linear issue list --help
+linear issue view --help
 linear issue create --help
 ```
 
