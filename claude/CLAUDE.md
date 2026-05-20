@@ -47,7 +47,7 @@ Reply in just the same language as the user used.
 - 設計判断・方針決定は`codex exec`に委ねる。ccは自分の判断で設計を決めない
 - 実装はccが直接行う（ファイル操作・ツール実行はccのネイティブ機能）
 - 自明な変更（5行以内、設計判断不要）は`codex exec`照会なしでccが直接行ってよい
-- モデルはgpt-5.5を明示的に指定すること
+- モデルはgpt-5.4を明示的に指定すること
 
 ### 実行モード
 - フロー: タスク受領 → `codex exec`で設計照会 → ccが実装 → `codex exec`でレビュー依頼 → 修正
@@ -65,7 +65,7 @@ Reply in just the same language as the user used.
   ```bash
   codex exec \
     --sandbox read-only \
-    --model gpt-5.5 \
+    --model gpt-5.4 \
     -c model_reasoning_effort=high \
     -c service_tier=fast \
     -c features.fast_mode=true \
