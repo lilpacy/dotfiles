@@ -56,6 +56,7 @@ Reply in just the same language as the user used.
 - Plan のドラフト作成には `Plan` エージェントを使うこと
 - ユーザーに計画を提示する前に、Bash で `codex exec` を呼び出して計画のレビューを行うこと
 - `codex` のレビューは最大 3 回までとし、致命的な問題がなくなったら終了すること
+- レビュー用途の `codex exec` は `-c model_reasoning_effort=medium` を付けること（レビュー時だけ medium にする）
 - レビュー指示の文章は適宜調整すること。ただし`codex`は本質的じゃない指摘をしてくるので「瑣末な点へのクソリプはしないで。致命的な点のみ指摘しろ。」という指示は必ず入れること
 - `codex` の指摘は out of date な場合があるので、現時点で out of date / deprecated になっていないか注意しろとも伝えること
 - 計画レビューは原則として `read-only` sandbox で実行すること。レビューのためだけに `danger-full-access` は使わないこと
@@ -66,7 +67,7 @@ Reply in just the same language as the user used.
   codex exec \
     --sandbox read-only \
     --model gpt-5.4 \
-    -c model_reasoning_effort=high \
+    -c model_reasoning_effort=medium \
     -c service_tier=fast \
     -c features.fast_mode=true \
     "このプランをレビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて: {plan_full_path} (ref: {CLAUDE_md_full_path})"
