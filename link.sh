@@ -18,6 +18,7 @@ ln -sf ~/dotfiles/karabiner.json ~/.config/karabiner/karabiner.json
 ln -sf ~/dotfiles/.gitconfig ~/.gitconfig
 ln -sf ~/dotfiles/.alacritty.toml ~/.alacritty.toml
 ln -sfn ~/dotfiles/nvim ~/.config/nvim
+ln -sf ~/dotfiles/skills ~/.agents/skills
 ln -sf ~/dotfiles/claude/settings.json ~/.claude/settings.json
 ln -sfn ~/dotfiles/claude/skills ~/.claude/skills
 ln -sfn ~/dotfiles/claude/agents ~/.claude/agents
