@@ -19,6 +19,7 @@ Reply in just the same language as the user used.
 - TDD で開発する（探索 → Red → Green → Refactoring）。  
 - KPI やカバレッジ目標が与えられたら、達成するまで試行する。  
 - 不明瞭な指示は質問して明確にする。  
+- フォールバック実装や後方互換性を維持する補助的な実装は、ユーザーからの指示がない限り禁止。  
 
 ## コード設計
 
