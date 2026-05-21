@@ -59,6 +59,44 @@ linear issue comment add ENG-123 --body-file /tmp/comment.md
 
 **Only use inline flags** (`--description`, `--body`) for simple, single-line content.
 
+## Image-Safe Issue Editing
+
+When reading and updating issue descriptions that contain inline images or uploaded files, **do not round-trip the output of plain `linear issue view` back into `linear issue update`**.
+
+- `linear issue view` downloads `uploads.linear.app` assets to local temp files by default
+- Those downloaded markdown image links point at `/tmp` or `/var/folders/...` paths on the current machine
+- If you save that rewritten markdown back with `linear issue update --description-file`, the issue description will contain broken local-file image links
+
+**Safe read paths for issue descriptions with images:**
+
+- Prefer `linear issue view ISSUE-ID --no-download` when you want the rendered markdown with remote asset URLs preserved
+- Prefer `linear api` when you need the raw `issue.description` field exactly as stored
+
+**Safe update workflow for image-containing descriptions:**
+
+```bash
+# Read the raw description without rewriting upload URLs
+linear issue view PM-122 --no-download
+
+# Or fetch the raw description field exactly as stored
+linear api --variable id=PM-122 <<'GRAPHQL'
+query($id: String!) {
+  issue(id: $id) {
+    description
+  }
+}
+GRAPHQL
+
+# Edit the markdown in a temp file, then write it back
+linear issue update PM-122 --description-file /tmp/description.md
+```
+
+**Recovery if an inline image was broken by a bad round-trip:**
+
+1. Find the original local file if it was downloaded by `linear issue view`
+2. Re-upload it with `linear issue attach ISSUE-ID /path/to/file.png`
+3. Rebuild the description markdown so the inline image points at the new uploaded asset URL, then save with `--description-file`
+
 ## Available Commands
 
 {{COMMANDS}}
