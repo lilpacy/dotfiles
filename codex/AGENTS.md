@@ -77,6 +77,11 @@ Reply in just the same language as the user used.
 - For `codex exec`, wait for the final answer before reporting failure: use ~15s for trivial prompts, ~30-60s for light reviews, and ~180s for normal review tasks.
 - If `codex exec` is still emitting intermediate output, wait until the review ends instead of calling it failed early.
 - If `codex exec` starts and shows intermediate output but no final answer arrives within the wait budget, report it as `review started but final result not yet returned`, not `failed`.
+- `review started but final result not yet returned` は `review complete` ではない。必須レビュー（計画レビュー・commit後レビュー）では、これを根拠にレビュー不要と判断して先へ進んではならない
+- 自分のテスト結果・手元確認・「こちらで十分確認した」という判断で、必須の `codex exec` レビューを代替してはならない。代替できるのは、ユーザーが明示的にレビュー省略を許可した場合だけ
+- 待機予算を超えてもプロセスが継続中なら、まずは最終回答を待つ。中断・再実行する場合も「不要だからやめた」と解釈せず、`review incomplete` として扱うこと
+- 必須レビューで最終回答が得られない場合は、少なくとも1回は `codex exec resume <SESSION_ID>` または再実行で回収を試みること。それでも回収できない場合は、レビュー未完了であることを明示してユーザーに判断を仰ぐこと
+- レビュー未完了のまま、そのレビューが通った前提の表現（例: `致命的な問題なしと判断した`, `レビュー完了として扱う`, `不要と判断した`）をしてはならない
 
 ## MCP Tool Usage Rules
 
@@ -119,14 +124,16 @@ Linear issueを扱う作業では、以下の状態遷移を必ず行う:
 
 ## git
 実装→テストが終わったら直交な単位でgit commitすること
-commitしたら`codex exec`にレビューをしてもらうこと。
-`codex exec`でokが出るまで修正→codexでレビューを繰り返すこと
-コミットメッセージは直近のgit logをいくつかみて形式を揃えること
-branchやworktreeを分けて作業している場合は、commitだけじゃなくpushしてgithub prを出すこと
+commitしたら`codex exec`にレビューをしてもらうこと  
+`codex exec`でokが出るまで修正→codexでレビューを繰り返すこと  
+commit後レビューは瑣末な修正で自ずと致命的な欠陥がないことが自明な場合を除いて、必須の完了条件であり、エージェント自身の裁量で省略・打ち切り・代替してはならない  
+commit後レビューで `codex exec` の最終回答が未取得なら、ステータスは `review incomplete` であり、`ok` ではない。少なくとも1回は resume / 再実行で回収を試みること  
+それでも最終回答を回収できない場合は、`codex exec` のレビューが未完了であること、何を確認済みで何が未確認かを分けてユーザーに報告し、承認なく `Done` 相当の結論に進めてはならない  
+コミットメッセージは直近のgit logをいくつかみて形式を揃えること  
+branchやworktreeを分けて作業している場合は、commitだけじゃなくpushしてgithub prを出すこと  
 
 ## install packages rules
 
 基本的にcliツールはbrew installすること
 brewにないpackageの場合はnpxなどアドホックに実行できるコマンドを使うこと
 グローバルに使うcliをnpm i -gやpip installでinstallすることは禁止
-
