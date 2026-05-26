@@ -78,6 +78,7 @@ it("異常系: <条件> のとき <期待する振る舞い>", ()=>{})
 - レビュー指示の文章は適宜調整すること。ただし`codex`は本質的じゃない指摘をしてくるので「瑣末な点へのクソリプはしないで。致命的な点のみ指摘しろ。」という指示は必ず入れること
 - `codex` の指摘は out of date な場合があるので、現時点で out of date / deprecated になっていないか注意しろとも伝えること
 - 計画レビューは原則として `read-only` sandbox で実行すること。レビューのためだけに `danger-full-access` は使わないこと
+- `read-only` sandbox のレビューでは、`codex` にテスト・build・format・install・生成コマンドを実行させないこと。Vitest等は一時ディレクトリやcache作成で失敗しやすく、レビューの本質ではないため、レビュー指示に「テストやbuildは実行せず、差分・設定・既存ログの読取だけで判断する。不足する実行結果があれば質問する」と必ず含めること
 - Git リポジトリ外で実行する必要がある場合のみ `--skip-git-repo-check` を使うこと
 
 - 初回レビュー例:
@@ -88,7 +89,7 @@ it("異常系: <条件> のとき <期待する振る舞い>", ()=>{})
     -c model_reasoning_effort=medium \
     -c service_tier=fast \
     -c features.fast_mode=true \
-    "このプランをレビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて: {plan_full_path} (ref: {CLAUDE_md_full_path})"
+    "このプランをレビューして。read-only sandboxなのでテスト・build・format・install・生成コマンドは実行せず、差分・設定・既存ログの読取だけで判断して。不足する実行結果があれば質問して。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて: {plan_full_path} (ref: {CLAUDE_md_full_path})"
   ```
 
 ### codex exec resume（前回の codex exec セッション継続）
@@ -98,7 +99,7 @@ it("異常系: <条件> のとき <期待する振る舞い>", ()=>{})
 - 2回目以降の再レビュー例:
   ```bash
   codex exec resume <SESSION_ID> \
-    "前回の指摘を反映してプランを更新した。もう一度レビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。新しく追加された問題がなければ、その旨を明示して: {plan_full_path} (ref: {CLAUDE_md_full_path})"
+    "前回の指摘を反映してプランを更新した。もう一度レビューして。read-only sandboxなのでテスト・build・format・install・生成コマンドは実行せず、差分・設定・既存ログの読取だけで判断して。不足する実行結果があれば質問して。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。新しく追加された問題がなければ、その旨を明示して: {plan_full_path} (ref: {CLAUDE_md_full_path})"
   ```
 
 ### codex exec / MCP error handling
@@ -166,6 +167,7 @@ Linear issueを扱う作業では、以下の状態遷移を必ず行う:
 実装→テストが終わったら直交な単位でgit commitすること
 commitしたら`codex exec`にレビューをしてもらうこと  
 `codex exec`でokが出るまで修正→codexでレビューを繰り返すこと  
+commit後レビューも原則 `read-only` sandbox で行い、レビュー指示には「テスト・build・format・install・生成コマンドは実行せず、差分・設定・既存ログの読取だけで判断する。不足する実行結果があれば質問する」を必ず含めること
 commit後レビューは瑣末な修正で自ずと致命的な欠陥がないことが自明な場合を除いて、必須の完了条件であり、エージェント自身の裁量で省略・打ち切り・代替してはならない  
 commit後レビューで `codex exec` の最終回答が未取得なら、ステータスは `review incomplete` であり、`ok` ではない。少なくとも1回は resume / 再実行で回収を試みること  
 それでも最終回答を回収できない場合は、`codex exec` のレビューが未完了であること、何を確認済みで何が未確認かを分けてユーザーに報告し、承認なく `Done` 相当の結論に進めてはならない  
