@@ -89,7 +89,7 @@ it("異常系: <条件> のとき <期待する振る舞い>", ()=>{})
     -c model_reasoning_effort=medium \
     -c service_tier=fast \
     -c features.fast_mode=true \
-    "このプランをレビューして。read-only sandboxなのでテスト・build・format・install・生成コマンドは実行せず、差分・設定・既存ログの読取だけで判断して。不足する実行結果があれば質問して。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて: {plan_full_path} (ref: {CLAUDE_md_full_path})"
+    "このプランをレビューして。read-only sandboxなのでテスト・build・format・install・生成コマンドは実行せず、差分・設定・既存ログの読取だけで判断して。不足する実行結果があれば質問して。別の codex exec や外部レビューコマンドは絶対に起動しないで。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて: {plan_full_path} (ref: {CLAUDE_md_full_path})"
   ```
 
 ### codex exec resume（前回の codex exec セッション継続）
@@ -99,7 +99,7 @@ it("異常系: <条件> のとき <期待する振る舞い>", ()=>{})
 - 2回目以降の再レビュー例:
   ```bash
   codex exec resume <SESSION_ID> \
-    "前回の指摘を反映してプランを更新した。もう一度レビューして。read-only sandboxなのでテスト・build・format・install・生成コマンドは実行せず、差分・設定・既存ログの読取だけで判断して。不足する実行結果があれば質問して。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。新しく追加された問題がなければ、その旨を明示して: {plan_full_path} (ref: {CLAUDE_md_full_path})"
+    "前回の指摘を反映してプランを更新した。もう一度レビューして。read-only sandboxなのでテスト・build・format・install・生成コマンドは実行せず、差分・設定・既存ログの読取だけで判断して。不足する実行結果があれば質問して。別の codex exec や外部レビューコマンドは絶対に起動しないで。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。新しく追加された問題がなければ、その旨を明示して: {plan_full_path} (ref: {CLAUDE_md_full_path})"
   ```
 
 ### codex exec / MCP error handling
