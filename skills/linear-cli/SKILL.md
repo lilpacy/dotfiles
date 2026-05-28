@@ -10,6 +10,35 @@ A CLI to manage Linear issues from the command line, with git and jj integration
 
 Generated from linear CLI v1.10.0
 
+## User Defaults
+
+```text
+workspace = "lilpacys-workspace"
+team_id = "LIL"
+issue_sort = "priority"
+```
+
+## Issue List Defaults
+
+`linear issue list` defaults to `state=unstarted` and `assignee=self`. When listing issues, always include all assignees and all states:
+
+```bash
+linear issue list -A --all-states --sort priority
+```
+
+## Required Issue State Flow
+
+When working on a Linear issue, move through states without skipping:
+
+1. After choosing the target issue: `linear issue update <ID> -s "Todo"`
+2. When starting work: `linear issue update <ID> -s "In Progress"`
+3. During work: put stable information in the issue description and progress logs in comments.
+4. After implementation and tests: `linear issue update <ID> -s "In Review"`
+5. After user approval: `linear issue update <ID> -s "Done"`
+6. Final report: `linear issue comment add <ID> -b "コメント本文"`
+
+Do not move an issue directly to `Done`.
+
 ## Prerequisites
 
 The `linear` command must be available on PATH. To check:
