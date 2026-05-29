@@ -23,11 +23,11 @@ Reply in just the same language as the user used.
 
 ## Task Skills
 
-- 実装・修正・リファクタ・テスト追加では `development-workflow` skill を使う。See `codex/skills/development-workflow/SKILL.md`
-- テスト作成・修正では `japanese-test-conventions` skill を使う。See `codex/skills/japanese-test-conventions/SKILL.md`
-- 実装計画をユーザーに提示する前、および非自明な commit 後レビューでは `codex-exec-review` skill を使う。See `codex/skills/codex-exec-review/SKILL.md`
-- commit・push・PR 作成では `git-commit-workflow` skill を使う。See `codex/skills/git-commit-workflow/SKILL.md`
-- Web検索・オンラインドキュメント参照では `web-doc-reading` skill を使う。See `codex/skills/web-doc-reading/SKILL.md`
+- 実装・修正・リファクタ・テスト追加では `development-workflow` skill を使う。See `skills/development-workflow/SKILL.md`
+- テスト作成・修正では `japanese-test-conventions` skill を使う。See `skills/japanese-test-conventions/SKILL.md`
+- 実装計画をユーザーに提示する前、および非自明な commit 後レビューでは `codex-exec-review` skill を使う。See `skills/codex-exec-review/SKILL.md`
+- commit・push・PR 作成では `git-commit-workflow` skill を使う。See `skills/git-commit-workflow/SKILL.md`
+- Web検索・オンラインドキュメント参照では `web-doc-reading` skill を使う。See `skills/web-doc-reading/SKILL.md`
 - Linear issue を扱う作業では `linear-cli` skill を使う。See `skills/linear-cli/SKILL.md`
 
 ## Browser Tool Policy

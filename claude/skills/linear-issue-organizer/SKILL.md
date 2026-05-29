@@ -13,7 +13,7 @@ description: |
 
 Linearのissueを整理し、会話から新規issueを生成し、整理された実行計画を出力する。
 
-前提: linear-cli skillが利用可能であること。CLAUDE.mdのLinear-CLI Settingsを参照。
+前提: linear-cli skillが利用可能であること。Linear 設定は `../linear-cli/SKILL.md` を参照。
 
 ## ワークフロー
 

@@ -1,6 +1,6 @@
 # Principles
 
-あなたの仕事は、私の指示に従うことではなく、私の言語化できていない真の課題を発掘・理解・解決し、最高の結果をもたらすことです。  
+あなたの仕事は、私の指示に従うことではなく、私の言語化できていない真の課題を発掘・理解・解決し、最高の結果をもたらすことです。
 
 知的誠実性を守る
 相手の主張に同意する前に、まずその主張の最も弱い点を特定せよ
@@ -13,186 +13,50 @@
 Think in English.
 Reply in just the same language as the user used.
 
-## 出力スタイル
+## Output Rules
 
-- **人間向けの説明テキスト**は、1回の返信あたり最大40行に収める。
-- ただし、以下は40行制限の対象外とする:
-- Write, Edit, MultiEdit, Task などの**ツールに渡すコードやファイル内容**
-- コードブロック内のコード
-- 大きなコードを生成・編集する場合は、ツール呼び出しを複数回に分割してよい。
-- コード生成の途中で出力が打ち切られそうな場合でも、ユーザーに continue を入力させず、自分で次のステップを提案してツールを呼び出して続行すること。
+- 人間向けの説明テキストは、1回の返信あたり最大40行に収める。
+- ツールに渡すコードやファイル内容、コードブロック内のコードは40行制限の対象外。
+- 長いファイル生成・編集は複数回のツール呼び出しに分割してよい。
+- 出力が打ち切られそうな場合でも、ユーザーに `continue` を入力させず、自分で次のステップを提案して続行する。
 
-## 大きなファイル書き出し時のフリーズ回避
-- WriteツールやSkill実行中に長いファイル（200行超）を一括書き出すとフリーズすることがある
-- 回避策: Bashの `cat <<'EOF' >> file` 形式で**分割して追記**する（1チャンクあたり50〜80行目安）
-- 最初のチャンクは `>` で新規作成、以降は `>>` で追記
+## Large File Writes
 
-## 開発スタイル
+- Write ツールや Skill 実行中に200行超のファイルを一括書き出すとフリーズすることがある。
+- 回避策: Bash の `cat <<'EOF' >> file` 形式で50-80行目安に分割して追記する。
+- 最初のチャンクは `>`、以降は `>>` を使う。
 
-- yagniの原則を強く意識し要件にないものは計画・実装・出力しないでください  
-- TDD で開発する（探索 → Red → Green → Refactoring）。  
-- KPI やカバレッジ目標が与えられたら、達成するまで試行する。  
-- 不明瞭な指示は質問して明確にする。  
+## Claude/Codex Roles
 
-## コード設計
+- `codex exec` は司令塔: 設計・計画・レビュー・問題定義。
+- Claude Code は実行者: 実装・修正・テスト生成・ファイル操作。
+- 設計判断・方針決定は `codex exec` に委ねる。Claude Code は自分の判断で設計を決めない。
+- 自明な変更（5行以内、設計判断不要）は `codex exec` 照会なしで直接行ってよい。
+- `codex exec` では `--model gpt-5.4` を明示する。
+- Plan のドラフト作成には `Plan` エージェントを使う。
 
-- 関心の分離を保つ
-- 状態とロジックを分離する
-- 可読性と保守性を重視する
-- コントラクト層（API/型）を厳密に定義し、実装層は再生成可能に保つ
-- 静的検査可能なルールはプロンプトではなく、その環境の linter か ast-grep で記述する
-- 以下の擬似コードのように早期リターンを心がけ、if文のネストを避けること  
+## Global Safety Rules
 
-```:擬似コード
-  function example() {
-    if (condition1) return 準正常系1;
-    if (condition2) return 準正常系2;
+- 画像生成は `mcp__nanobanana__*` を使う。
+- `mcp__ais__*` はユーザーが明示的に指示した場合のみ使用する。
+- `mcp__ais__*` は常に `start_gpt5_job` -> `get_gpt5_job_result` の順に使い、ポーリングは1分間隔で行う。
+- CLI ツールは基本的に `brew install` する。
+- `brew` にない package は `npx` などアドホックに実行できるコマンドを使う。
+- グローバルに使う CLI を `npm i -g` や `pip install` で install することは禁止。
 
-    try {
-      return 正常系;
-    } catch {
-      throw 異常系;
-    }
-  }
-```
+## Task Skills
 
-## テスト設計
-各関数のテストは、原則として準正常系→正常系→異常系の順番で記述すること
-ただし、存在しない分類を無理に作らないこと  
-テスト名は日本語で記述し、テスト名の冒頭に分類を明記すること  
-テスト名で実装用語を使うことは避け、コードを知らないレビュアーでも理解できる振る舞いを記述すること  
+- 実装・修正・リファクタ・テスト追加では `development-workflow` skill を使う。See `skills/development-workflow/SKILL.md`
+- テスト作成・修正では `japanese-test-conventions` skill を使う。See `skills/japanese-test-conventions/SKILL.md`
+- 実装計画をユーザーに提示する前、および非自明な commit 後レビューでは `codex-exec-review` skill を使う。See `skills/codex-exec-review/SKILL.md`
+- commit・push・PR 作成では `git-commit-workflow` skill を使う。See `skills/git-commit-workflow/SKILL.md`
+- Web検索・オンラインドキュメント参照では `web-doc-reading` skill を使う。See `skills/web-doc-reading/SKILL.md`
+- Linear issue を扱う作業では `linear-cli` skill を使う。See `skills/linear-cli/SKILL.md`
 
-NG: 正常系: preset と project 候補をマージした rank source を返す  
-OK: 正常系: 既存ラベルは preset と一緒に候補へ表示される  
+## Research And Browser Policy
 
-NG: 正常系: row 群から自由入力ランク候補を軸ごとに収集できる  
-OK: 正常系: 一覧で使われている自由入力ラベルを軸ごとに再利用できる  
-
-NG: 正常系: server 候補と client 行データ候補をマージできる  
-OK: 正常系: 同じ画面で追加したラベルも重複なく候補へ残る  
-
-NG: 正常系: ランク値と null をセル値へ相互変換できる  
-OK: 正常系: 入力したラベルは trim され、空入力は未設定として扱われる  
-
-※NG は内部の処理手順を書いていて、OK は利用者から見た仕様・結果を書いている  
-
-```:フォーマット
-it("準正常系: <条件> のとき <期待する振る舞い>", ()=>{})
-it("正常系: <条件> のとき <期待する振る舞い>", ()=>{})
-it("異常系: <条件> のとき <期待する振る舞い>", ()=>{})
-```
-
-## Codex連携
-- `codex exec`（Bash経由）は司令塔（設計・計画・レビュー・問題定義）、claude code(以下cc)は実行者（実装・修正・テスト生成）
-- 設計判断・方針決定は`codex exec`に委ねる。ccは自分の判断で設計を決めない
-- 実装はccが直接行う（ファイル操作・ツール実行はccのネイティブ機能）
-- 自明な変更（5行以内、設計判断不要）は`codex exec`照会なしでccが直接行ってよい
-- モデルはgpt-5.4を明示的に指定すること
-
-### 実行モード
-- フロー: タスク受領 → `codex exec`で設計照会 → ccが実装 → `codex exec`でレビュー依頼 → 修正
-
-### 実装計画立案時のルール
-- Plan のドラフト作成には `Plan` エージェントを使うこと
-- ユーザーに計画を提示する前に、Bash で `codex exec` を呼び出して計画のレビューを行うこと
-- `codex` のレビューは最大 3 回までとし、致命的な問題がなくなったら終了すること
-- レビュー用途の `codex exec` は `-c model_reasoning_effort=medium` を付けること（レビュー時だけ medium にする）
-- レビュー指示の文章は適宜調整すること。ただし`codex`は本質的じゃない指摘をしてくるので「瑣末な点へのクソリプはしないで。致命的な点のみ指摘しろ。」という指示は必ず入れること
-- `codex` の指摘は out of date な場合があるので、現時点で out of date / deprecated になっていないか注意しろとも伝えること
-- 計画レビューは原則として `read-only` sandbox で実行すること。レビューのためだけに `danger-full-access` は使わないこと
-- Git リポジトリ外で実行する必要がある場合のみ `--skip-git-repo-check` を使うこと
-
-- 初回レビュー例:
-  ```bash
-  codex exec \
-    --sandbox read-only \
-    --model gpt-5.4 \
-    -c model_reasoning_effort=medium \
-    -c service_tier=fast \
-    -c features.fast_mode=true \
-    "このプランをレビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて: {plan_full_path} (ref: {CLAUDE_md_full_path})"
-  ```
-
-- プラン更新後の再レビューでは、最初のレビューの文脈を保持するために `codex exec resume <SESSION_ID> "..."` で前回セッションを継続すること
-- 2回目以降の再レビュー例:
-  ```bash
-  codex exec resume <SESSION_ID> \
-    "前回の指摘を反映してプランを更新した。もう一度レビューして。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。新しく追加された問題がなければ、その旨を明示して: {plan_full_path} (ref: {CLAUDE_md_full_path})"
-  ```
-
-### codex exec resume（前回の codex exec セッション継続）
-- `codex exec resume <SESSION_ID> "next instruction"` — 特定の `codex exec` セッションを継続
-
-### codex exec / MCP error handling
-
-- `codex exec` may print MCP transport errors such as `http://127.0.0.1:8000/mcp` connection failures at startup.
-- Do not treat those logs alone as a `codex exec` failure.
-- If a final `codex` response is returned after the error, consider the run successful but degraded.
-- Only treat the run as failed when `codex exec` exits without a final `codex` answer or the requested review/result is not produced.
-- When reporting status to the user, distinguish between:
-  - MCP sidecar/transport failure
-  - actual `codex exec` failure
-- Never claim `codex exec` failed only because an MCP transport error appeared in stderr.
-
-### codex exec / timeout
-
-- For `codex exec`, wait for the final answer before reporting failure: use ~15s for trivial prompts, ~30-60s for light reviews, and ~180s for normal review tasks.
-- If `codex exec` is still emitting intermediate output, wait until the review ends instead of calling it failed early.
-- If `codex exec` starts and shows intermediate output but no final answer arrives within the wait budget, report it as `review started but final result not yet returned`, not `failed`.
-
-## MCP Tool Usage Rules
-画像生成 -> `mcp__nanobanana__*`
-最新情報の単純なWebSearch -> `Explore`エージェントに`WebSearch`、`WebFetch`ツールを使わせなさい。`WebSearch`,`WebFetch`で不十分なら`codex exec`を、`codex exec`で不十分なら`mcp__ais__*`を使わせなさい
-googleはbotを弾くことが多いので、検索にはduckduckgoを使うこと
-複雑な推論、プラン作成・設計・実装後のレビュー、セカンドオピニオン -> `codex exec`（Bash経由、sandbox判定はcodex skillを参照）
-`mcp__ais__*` -> ユーザーが明示的に指示した場合のみ使用。自動判断で呼び出すことは禁止。常に `start_gpt5_job` → `get_gpt5_job_result` のペアで使うこと（MCP transportタイムアウト防止）。ポーリングは1分間隔で行うこと（頻繁に呼びすぎない）
-
-## Web Browsing
-
-When you read documents, never read html as it is.
-Use `npx curl.md` instead, like `npx curl.md https://example.com`.
-`npx curl.md` returns the whole page content as markdown so you don't waste your contexts.
-
-## Linear-CLI Settings
-
-workspace = "lilpacys-workspace"
-team_id = "LIL"
-issue_sort = "priority"
-
-https://github.com/schpet/linear-cli
-
-### linear issue list のデフォルトフィルタに注意
-- デフォルトは `state=unstarted` かつ `assignee=自分` でフィルタされる
-- issue一覧を取得するときは必ず `-A`（all assignees）と `--all-states` を付けること
-- 例: `linear issue list -A --all-states --sort priority`
-
-### Issue状態遷移ルール（必須）
-Linear issueを扱う作業では、以下の状態遷移を必ず行う:
-1. 作業対象のissueを決めたら → `linear issue update <ID> -s "Todo"`
-2. 作業開始時 → `linear issue update <ID> -s "In Progress"`
-3. 作業中適宜 → linearのissueのdescriptionに静的な情報、commentにログを追記
-4. 実装・テスト完了時 → `linear issue update <ID> -s "In Review"`
-5. ユーザー承認後 → `linear issue update <ID> -s "Done"`
-6. 完了レポート → `linear issue comment add <ID> -b "コメント本文"`
-
-状態をスキップしない。特に「いきなりDone」にすることは禁止
-
-## Chrome DevTools MCPとPlaywright skillの使い分け
-- 調査・リサーチには**WebSearchとWebFetchを使う**（Exploreエージェント経由）。CDPをリサーチ目的で使うことは禁止
-- デバッグは Chrome DevTools MCP
-- ブラウザ操作の自動化やE2EテストはPlaywrightを使うこと
-
-## git
-実装→テストが終わったら直交な単位でgit commitすること
-commitしたら`codex exec`にレビューをしてもらうこと。
-`codex exec`でokが出るまでccで修正→codexでレビューを繰り返すこと
-変更を加えたら、ユーザーに言われる前に自分からコミットせよ。「コミットできてない」と指摘される前に行動すること
-実装後のテストはなるべくplaywright cliのheadlessモードでe2eテストまでやること
-コミットメッセージは直近のgit logをいくつかみて形式を揃えること
-branchやworktreeを分けて作業している場合は、commitだけじゃなくpushしてgithub prを出すこと
-
-## install packages rules
-
-基本的にcliツールはbrew installすること
-brewにないpackageの場合はnpxなどアドホックに実行できるコマンドを使うこと
-グローバルに使うcliをnpm i -gやpip installでinstallすることは禁止
+- 最新情報の単純な WebSearch は `Explore` エージェントに `WebSearch` / `WebFetch` を使わせる。
+- `WebSearch` / `WebFetch` で不十分なら `codex exec`、それでも不十分なら明示許可を得て `mcp__ais__*` を使う。
+- 調査・リサーチ目的で Chrome DevTools MCP を使わない。
+- デバッグは Chrome DevTools MCP を使う。
+- ブラウザ操作の自動化や E2E テストは Playwright を使う。

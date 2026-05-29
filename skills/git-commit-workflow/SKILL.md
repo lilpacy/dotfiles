@@ -21,6 +21,8 @@ git log --oneline -5
 - Run the relevant tests or checks for the change.
 - If tests cannot be run, say exactly why.
 - Commit after implementation and verification.
+- Do not wait for the user to ask for a commit after making requested code or documentation changes.
+- For browser-facing changes, run relevant headless Playwright or E2E checks when practical.
 
 ## After Commit
 
