@@ -13,8 +13,19 @@ return {
     {
       "<C-S-f>",
       function()
-        require("telescope").extensions.live_grep_args.live_grep_args()
+        local opts = {}
+        local m = vim.fn.mode()
+        if m == "v" or m == "V" or m == "\22" then
+          local saved = vim.fn.getreg("v")
+          vim.cmd('noau normal! "vy')
+          local text = vim.fn.getreg("v") or ""
+          vim.fn.setreg("v", saved)
+          text = text:gsub("\n", " "):gsub('"', '\\"')
+          opts.default_text = '"' .. text .. '"'
+        end
+        require("telescope").extensions.live_grep_args.live_grep_args(opts)
       end,
+      mode = { "n", "x" },
       desc = "Search in Files (Cmd+Shift+F)",
     },
     { "<C-S-e>", "<cmd>Telescope buffers<cr>", desc = "Explorer/Buffers (Cmd+Shift+E)" },
