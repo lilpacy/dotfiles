@@ -27,7 +27,7 @@ git log --oneline -5
 ## After Commit
 
 - For non-trivial changes, use `codex-exec-review` after committing.
-- If review reports critical issues, fix them, test again, commit or amend only when appropriate, and rerun review.
+- If review reports critical issues, fix them, test again, commit the fix, and rerun review.
 - Do not treat `review incomplete` as approval.
 
 ## Push And PR
