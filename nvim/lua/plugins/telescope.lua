@@ -48,6 +48,33 @@ return {
     local actions = require("telescope.actions")
     local lga_actions = require("telescope-live-grep-args.actions")
 
+    -- TelescopePrompt 内では bracketed paste をそのまま入力として流し込む。
+    -- (Telescope の prompt buffer は通常の vim.paste 経路と相性が悪く、
+    -- Cmd+V で picker が閉じてしまう症状を回避する)
+    do
+      local original_paste = vim.paste
+      vim.paste = function(lines, phase)
+        local bufnr = vim.api.nvim_get_current_buf()
+        if vim.bo[bufnr].filetype == "TelescopePrompt" then
+          if phase == -1 or phase == 1 then
+            local text = table.concat(lines, "\n")
+            text = text:gsub("\r\n", "\n"):gsub("\r", "\n"):gsub("\n", " ")
+            vim.schedule(function()
+              if vim.api.nvim_buf_is_valid(bufnr) then
+                vim.api.nvim_feedkeys(
+                  vim.api.nvim_replace_termcodes(text, true, false, true),
+                  "i",
+                  false
+                )
+              end
+            end)
+          end
+          return true
+        end
+        return original_paste(lines, phase)
+      end
+    end
+
     telescope.setup({
       defaults = {
         vimgrep_arguments = {
@@ -64,13 +91,17 @@ return {
         file_ignore_patterns = { "node_modules", ".git/" },
         mappings = {
           i = {
-            ["<Esc>"] = actions.close,  -- VSCode: Esc closes immediately
+            -- Insert-mode Esc は close せず normal mode に戻す。
+            -- bracketed paste の先頭 ESC が close を誤発火させるのを避けるため。
+            ["<Esc>"] = false,
+            ["<C-c>"] = actions.close,
             ["<C-j>"] = actions.move_selection_next,
             ["<C-k>"] = actions.move_selection_previous,
-            ["<C-u>"] = false,  -- Clear line like VSCode
-            ["<D-v>"] = function()
-              vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes('<C-r>+', true, true, true), 'n', false)
-            end,
+            ["<C-u>"] = false,
+          },
+          n = {
+            ["<Esc>"] = actions.close,
+            ["q"] = actions.close,
           },
         },
       },
@@ -81,7 +112,7 @@ return {
       },
       extensions = {
         live_grep_args = {
-          auto_quoting = true,
+          auto_quoting = false,
           mappings = {
             i = {
               -- 検索結果を開いた時に該当行にジャンプする（autocmdとの競合回避）
@@ -98,7 +129,7 @@ return {
               -- VSCode風の検索オプション切り替え（複数組み合わせ可能）
               ["<C-k>"] = lga_actions.quote_prompt(),                            -- クォートで囲む
               ["<C-s>"] = lga_actions.quote_prompt({ postfix = " --case-sensitive" }), -- 大文字小文字を区別 (Aa ON)
-              ["<C-i>"] = lga_actions.quote_prompt({ postfix = " --ignore-case" }),    -- 大文字小文字を無視 (Aa OFF)
+              ["<M-i>"] = lga_actions.quote_prompt({ postfix = " --ignore-case" }),    -- 大文字小文字を無視 (Aa OFF) ※<C-i>は<Tab>と衝突するため<M-i>に変更
               ["<C-w>"] = lga_actions.quote_prompt({ postfix = " -w" }),               -- 単語完全一致 (Ab| ON)
               ["<C-f>"] = lga_actions.quote_prompt({ postfix = " -F" }),               -- リテラル検索 (.* OFF)
             },
