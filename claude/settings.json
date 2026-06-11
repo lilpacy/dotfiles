@@ -2,7 +2,7 @@
   "env": {
     "CLAUDE_CODE_USE_BEDROCK": "1",
     "AWS_REGION": "us-east-1",
-    "ANTHROPIC_MODEL": "global.anthropic.claude-opus-4-7",
+    "ANTHROPIC_MODEL": "global.anthropic.claude-fable-5",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "16384",
     "MAX_THINKING_TOKENS": "1024",
     "MCP_TOOL_TIMEOUT": "900000",
@@ -204,16 +204,9 @@
     "enabled": false,
     "autoAllowBashIfSandboxed": true,
     "network": {
-      "allowedDomains": [
-        "github.com",
-        "*.npmjs.org",
-        "registry.npmjs.org"
-      ]
+      "allowedDomains": ["github.com", "*.npmjs.org", "registry.npmjs.org"]
     },
-    "excludedCommands": [
-      "docker",
-      "docker-compose"
-    ]
+    "excludedCommands": ["docker", "docker-compose"]
   },
   "spinnerVerbs": {
     "mode": "replace",
