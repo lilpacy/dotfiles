@@ -8,6 +8,7 @@ asdf
 autoconf
 automake
 awscli
+bats-core
 bash
 brotli
 c-ares

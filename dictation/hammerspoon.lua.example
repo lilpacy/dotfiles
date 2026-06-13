@@ -1,0 +1,4 @@
+-- Right Control is mapped to F18 by Karabiner-Elements.
+hs.hotkey.bind({}, "F18", function()
+  hs.task.new("/Users/lilpacy/dotfiles/bin/local-dictation", nil, { "toggle" }):start()
+end)

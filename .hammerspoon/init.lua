@@ -90,6 +90,11 @@ local caffeinateWatcher = hs.caffeinate.watcher.new(function(event)
 end)
 caffeinateWatcher:start()
 
+-- Local dictation
+hs.hotkey.bind({}, "F18", function()
+  hs.task.new("/Users/lilpacy/dotfiles/bin/local-dictation", nil, { "toggle" }):start()
+end)
+
 -- Run on Hammerspoon startup
 hs.timer.doAfter(1.0, updateAeroSpace)
 
