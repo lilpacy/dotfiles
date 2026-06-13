@@ -138,6 +138,7 @@ rewrite_config() {
 
 DICTATION_STATE_DIR="$TEST_STATE_DIR"
 PID_FILE="\$DICTATION_STATE_DIR/recording.pid"
+LOCK_DIR="\$DICTATION_STATE_DIR/lock"
 AUDIO_FILE="\$DICTATION_STATE_DIR/dictation.wav"
 TXT_PREFIX="\$DICTATION_STATE_DIR/dictation"
 TXT_FILE="\$TXT_PREFIX.txt"
@@ -200,6 +201,16 @@ CONFIG
   wait_for_file_contains "$TEST_LOG_DIR/sounds.log" "Pop.aiff"
 }
 
+@test "準正常系: 別のトグル処理中は新しいトグルを無視する" {
+  mkdir -p "$TEST_STATE_DIR/lock"
+
+  run "$TEST_ROOT/bin/local-dictation" toggle
+
+  [ "$status" -eq 0 ]
+  [[ ! -f "$TEST_STATE_DIR/recording.pid" ]]
+  [[ ! -f "$TEST_LOG_DIR/ffmpeg.args" ]]
+}
+
 @test "準正常系: 冒頭の発話を落とさないためVAD付きで文字起こしされる" {
   rewrite_config 'AUTO_PASTE="false"' $'CLEANUP="true"\nWHISPER_USE_VAD="true"'
   printf 'dummy audio\n' >"$TEST_STATE_DIR/dictation.wav"
@@ -252,15 +263,26 @@ CONFIG
   [ "$(cat "$TEST_LOG_DIR/clipboard.txt")" = $'日本語と英語を一言で混ぜることができますか?\n例えば、local dictation を test します。' ]
 }
 
-@test "準正常系: プロンプト由来の長い断片が出たとき発話だけがコピーされる" {
+@test "準正常系: 既知の字幕由来テキストが出たとき発話だけがコピーされる" {
   # shellcheck disable=SC2030,SC2031
-  export TEST_WHISPER_SILENCE_TEXT=$'local dictation, Right Control, clipboard, whisper.cpp, ffmpeg, Hammerspoon, Karabiner, AirPods Pro.\nUndertexter av Amara.org-gemenskapen\nClick the link in the description below if you want to subscribe to my channel and get notified of my new videos.\nThank you so much for watching until the end, and I will see you in the next video.\n実際の発話です。\n'
+  export TEST_WHISPER_SILENCE_TEXT=$'Undertexter av Amara.org-gemenskapen\nClick the link in the description below if you want to subscribe to my channel and get notified of my new videos.\nThank you so much for watching until the end, and I will see you in the next video.\n実際の発話です。\n'
   printf 'dummy audio\n' >"$TEST_STATE_DIR/dictation.wav"
 
   run "$TEST_ROOT/bin/local-dictation" transcribe
 
   [ "$status" -eq 0 ]
   [ "$(cat "$TEST_LOG_DIR/clipboard.txt")" = "実際の発話です。" ]
+}
+
+@test "正常系: プロンプト内の語彙を話したときそのままコピーされる" {
+  # shellcheck disable=SC2030
+  export TEST_WHISPER_JAPANESE_TEXT=$'local dictation, Right Control, clipboard, whisper.cpp を設定します。\n'
+  printf 'dummy audio\n' >"$TEST_STATE_DIR/dictation.wav"
+
+  run "$TEST_ROOT/bin/local-dictation" transcribe
+
+  [ "$status" -eq 0 ]
+  [ "$(cat "$TEST_LOG_DIR/clipboard.txt")" = "local dictation, Right Control, clipboard, whisper.cpp を設定します。" ]
 }
 
 @test "正常系: 録音開始から停止まで行うと文字起こし結果がクリップボードに入る" {
@@ -279,6 +301,7 @@ CONFIG
 }
 
 @test "正常系: 日本語をコピーするときUTF-8ロケールでpbcopyが実行される" {
+  # shellcheck disable=SC2031
   export TEST_WHISPER_JAPANESE_TEXT=$'日本語とEnglish\n'
   printf 'dummy audio\n' >"$TEST_STATE_DIR/dictation.wav"
 

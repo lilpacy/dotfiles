@@ -7,6 +7,10 @@ DICTATION_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null && pwd -P)
 source "$DICTATION_DIR/lib.sh"
 
 ensure_state_dir
+if ! acquire_lock; then
+  exit 0
+fi
+trap release_lock EXIT
 
 if [[ ! -f "$PID_FILE" ]]; then
   "$DICTATION_DIR/start.sh"

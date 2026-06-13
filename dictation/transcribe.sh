@@ -83,7 +83,7 @@ if [[ ! -s "$TXT_FILE" ]]; then
   fail "transcription output is missing or empty: $TXT_FILE" 1
 fi
 
-text="$(/usr/bin/awk -v prompt="$WHISPER_PROMPT" '
+text="$(/usr/bin/awk '
 function trim(value) {
   sub(/^[[:space:]]+/, "", value)
   sub(/[[:space:]]+$/, "", value)
@@ -119,10 +119,6 @@ function norm(value) {
   if (line ~ /^(Thank you so much for watching until the end, and I will see you in the next video\.)$/) {
     next
   }
-  if (length(line) >= 16 && index(prompt, line) > 0) {
-    next
-  }
-
   normalized = norm(line)
   if (length(normalized) >= 8 && normalized == previous) {
     next

@@ -10,6 +10,19 @@ ensure_state_dir() {
   /bin/mkdir -p "$DICTATION_STATE_DIR"
 }
 
+acquire_lock() {
+  if /bin/mkdir "$LOCK_DIR" 2>/dev/null; then
+    return 0
+  fi
+
+  log "dictation command already running"
+  return 1
+}
+
+release_lock() {
+  /bin/rmdir "$LOCK_DIR" 2>/dev/null || true
+}
+
 log() {
   ensure_state_dir
   /bin/date '+%Y-%m-%dT%H:%M:%S%z' | /usr/bin/tr -d '\n' >>"$APP_LOG"
