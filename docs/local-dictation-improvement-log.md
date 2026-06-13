@@ -44,6 +44,8 @@ link.sh
 Makefile
 ```
 
+2026-06-14時点では、速度が遅いという運用フィードバックを受けて、既定モデルを `ggml-large-v3.bin` から `ggml-medium.bin` に戻している。`large-v3` へ切り替えた判断と検証内容は履歴として後述するが、現在の `dictation/config.sh` は速度と精度のバランスを優先した medium を参照する。
+
 ## 実装前の問題
 
 最初の実装では、録音と文字起こしは動いたが、実運用で次の問題が出た。
@@ -167,6 +169,8 @@ ad82bf6a9043ceed055076d0fd39f5f186ff8062
 ```text
 whisper_model_load: type = 5 (large v3)
 ```
+
+その後、日常利用では応答速度を優先したい場面が増えたため、2026-06-14に既定値を `ggml-medium.bin` へ戻した。直近の13.8秒の録音では、`ggml-medium.bin` が `type = 4 (medium)` としてロードされ、総処理時間は約3.4秒だった。
 
 ### 5. VADを既定OFFにした
 
@@ -381,7 +385,7 @@ make test: 15 tests passed
 ### モデル配置
 
 ```text
-~/models/whisper.cpp/ggml-large-v3.bin
+~/models/whisper.cpp/ggml-medium.bin
 ~/models/whisper.cpp/ggml-silero-v6.2.0.bin
 ```
 

@@ -10,10 +10,10 @@ brew install whisper-cpp ffmpeg
 
 `whisper-cpp` はモデルを同梱しない。日本語では `.en` ではない multilingual model を使う。
 
-精度最優先の推奨配置:
+速度と精度のバランスを優先した推奨配置:
 
 ```text
-~/models/whisper.cpp/ggml-large-v3.bin
+~/models/whisper.cpp/ggml-medium.bin
 ```
 
 モデルを別の場所に置く場合は [config.sh](config.sh) の `MODEL_PATH` を編集する。
@@ -23,7 +23,7 @@ brew install whisper-cpp ffmpeg
 主な設定は [config.sh](config.sh) にある。
 
 ```sh
-MODEL_PATH="$HOME/models/whisper.cpp/ggml-large-v3.bin"
+MODEL_PATH="$HOME/models/whisper.cpp/ggml-medium.bin"
 VAD_MODEL_PATH="$HOME/models/whisper.cpp/ggml-silero-v6.2.0.bin"
 MIC_DEVICE=":6"
 WHISPER_LANGUAGE="auto"
@@ -150,7 +150,7 @@ Terminal から `bin/local-dictation start` を直接実行した場合は、Ham
 `brew install whisper-cpp` を確認し、`config.sh` の `WHISPER_BIN` を実際のパスに合わせる。
 
 `whisper model not found`:
-`MODEL_PATH` に `ggml-large-v3.bin` などの multilingual model を配置する。
+`MODEL_PATH` に `ggml-medium.bin` などの multilingual model を配置する。
 
 録音ファイルが空:
 `ffmpeg -f avfoundation -list_devices true -i ""` で `MIC_DEVICE` を確認し、macOS のマイク権限を確認する。

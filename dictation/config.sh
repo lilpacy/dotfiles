@@ -20,7 +20,7 @@ AFPLAY_BIN="/usr/bin/afplay"
 PBCOPY_BIN="/usr/bin/pbcopy"
 OSASCRIPT_BIN="/usr/bin/osascript"
 
-MODEL_PATH="$HOME/models/whisper.cpp/ggml-large-v3.bin"
+MODEL_PATH="$HOME/models/whisper.cpp/ggml-medium.bin"
 VAD_MODEL_PATH="$HOME/models/whisper.cpp/ggml-silero-v6.2.0.bin"
 MIC_DEVICE=":6"
 WHISPER_LANGUAGE="auto"
