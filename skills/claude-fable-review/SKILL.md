@@ -1,0 +1,152 @@
+---
+name: claude-fable-review
+description: Use before presenting implementation plans and after non-trivial commits when the review should run through Claude Code with the configured Fable model. Runs claude -p in streaming review mode, derives the Fable model from claude/settings.json, constrains tools for read-only review plus currentness checks, handles resume, and defines review timeout semantics.
+---
+
+# Claude Fable Review
+
+## Required Gates
+
+- Before presenting an implementation plan to the user, run `claude -p` with Fable to review the plan.
+- After a non-trivial commit, run `claude -p` with Fable to review the committed change.
+- Repeat review up to 3 times. Stop when no critical issue remains.
+- Do not replace a required review with local tests or your own judgment.
+
+## Review Command Rules
+
+- Use `env claude -p` to avoid shell aliases such as `claude --dangerously-skip-permissions`.
+- Read the model from `/Users/lilpacy/dotfiles/claude/settings.json` at `.env.ANTHROPIC_MODEL`.
+- Pass `--model "$CLAUDE_REVIEW_MODEL"` explicitly. Do not rely on the root `"model"` setting.
+- Use `CLAUDE_REVIEW_EFFORT=${CLAUDE_REVIEW_EFFORT:-medium}` and pass `--effort "$CLAUDE_REVIEW_EFFORT"`.
+- Do not pass `/Users/lilpacy/dotfiles/claude/settings.json` as the runtime settings file. Its normal permissions are broader than review mode.
+- Use `--bare` and a minimal review settings JSON.
+- Use `--permission-mode plan`.
+- Prefer `--output-format stream-json --include-partial-messages --verbose` so progress remains visible while the final result is still machine-checkable.
+- Allow only `Read`, `Grep`, `Glob`, `WebSearch`, `WebFetch`, `Fetch`, and read-only `Bash` commands for inspecting files, diffs, and logs.
+- Allow web tools only for currentness checks against public primary sources.
+- Instruct the reviewer not to paste private code, secrets, env values, customer data, or large local diffs into web queries.
+- Instruct the reviewer not to run tests, build, format, install, generation, mutation, deployment, or external review commands.
+- Instruct the reviewer not to start another `claude -p`, `codex exec`, or `mcp__ais` call.
+- Instruct the reviewer to report only critical issues and to check whether the answer is out of date or deprecated.
+
+## Initial Review Template
+
+Set `PLAN_OR_DIFF_REF` to the full path, commit ref, or concise description being reviewed.
+
+```bash
+set -o pipefail
+
+CLAUDE_MAIN_SETTINGS=/Users/lilpacy/dotfiles/claude/settings.json
+CLAUDE_REVIEW_MODEL=$(jq -r '.env.ANTHROPIC_MODEL' "$CLAUDE_MAIN_SETTINGS")
+CLAUDE_REVIEW_EFFORT=${CLAUDE_REVIEW_EFFORT:-medium}
+REVIEW_LOG=${REVIEW_LOG:-review-result.jsonl}
+CLAUDE_REVIEW_SETTINGS_JSON=$(jq -c '{
+  env: {
+    CLAUDE_CODE_USE_BEDROCK: .env.CLAUDE_CODE_USE_BEDROCK,
+    AWS_REGION: .env.AWS_REGION,
+    ANTHROPIC_MODEL: .env.ANTHROPIC_MODEL,
+    CLAUDE_CODE_MAX_OUTPUT_TOKENS: .env.CLAUDE_CODE_MAX_OUTPUT_TOKENS,
+    MAX_THINKING_TOKENS: .env.MAX_THINKING_TOKENS
+  },
+  permissions: {
+    allow: [
+      "Read(~/**)", "Grep", "Glob", "WebSearch", "WebFetch", "Fetch",
+      "Bash(pwd:*)", "Bash(ls:*)", "Bash(find:*)", "Bash(sed:*)",
+      "Bash(head:*)", "Bash(tail:*)", "Bash(wc:*)",
+      "Bash(git status:*)", "Bash(git diff:*)",
+      "Bash(git show:*)", "Bash(git log:*)"
+    ],
+    deny: [
+      "Edit(*)", "Write(*)", "MultiEdit(*)",
+      "Bash(codex exec:*)", "Bash(claude:*)",
+      "Bash(npm:*)", "Bash(npx:*)", "Bash(pnpm:*)",
+      "Bash(yarn:*)", "Bash(bun:*)", "Bash(pip:*)",
+      "Bash(python:*)", "Bash(python3:*)", "Bash(ruby:*)",
+      "Bash(go test:*)", "Bash(cargo test:*)", "Bash(make:*)",
+      "Bash(git reset:*)", "Bash(git checkout:*)",
+      "Bash(git clean:*)", "Bash(git push:*)",
+      "mcp__ais__*"
+    ]
+  },
+  sandbox: {enabled: false}
+}' "$CLAUDE_MAIN_SETTINGS")
+
+env claude -p \
+  --bare \
+  --settings "$CLAUDE_REVIEW_SETTINGS_JSON" \
+  --model "$CLAUDE_REVIEW_MODEL" \
+  --effort "$CLAUDE_REVIEW_EFFORT" \
+  --permission-mode plan \
+  --tools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash" \
+  --allowedTools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash(pwd:*),Bash(ls:*),Bash(find:*),Bash(sed:*),Bash(head:*),Bash(tail:*),Bash(wc:*),Bash(git status:*),Bash(git diff:*),Bash(git show:*),Bash(git log:*)" \
+  --output-format stream-json \
+  --include-partial-messages \
+  --verbose \
+  "このプランまたは差分をレビューして。Claude Code の plan permission mode なので、テスト・build・format・install・生成・編集・mutation・deploy コマンドは実行せず、差分・設定・既存ログの読取を主材料に判断して。現行仕様確認に限って WebSearch/WebFetch/Fetch を使ってよいが、公式 docs・release notes・standards・package registry・source repository など public primary sources を優先し、private code・secret・env 値・customer data・大きな local diff を検索クエリに貼らないで。不足する実行結果があれば質問して。別の claude -p、codex exec、mcp__ais、外部レビューコマンドは絶対に起動しないで。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて。Web を使った場合は参照 URL と判断への使い方を短く添えて: $PLAN_OR_DIFF_REF" \
+  | tee "$REVIEW_LOG"
+```
+
+Capture the session id from the final stream result:
+
+```bash
+jq -r 'select(.type == "result") | .session_id' "$REVIEW_LOG" | tail -n 1
+```
+
+## Resume Review Template
+
+Use the same session for updated plan reviews:
+
+```bash
+set -o pipefail
+
+REVIEW_LOG=${REVIEW_LOG:-review-result.jsonl}
+
+env claude -p \
+  --bare \
+  --settings "$CLAUDE_REVIEW_SETTINGS_JSON" \
+  --model "$CLAUDE_REVIEW_MODEL" \
+  --effort "$CLAUDE_REVIEW_EFFORT" \
+  --permission-mode plan \
+  --tools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash" \
+  --allowedTools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash(pwd:*),Bash(ls:*),Bash(find:*),Bash(sed:*),Bash(head:*),Bash(tail:*),Bash(wc:*),Bash(git status:*),Bash(git diff:*),Bash(git show:*),Bash(git log:*)" \
+  --output-format stream-json \
+  --include-partial-messages \
+  --verbose \
+  --resume "$SESSION_ID" \
+  "前回の指摘を反映してプランまたは差分を更新した。もう一度レビューして。前回と同じ制約で、テスト・build・format・install・生成・編集・mutation・deploy・外部レビューコマンドは実行しないで。現行仕様確認に限って public primary sources への WebSearch/WebFetch/Fetch は使ってよい。致命的な点だけ指摘して。新しく追加された問題がなければ、その旨を明示して: $PLAN_OR_DIFF_REF" \
+  | tee "$REVIEW_LOG"
+```
+
+For non-interactive automation where progress visibility is irrelevant, `--output-format json` may be used instead of `stream-json`.
+
+## Permission Caveats
+
+- Claude Code `--permission-mode plan` is not the same security boundary as `codex exec --sandbox read-only`.
+- Treat the review as complete only when a final `type == "result"` stream event is returned and the command used the explicit minimal settings above.
+- If the command runs without the explicit Fable model, without `--bare`, or with the full normal `claude/settings.json`, treat it as `review incomplete`.
+- If the stream `init` event does not list `WebSearch`, `WebFetch`, or `Fetch`, treat web currentness checks as unavailable in that run. Do not drop `--bare` just to enable web tools unless the user accepts the broader startup context.
+- If a denied tool appears in `permission_denials`, treat that denial as evidence the permission gate worked, not as a review failure.
+- If the reviewer needs command output that was intentionally blocked, provide existing logs or run the command yourself outside this review gate when appropriate.
+
+## Timeout Semantics
+
+- Wait for the final `type == "result"` stream event before reporting success:
+  - about 15s for trivial prompts
+  - about 30-60s for light reviews
+  - about 180s for normal review tasks
+- If intermediate output is still arriving, keep waiting until the review ends.
+- `review started but final result not yet returned` is not `review complete`.
+- For a required review, if the final answer is missing, try at least one `--resume "$SESSION_ID"` or rerun.
+- If the final answer still cannot be recovered, report `review incomplete` and ask the user how to proceed.
+- Do not say a review passed unless the final review answer was obtained.
+
+## Validation
+
+- `--bare`, `--settings <json>`, explicit Fable `--model`, default `--effort medium`, `--output-format stream-json --include-partial-messages --verbose`, and `--resume` were verified with Claude Code 2.1.153.
+- The stream output ends with `type == "result"` and includes `.session_id` and `modelUsage."global.anthropic.claude-fable-5"`.
+- A dry run attempting `Bash(claude -p hi)` returned a permission denial instead of executing.
+- After editing this skill, run:
+
+```bash
+python3 /Users/lilpacy/dotfiles/codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/lilpacy/dotfiles/skills/claude-fable-review
+```
