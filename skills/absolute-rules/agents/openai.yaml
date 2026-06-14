@@ -1,0 +1,4 @@
+interface:
+  display_name: "Absolute Rules"
+  short_description: "破壊的変更と fallback を厳格に扱うルール"
+  default_prompt: "Use $absolute-rules before editing code or workflow files where compatibility behavior or fallbacks might be introduced."
