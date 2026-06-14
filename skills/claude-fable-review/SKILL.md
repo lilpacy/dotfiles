@@ -15,7 +15,7 @@ description: Use before presenting implementation plans and after non-trivial co
 ## Review Command Rules
 
 - Use `env claude -p` to avoid shell aliases such as `claude --dangerously-skip-permissions`.
-- Read the model from `/Users/lilpacy/dotfiles/claude/settings.json` at `.env.ANTHROPIC_MODEL`.
+- Use `CLAUDE_REVIEW_MODEL=global.anthropic.claude-fable-5`. Do not read the review model from the normal runtime model setting.
 - Pass `--model "$CLAUDE_REVIEW_MODEL"` explicitly. Do not rely on the root `"model"` setting.
 - Use `CLAUDE_REVIEW_EFFORT=${CLAUDE_REVIEW_EFFORT:-medium}` and pass `--effort "$CLAUDE_REVIEW_EFFORT"`.
 - Do not pass `/Users/lilpacy/dotfiles/claude/settings.json` as the runtime settings file. Its normal permissions are broader than review mode.
@@ -37,14 +37,14 @@ Set `PLAN_OR_DIFF_REF` to the full path, commit ref, or concise description bein
 set -o pipefail
 
 CLAUDE_MAIN_SETTINGS=/Users/lilpacy/dotfiles/claude/settings.json
-CLAUDE_REVIEW_MODEL=$(jq -r '.env.ANTHROPIC_MODEL' "$CLAUDE_MAIN_SETTINGS")
+CLAUDE_REVIEW_MODEL=global.anthropic.claude-fable-5
 CLAUDE_REVIEW_EFFORT=${CLAUDE_REVIEW_EFFORT:-medium}
 REVIEW_LOG=${REVIEW_LOG:-review-result.jsonl}
-CLAUDE_REVIEW_SETTINGS_JSON=$(jq -c '{
+CLAUDE_REVIEW_SETTINGS_JSON=$(jq --arg review_model "$CLAUDE_REVIEW_MODEL" -c '{
   env: {
     CLAUDE_CODE_USE_BEDROCK: .env.CLAUDE_CODE_USE_BEDROCK,
     AWS_REGION: .env.AWS_REGION,
-    ANTHROPIC_MODEL: .env.ANTHROPIC_MODEL,
+    ANTHROPIC_MODEL: $review_model,
     CLAUDE_CODE_MAX_OUTPUT_TOKENS: .env.CLAUDE_CODE_MAX_OUTPUT_TOKENS,
     MAX_THINKING_TOKENS: .env.MAX_THINKING_TOKENS
   },
