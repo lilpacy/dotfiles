@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export LANG="ja_JP.UTF-8"
+export LC_ALL="ja_JP.UTF-8"
+export LC_CTYPE="ja_JP.UTF-8"
+
+BIN_DIR="$(cd -- "$(dirname -- "$0")" >/dev/null && pwd -P)"
+SCRIPT_DIR="$(cd -- "$BIN_DIR/../scripts" >/dev/null && pwd -P)"
+
+usage() {
+  printf 'usage: %s {toggle|start|stop|transcribe}\n' "$0" >&2
+}
+
+if [[ "$#" -ne 1 ]]; then
+  usage
+  exit 2
+fi
+
+case "$1" in
+  toggle)
+    exec "$SCRIPT_DIR/toggle.sh"
+    ;;
+  start)
+    exec "$SCRIPT_DIR/start.sh"
+    ;;
+  stop)
+    exec "$SCRIPT_DIR/stop.sh"
+    ;;
+  transcribe)
+    exec "$SCRIPT_DIR/transcribe.sh"
+    ;;
+  *)
+    usage
+    exit 2
+    ;;
+esac

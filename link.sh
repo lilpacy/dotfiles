@@ -14,7 +14,7 @@ ln -sf ~/dotfiles/.bashrc ~/.bashrc
 ln -sf ~/dotfiles/.tmux.conf ~/.tmux.conf
 ln -sf ~/dotfiles/starship.toml ~/.config/starship.toml
 ln -sf ~/dotfiles/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
-ln -sf ~/dotfiles/karabiner.json ~/.config/karabiner/karabiner.json
+ln -sf ~/dotfiles/.config/karabiner/karabiner.json ~/.config/karabiner/karabiner.json
 ln -sf ~/dotfiles/.gitconfig ~/.gitconfig
 ln -sf ~/dotfiles/.alacritty.toml ~/.alacritty.toml
 ln -sfn ~/dotfiles/nvim ~/.config/nvim
@@ -37,4 +37,3 @@ sudo ln -sf ~/dotfiles/bin/sssh /usr/local/bin/sssh
 sudo ln -sf ~/dotfiles/bin/ecs-sh /usr/local/bin/ecs-sh
 sudo ln -sf ~/dotfiles/bin/tmux-dev /usr/local/bin/tmux-dev
 find bin -type f | xargs chmod 755
-

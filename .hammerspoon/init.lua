@@ -90,6 +90,8 @@ local caffeinateWatcher = hs.caffeinate.watcher.new(function(event)
 end)
 caffeinateWatcher:start()
 
+require("modules.dictation")
+
 -- Run on Hammerspoon startup
 hs.timer.doAfter(1.0, updateAeroSpace)
 
