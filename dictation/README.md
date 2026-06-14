@@ -80,7 +80,7 @@ Hammerspoon のメニューから Reload Config する。
 
 ## Karabiner-Elements
 
-この dotfiles では `~/.config/karabiner` が `/Users/lilpacy/dotfiles/.config/karabiner` への symlink になっている。編集対象は [../.config/karabiner/karabiner.json](../.config/karabiner/karabiner.json)。
+この dotfiles では `~/.config/karabiner/karabiner.json` が `/Users/lilpacy/dotfiles/.config/karabiner/karabiner.json` への symlink になっている。編集対象は [../.config/karabiner/karabiner.json](../.config/karabiner/karabiner.json)。
 
 追加済みのルール:
 
