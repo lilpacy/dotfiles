@@ -29,10 +29,9 @@ dictation/
     toggle.sh
     transcribe.sh
   test/dictation.bats
+  docs/architecture.md
   docs/improve-dictation.md
   docs/improvement-log.md
-  hammerspoon.lua.example
-  karabiner.json.example
   README.md
 ```
 
@@ -48,6 +47,8 @@ Makefile
 ```
 
 2026-06-14時点では、速度が遅いという運用フィードバックを受けて、既定モデルを `ggml-large-v3.bin` から `ggml-medium.bin` に戻している。`large-v3` へ切り替えた判断と検証内容は履歴として後述するが、現在の `dictation/scripts/config.sh` は速度と精度のバランスを優先した medium を参照する。
+
+2026-06-15時点では、関心の分離を明確にするため、dictation の実装・テスト・調査資料は `dictation/` 配下に集約した。一方で、Hammerspoon と Karabiner はそれぞれグローバルなアプリ設定として扱い、`.hammerspoon/modules/dictation.lua` と `.config/karabiner/karabiner.json` に残した。この設計は `dictation/docs/architecture.md` にまとめている。
 
 ## 実装前の問題
 

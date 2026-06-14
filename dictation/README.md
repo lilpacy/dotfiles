@@ -2,6 +2,8 @@
 
 macOS ローカル音声入力。右 Control 単体押しを Karabiner-Elements で F18 に変換し、Hammerspoon から `bin/local-dictation toggle` を呼ぶ。
 
+構成と所有権の整理は [docs/architecture.md](docs/architecture.md) に残している。
+
 ## 必要なもの
 
 ```sh
@@ -87,7 +89,7 @@ right_control 単体押し -> f18
 right_control + 他キー -> right_control
 ```
 
-参考例は [karabiner.json.example](karabiner.json.example) にある。実設定はKarabiner全体の設定ファイルに置く。Karabiner-Elements 側で設定を再読み込みする。
+この設定はKarabiner全体の設定ファイルに置く。dictation 側にルールのコピーは持たない。Karabiner-Elements 側で設定を再読み込みする。
 
 ## 使い方
 
