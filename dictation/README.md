@@ -16,11 +16,11 @@ brew install whisper-cpp ffmpeg
 ~/models/whisper.cpp/ggml-medium.bin
 ```
 
-モデルを別の場所に置く場合は [config.sh](config.sh) の `MODEL_PATH` を編集する。
+モデルを別の場所に置く場合は [scripts/config.sh](scripts/config.sh) の `MODEL_PATH` を編集する。
 
 ## 設定
 
-主な設定は [config.sh](config.sh) にある。
+主な設定は [scripts/config.sh](scripts/config.sh) にある。
 
 ```sh
 MODEL_PATH="$HOME/models/whisper.cpp/ggml-medium.bin"
@@ -64,16 +64,14 @@ CLEANUP="false"
 ffmpeg -f avfoundation -list_devices true -i ""
 ```
 
-音声デバイスの番号を見て、`config.sh` の `MIC_DEVICE` を `:0` などにする。`:` の左側は映像入力、右側が音声入力。
+音声デバイスの番号を見て、`scripts/config.sh` の `MIC_DEVICE` を `:0` などにする。`:` の左側は映像入力、右側が音声入力。
 
 ## Hammerspoon
 
-[../.hammerspoon/init.lua](../.hammerspoon/init.lua) には追加済み。
+[../.hammerspoon/init.lua](../.hammerspoon/init.lua) から [../.hammerspoon/modules/dictation.lua](../.hammerspoon/modules/dictation.lua) を読み込む形で追加済み。
 
 ```lua
-hs.hotkey.bind({}, "F18", function()
-  hs.task.new("/Users/lilpacy/dotfiles/bin/local-dictation", nil, { "toggle" }):start()
-end)
+require("modules.dictation")
 ```
 
 Hammerspoon のメニューから Reload Config する。
@@ -89,7 +87,7 @@ right_control 単体押し -> f18
 right_control + 他キー -> right_control
 ```
 
-例は [karabiner.json.example](karabiner.json.example) にある。Karabiner-Elements 側で設定を再読み込みする。
+参考例は [karabiner.json.example](karabiner.json.example) にある。実設定はKarabiner全体の設定ファイルに置く。Karabiner-Elements 側で設定を再読み込みする。
 
 ## 使い方
 
@@ -144,10 +142,10 @@ Terminal から `bin/local-dictation start` を直接実行した場合は、Ham
 ## トラブルシュート
 
 `ffmpeg is not executable`:
-`brew install ffmpeg` を確認し、`config.sh` の `FFMPEG_BIN` を実際のパスに合わせる。
+`brew install ffmpeg` を確認し、`scripts/config.sh` の `FFMPEG_BIN` を実際のパスに合わせる。
 
 `whisper-cli is not executable`:
-`brew install whisper-cpp` を確認し、`config.sh` の `WHISPER_BIN` を実際のパスに合わせる。
+`brew install whisper-cpp` を確認し、`scripts/config.sh` の `WHISPER_BIN` を実際のパスに合わせる。
 
 `whisper model not found`:
 `MODEL_PATH` に `ggml-medium.bin` などの multilingual model を配置する。

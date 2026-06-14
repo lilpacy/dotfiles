@@ -1,16 +1,17 @@
 #!/usr/bin/env bats
 
 setup() {
-  REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/.." >/dev/null && pwd -P)"
+  REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." >/dev/null && pwd -P)"
   TEST_ROOT="$(mktemp -d)"
   TEST_LOG_DIR="$TEST_ROOT/logs"
   TEST_STATE_DIR="$TEST_ROOT/state"
   export TEST_LOG_DIR
 
-  mkdir -p "$TEST_ROOT/bin" "$TEST_ROOT/dictation" "$TEST_ROOT/stubs" "$TEST_LOG_DIR" "$TEST_STATE_DIR"
-  cp "$REPO_ROOT"/dictation/*.sh "$TEST_ROOT/dictation/"
+  mkdir -p "$TEST_ROOT/bin" "$TEST_ROOT/dictation/bin" "$TEST_ROOT/dictation/scripts" "$TEST_ROOT/stubs" "$TEST_LOG_DIR" "$TEST_STATE_DIR"
   cp "$REPO_ROOT/bin/local-dictation" "$TEST_ROOT/bin/local-dictation"
-  chmod 755 "$TEST_ROOT/bin/local-dictation" "$TEST_ROOT"/dictation/*.sh
+  cp "$REPO_ROOT/dictation/bin/local-dictation" "$TEST_ROOT/dictation/bin/local-dictation"
+  cp "$REPO_ROOT"/dictation/scripts/*.sh "$TEST_ROOT/dictation/scripts/"
+  chmod 755 "$TEST_ROOT/bin/local-dictation" "$TEST_ROOT/dictation/bin/local-dictation" "$TEST_ROOT"/dictation/scripts/*.sh
 
   create_stubs
   touch "$TEST_ROOT/model.bin"
@@ -131,7 +132,7 @@ rewrite_config() {
   local auto_paste="$1"
   local cleanup="$2"
 
-  cat >"$TEST_ROOT/dictation/config.sh" <<CONFIG
+  cat >"$TEST_ROOT/dictation/scripts/config.sh" <<CONFIG
 #!/usr/bin/env bash
 # shellcheck shell=bash
 # shellcheck disable=SC2034

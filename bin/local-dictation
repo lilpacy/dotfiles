@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+BIN_DIR="$(cd -- "$(dirname -- "$0")" >/dev/null && pwd -P)"
+
+exec "$BIN_DIR/../dictation/bin/local-dictation" "$@"
