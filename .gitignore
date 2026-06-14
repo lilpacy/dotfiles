@@ -147,3 +147,7 @@ dist
 .DS_Store
 
 **/memories/**
+
+# Python
+__pycache__/
+*.py[cod]
