@@ -107,7 +107,8 @@ function norm(value) {
   if (line ~ /^\(speaking in .*Japanese.*\)$/) {
     next
   }
-  if (line ~ /^(ご視聴ありがとうございました|字幕.*ありがとうございました)$/) {
+  normalized = norm(line)
+  if (normalized == "ご視聴ありがとうございました" || normalized ~ /^字幕.*ありがとうございました$/) {
     next
   }
   if (line ~ /^(Undertexter av Amara\.org-gemenskapen)$/) {
@@ -119,7 +120,6 @@ function norm(value) {
   if (line ~ /^(Thank you so much for watching until the end, and I will see you in the next video\.)$/) {
     next
   }
-  normalized = norm(line)
   if (length(normalized) >= 8 && normalized == previous) {
     next
   }
