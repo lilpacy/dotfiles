@@ -54,6 +54,11 @@
                                                 "is_pointing_device": true,
                                                 "product_id": 1029,
                                                 "vendor_id": 13364
+                                            },
+                                            {
+                                                "is_keyboard": true,
+                                                "product_id": 1029,
+                                                "vendor_id": 13364
                                             }
                                         ],
                                         "type": "device_if"
@@ -103,6 +108,10 @@
                     },
                     "simple_modifications": [
                         {
+                            "from": { "key_code": "caps_lock" },
+                            "to": [{ "key_code": "left_control" }]
+                        },
+                        {
                             "from": { "key_code": "japanese_pc_katakana" },
                             "to": [{ "key_code": "right_command" }]
                         },
@@ -123,6 +132,10 @@
                         "vendor_id": 13364
                     },
                     "simple_modifications": [
+                        {
+                            "from": { "key_code": "caps_lock" },
+                            "to": [{ "key_code": "left_control" }]
+                        },
                         {
                             "from": { "key_code": "japanese_pc_katakana" },
                             "to": [{ "key_code": "right_command" }]
@@ -147,6 +160,35 @@
                     "ignore": false,
                     "simple_modifications": [
                         {
+                            "from": { "key_code": "caps_lock" },
+                            "to": [{ "key_code": "left_control" }]
+                        },
+                        {
+                            "from": { "key_code": "japanese_pc_katakana" },
+                            "to": [{ "key_code": "right_command" }]
+                        },
+                        {
+                            "from": { "key_code": "japanese_pc_nfer" },
+                            "to": [{ "key_code": "japanese_eisuu" }]
+                        },
+                        {
+                            "from": { "key_code": "japanese_pc_xfer" },
+                            "to": [{ "key_code": "japanese_kana" }]
+                        }
+                    ]
+                },
+                {
+                    "identifiers": {
+                        "is_keyboard": true,
+                        "product_id": 1029,
+                        "vendor_id": 13364
+                    },
+                    "simple_modifications": [
+                        {
+                            "from": { "key_code": "caps_lock" },
+                            "to": [{ "key_code": "left_control" }]
+                        },
+                        {
                             "from": { "key_code": "japanese_pc_katakana" },
                             "to": [{ "key_code": "right_command" }]
                         },
@@ -169,6 +211,10 @@
                     },
                     "ignore": false,
                     "simple_modifications": [
+                        {
+                            "from": { "key_code": "caps_lock" },
+                            "to": [{ "key_code": "left_control" }]
+                        },
                         {
                             "from": { "key_code": "japanese_pc_katakana" },
                             "to": [{ "key_code": "right_command" }]
@@ -204,10 +250,6 @@
                 {
                     "from": { "key_code": "caps_lock" },
                     "to": [{ "key_code": "left_control" }]
-                },
-                {
-                    "from": { "key_code": "left_control" },
-                    "to": [{ "key_code": "caps_lock" }]
                 }
             ],
             "virtual_hid_keyboard": {
