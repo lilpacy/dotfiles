@@ -7,7 +7,7 @@ macOS ローカル音声入力。右 Control 単体押しを Karabiner-Elements 
 ## 必要なもの
 
 ```sh
-brew install whisper-cpp ffmpeg peco switchaudio-osx
+brew install whisper-cpp ffmpeg peco jq switchaudio-osx
 ```
 
 `whisper-cpp` はモデルを同梱しない。日本語では `.en` ではない multilingual model を使う。
@@ -66,7 +66,7 @@ CLEANUP="false"
 bin/select-mic
 ```
 
-`select-mic` は `SwitchAudioSource -t input -f cli` で入力デバイスを取得し、`peco` で選んだデバイスを macOS の default input device に設定する。Zoom、Teams、Slack、ブラウザなど、dictation 以外のアプリの入力にも影響する。
+`select-mic` は `SwitchAudioSource -t input -f json` で入力デバイスを取得し、`jq` でデバイス名を取り出し、`peco` で選んだデバイスを macOS の default input device に設定する。Zoom、Teams、Slack、ブラウザなど、dictation 以外のアプリの入力にも影響する。
 
 dictation は `MIC_DEVICE=":default"` で録音するため、右 Control で録音する前に `select-mic` で選んだマイクを使う。
 
@@ -162,6 +162,9 @@ Terminal から `bin/local-dictation start` を直接実行した場合は、Ham
 
 `select-mic` で `peco not found`:
 `brew install peco` を確認する。
+
+`select-mic` で `jq not found`:
+`brew install jq` を確認する。
 
 右 Control で反応しない:
 Karabiner-Elements が F18 を送っているか EventViewer で確認し、Hammerspoon config を reload する。

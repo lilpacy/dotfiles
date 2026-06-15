@@ -158,27 +158,41 @@ if [[ -n "$selected" ]]; then
   exit 0
 fi
 
-if [[ "$format" != "cli" ]]; then
+if [[ "$format" != "json" ]]; then
   printf 'unexpected format: %s\n' "$format" >&2
   exit 2
 fi
 
 case "$mode" in
   -a)
-    printf 'MacBook Pro Microphone\nAirPods Pro\nUSB Microphone\n'
+    printf '{"name": "MacBook Pro Microphone", "type": "input", "id": "107", "uid": "BuiltInMicrophoneDevice"}\n'
+    printf '{"name": "AirPods Pro", "type": "input", "id": "169", "uid": "AirPodsProDevice"}\n'
+    printf '{"name": "USB Microphone", "type": "input", "id": "188", "uid": "USBMicrophoneDevice"}\n'
     ;;
   -c)
     if [[ -f "$TEST_LOG_DIR/selected-mic.txt" ]]; then
-      tail -n 1 "$TEST_LOG_DIR/selected-mic.txt"
+      current="$(tail -n 1 "$TEST_LOG_DIR/selected-mic.txt")"
+      printf '{"name": "%s", "type": "input", "id": "169", "uid": "SelectedDevice"}\n' "$current"
       exit 0
     fi
-    printf '%s\n' "${TEST_CURRENT_MIC:-MacBook Pro Microphone}"
+    printf '{"name": "%s", "type": "input", "id": "107", "uid": "CurrentDevice"}\n' "${TEST_CURRENT_MIC:-MacBook Pro Microphone}"
     ;;
   *)
     printf 'unexpected mode: %s\n' "$mode" >&2
     exit 2
     ;;
 esac
+STUB
+
+  cat >"$TEST_ROOT/stubs/jq" <<'STUB'
+#!/usr/bin/env bash
+set -euo pipefail
+
+while [[ "$#" -gt 0 ]]; do
+  shift
+done
+
+sed -n 's/.*"name": "\([^"]*\)".*/\1/p'
 STUB
 
   cat >"$TEST_ROOT/stubs/peco" <<'STUB'
@@ -391,8 +405,8 @@ CONFIG
   [ "$status" -eq 0 ]
   grep -Fxq "AirPods Pro" "$TEST_LOG_DIR/selected-mic.txt"
   [[ "$output" == "AirPods Pro" ]]
-  grep -Fxq -- "-a -t input -f cli" "$TEST_LOG_DIR/SwitchAudioSource.args"
-  grep -Fxq -- "-c -t input -f cli" "$TEST_LOG_DIR/SwitchAudioSource.args"
+  grep -Fxq -- "-a -t input -f json" "$TEST_LOG_DIR/SwitchAudioSource.args"
+  grep -Fxq -- "-c -t input -f json" "$TEST_LOG_DIR/SwitchAudioSource.args"
 }
 
 @test "正常系: dictationはmacOS default inputを録音入力として使う" {
@@ -477,7 +491,7 @@ CONFIG
 @test "異常系: SwitchAudioSourceがないと失敗する" {
   mv "$TEST_ROOT/stubs/SwitchAudioSource" "$TEST_ROOT/stubs/SwitchAudioSource.disabled"
 
-  run -127 env PATH="$TEST_ROOT/stubs:/usr/bin:/bin" "$TEST_ROOT/bin/select-mic"
+  run -127 env PATH="$TEST_ROOT/stubs:/bin" "$TEST_ROOT/bin/select-mic"
 
   [ "$status" -eq 127 ]
   [[ "$output" == *"SwitchAudioSource not found"* ]]
@@ -491,6 +505,16 @@ CONFIG
 
   [ "$status" -eq 127 ]
   [[ "$output" == *"peco not found"* ]]
+  [[ ! -f "$TEST_LOG_DIR/selected-mic.txt" ]]
+}
+
+@test "異常系: jqがないと失敗する" {
+  mv "$TEST_ROOT/stubs/jq" "$TEST_ROOT/stubs/jq.disabled"
+
+  run -127 env PATH="$TEST_ROOT/stubs:/bin" "$TEST_ROOT/bin/select-mic"
+
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"jq not found"* ]]
   [[ ! -f "$TEST_LOG_DIR/selected-mic.txt" ]]
 }
 

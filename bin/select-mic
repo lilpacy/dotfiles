@@ -50,14 +50,15 @@ build_menu() {
 
 require_command "SwitchAudioSource" "brew install switchaudio-osx"
 require_command "peco" "brew install peco"
+require_command "jq" "brew install jq"
 
-devices="$(SwitchAudioSource -a -t input -f cli)"
+devices="$(SwitchAudioSource -a -t input -f json | jq -r '.name // empty')"
 if [[ -z "$devices" ]]; then
   printf 'input audio device not found\n' >&2
   exit 1
 fi
 
-current="$(SwitchAudioSource -c -t input -f cli)"
+current="$(SwitchAudioSource -c -t input -f json | jq -r '.name // empty')"
 selection="$(build_menu "$current" <<<"$devices" | peco)" || exit 130
 if [[ -z "$selection" ]]; then
   exit 130
@@ -69,4 +70,4 @@ if [[ -z "$selected_device" ]]; then
 fi
 
 SwitchAudioSource -s "$selected_device" -t input >/dev/null
-SwitchAudioSource -c -t input -f cli
+SwitchAudioSource -c -t input -f json | jq -r '.name // empty'

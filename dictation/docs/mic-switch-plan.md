@@ -41,9 +41,10 @@ bin/select-mic
 ```text
 peco
 SwitchAudioSource
+jq
 ```
 
-`peco` は既に `homebrew/formula` にある。
+`peco` と `jq` は既に `homebrew/formula` にある。
 
 `SwitchAudioSource` は `switchaudio-osx` formula で入れる。
 
@@ -58,15 +59,16 @@ homebrew/formula
 
 `select-mic` は次だけを担当する。
 
-1. `SwitchAudioSource -a -t input -f cli` で入力デバイス一覧を取る。
-2. `SwitchAudioSource -c -t input -f cli` で現在のデフォルト入力を取る。
-3. 一覧を `peco` に渡してユーザーに選ばせる。
-4. 選択された名前を `SwitchAudioSource -s "$name" -t input` に渡す。
-5. 変更後の現在値を表示する。
+1. `SwitchAudioSource -a -t input -f json` で入力デバイス一覧を取る。
+2. `SwitchAudioSource -c -t input -f json` で現在のデフォルト入力を取る。
+3. `jq -r '.name // empty'` でデバイス名だけを取り出す。
+4. 一覧を `peco` に渡してユーザーに選ばせる。
+5. 選択された名前を `SwitchAudioSource -s "$name" -t input` に渡す。
+6. 変更後の現在値を表示する。
 
 `select-mic` は dictation の設定ファイルを読まない。dictation の状態も変更しない。
 
-`SwitchAudioSource` の既定出力は人間向け表示なので、パース対象にはしない。デバイス名の一覧と現在値は必ず `-f cli` の出力を使う。
+`SwitchAudioSource` の既定出力は人間向け表示なので、パース対象にはしない。`-f cli` も `name,type,id,uid` の行を返すため直接 UI には使わない。デバイス名の一覧と現在値は必ず `-f json` の出力から `jq` で取り出す。
 
 ## UI 契約
 
@@ -81,7 +83,7 @@ $ select-mic
 
 現在のデフォルト入力には `* ` を付ける。`peco` で選択した後は、`* ` を取り除いたデバイス名を `SwitchAudioSource` に渡す。
 
-`peco` に渡す表示は `select-mic` 側で作る。`SwitchAudioSource` の human 出力に含まれる装飾や文言は使わない。
+`peco` に渡す表示は `select-mic` 側で作る。`SwitchAudioSource` の human / cli 出力に含まれる装飾やCSV風の列は使わない。
 
 キャンセル時は何も変更せず、終了コード `130` で終了する。
 
@@ -144,6 +146,7 @@ Bats に次を追加する。
 異常系: pecoでキャンセルするとマイクを変更しない
 異常系: SwitchAudioSourceがないと失敗する
 異常系: pecoがないと失敗する
+異常系: jqがないと失敗する
 ```
 
 既存の日本語テスト命名規則に合わせ、準正常系、正常系、異常系の順で追加する。
