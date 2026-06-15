@@ -27,6 +27,7 @@ dictation/
 
 bin/
   local-dictation
+  select-mic
 
 .hammerspoon/
   init.lua
@@ -41,7 +42,8 @@ bin/
 
 ```text
 dictation/          = 音声入力機能そのもの
-bin/local-dictation = dotfiles全体に公開するCLI入口
+bin/local-dictation = dictation を dotfiles 全体へ公開するCLI入口
+bin/select-mic      = macOS のデフォルト入力を切り替える汎用CLI
 .hammerspoon/       = Hammerspoon設定
 .config/karabiner/  = Karabiner設定
 homebrew/           = brew管理
@@ -51,9 +53,11 @@ Makefile            = repo全体の集約
 
 ## 公開入口
 
-PATH から直接呼ばれる公開コマンドは `bin/local-dictation` だけにする。このファイルは薄い shim として `dictation/bin/local-dictation` を `exec` する。
+dictation の公開入口は `bin/local-dictation` である。このファイルは薄い shim として `dictation/bin/local-dictation` を `exec` する。
 
 `dictation/bin/local-dictation` は機能側のエントリポイントで、`dictation/scripts/` 配下の `toggle.sh`、`start.sh`、`stop.sh`、`transcribe.sh` に処理を委譲する。
+
+マイク選択の公開入口は `bin/select-mic` である。これは dictation 専用設定ではなく、macOS の default input device を切り替える汎用コマンドとして `bin/` に置く。dictation は `MIC_DEVICE=":default"` で録音するため、`select-mic` で選んだ OS のデフォルト入力に従う。
 
 ## Hammerspoon
 

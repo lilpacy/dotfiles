@@ -22,7 +22,7 @@ OSASCRIPT_BIN="/usr/bin/osascript"
 
 MODEL_PATH="$HOME/models/whisper.cpp/ggml-medium.bin"
 VAD_MODEL_PATH="$HOME/models/whisper.cpp/ggml-silero-v6.2.0.bin"
-MIC_DEVICE=":6"
+MIC_DEVICE=":default"
 WHISPER_LANGUAGE="auto"
 WHISPER_ALLOWED_LANGUAGES="ja en"
 WHISPER_PROMPT="日英混在 transcript: local dictation, Right Control, clipboard, whisper.cpp, ffmpeg, Hammerspoon, Karabiner, AirPods Pro."

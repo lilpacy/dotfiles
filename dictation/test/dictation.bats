@@ -1,5 +1,7 @@
 #!/usr/bin/env bats
 
+bats_require_minimum_version 1.5.0
+
 setup() {
   REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." >/dev/null && pwd -P)"
   TEST_ROOT="$(mktemp -d)"
@@ -9,9 +11,10 @@ setup() {
 
   mkdir -p "$TEST_ROOT/bin" "$TEST_ROOT/dictation/bin" "$TEST_ROOT/dictation/scripts" "$TEST_ROOT/stubs" "$TEST_LOG_DIR" "$TEST_STATE_DIR"
   cp "$REPO_ROOT/bin/local-dictation" "$TEST_ROOT/bin/local-dictation"
+  cp "$REPO_ROOT/bin/select-mic" "$TEST_ROOT/bin/select-mic"
   cp "$REPO_ROOT/dictation/bin/local-dictation" "$TEST_ROOT/dictation/bin/local-dictation"
   cp "$REPO_ROOT"/dictation/scripts/*.sh "$TEST_ROOT/dictation/scripts/"
-  chmod 755 "$TEST_ROOT/bin/local-dictation" "$TEST_ROOT/dictation/bin/local-dictation" "$TEST_ROOT"/dictation/scripts/*.sh
+  chmod 755 "$TEST_ROOT/bin/local-dictation" "$TEST_ROOT/bin/select-mic" "$TEST_ROOT/dictation/bin/local-dictation" "$TEST_ROOT"/dictation/scripts/*.sh
 
   create_stubs
   touch "$TEST_ROOT/model.bin"
@@ -111,6 +114,86 @@ set -euo pipefail
 printf '%s\n' "$*" >>"$TEST_LOG_DIR/osascript.args"
 STUB
 
+  cat >"$TEST_ROOT/stubs/SwitchAudioSource" <<'STUB'
+#!/usr/bin/env bash
+set -euo pipefail
+
+printf '%s\n' "$*" >>"$TEST_LOG_DIR/SwitchAudioSource.args"
+
+type=""
+format=""
+mode=""
+selected=""
+while [[ "$#" -gt 0 ]]; do
+  case "$1" in
+    -a | -c)
+      mode="$1"
+      shift
+      ;;
+    -t)
+      type="$2"
+      shift 2
+      ;;
+    -f)
+      format="$2"
+      shift 2
+      ;;
+    -s)
+      selected="$2"
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
+
+if [[ "$type" != "input" ]]; then
+  printf 'unexpected type: %s\n' "$type" >&2
+  exit 2
+fi
+
+if [[ -n "$selected" ]]; then
+  printf '%s\n' "$selected" >>"$TEST_LOG_DIR/selected-mic.txt"
+  exit 0
+fi
+
+if [[ "$format" != "cli" ]]; then
+  printf 'unexpected format: %s\n' "$format" >&2
+  exit 2
+fi
+
+case "$mode" in
+  -a)
+    printf 'MacBook Pro Microphone\nAirPods Pro\nUSB Microphone\n'
+    ;;
+  -c)
+    if [[ -f "$TEST_LOG_DIR/selected-mic.txt" ]]; then
+      tail -n 1 "$TEST_LOG_DIR/selected-mic.txt"
+      exit 0
+    fi
+    printf '%s\n' "${TEST_CURRENT_MIC:-MacBook Pro Microphone}"
+    ;;
+  *)
+    printf 'unexpected mode: %s\n' "$mode" >&2
+    exit 2
+    ;;
+esac
+STUB
+
+  cat >"$TEST_ROOT/stubs/peco" <<'STUB'
+#!/usr/bin/env bash
+set -euo pipefail
+
+cat >"$TEST_LOG_DIR/peco-input.txt"
+
+if [[ -n "${TEST_PECO_CANCEL:-}" ]]; then
+  exit 1
+fi
+
+printf '%s\n' "${TEST_PECO_SELECTION:-AirPods Pro}"
+STUB
+
   chmod 755 "$TEST_ROOT"/stubs/*
 }
 
@@ -157,7 +240,7 @@ OSASCRIPT_BIN="$TEST_ROOT/stubs/osascript"
 
 MODEL_PATH="$TEST_ROOT/model.bin"
 VAD_MODEL_PATH="$TEST_ROOT/vad.bin"
-MIC_DEVICE=":6"
+MIC_DEVICE=":default"
 WHISPER_LANGUAGE="auto"
 WHISPER_ALLOWED_LANGUAGES="ja en"
 WHISPER_PROMPT="日英混在 transcript: local dictation, Right Control, clipboard, whisper.cpp, ffmpeg, Hammerspoon, Karabiner, AirPods Pro."
@@ -178,6 +261,19 @@ ERROR_SOUND="/System/Library/Sounds/Basso.aiff"
 CONFIG
 }
 
+@test "準正常系: 現在の入力マイクが一覧で選択状態として表示される" {
+  run env PATH="$TEST_ROOT/stubs:/usr/bin:/bin" \
+    TEST_CURRENT_MIC="MacBook Pro Microphone" \
+    TEST_PECO_SELECTION="MacBook Pro Microphone" \
+    "$TEST_ROOT/bin/select-mic"
+
+  [ "$status" -eq 0 ]
+  grep -Fxq "* MacBook Pro Microphone" "$TEST_LOG_DIR/peco-input.txt"
+  grep -Fxq "  AirPods Pro" "$TEST_LOG_DIR/peco-input.txt"
+  grep -Fxq "  USB Microphone" "$TEST_LOG_DIR/peco-input.txt"
+  grep -Fxq "MacBook Pro Microphone" "$TEST_LOG_DIR/selected-mic.txt"
+}
+
 @test "準正常系: 古い録音状態が残っているとき新しい録音を開始できる" {
   mkdir -p "$TEST_STATE_DIR"
   printf '999999\n' >"$TEST_STATE_DIR/recording.pid"
@@ -186,7 +282,7 @@ CONFIG
 
   [ "$status" -eq 0 ]
   [[ -f "$TEST_STATE_DIR/recording.pid" ]]
-  wait_for_file_contains "$TEST_LOG_DIR/ffmpeg.args" ":6"
+  wait_for_file_contains "$TEST_LOG_DIR/ffmpeg.args" ":default"
   wait_for_file_contains "$TEST_LOG_DIR/ffmpeg.args" "-nostdin"
   wait_for_file_contains "$TEST_LOG_DIR/sounds.log" "Pop.aiff"
 }
@@ -286,6 +382,26 @@ CONFIG
   [ "$(cat "$TEST_LOG_DIR/clipboard.txt")" = "local dictation, Right Control, clipboard, whisper.cpp を設定します。" ]
 }
 
+@test "正常系: 選択した入力マイクをmacOSのデフォルト入力に設定できる" {
+  run env PATH="$TEST_ROOT/stubs:/usr/bin:/bin" \
+    TEST_CURRENT_MIC="MacBook Pro Microphone" \
+    TEST_PECO_SELECTION="  AirPods Pro" \
+    "$TEST_ROOT/bin/select-mic"
+
+  [ "$status" -eq 0 ]
+  grep -Fxq "AirPods Pro" "$TEST_LOG_DIR/selected-mic.txt"
+  [[ "$output" == "AirPods Pro" ]]
+  grep -Fxq -- "-a -t input -f cli" "$TEST_LOG_DIR/SwitchAudioSource.args"
+  grep -Fxq -- "-c -t input -f cli" "$TEST_LOG_DIR/SwitchAudioSource.args"
+}
+
+@test "正常系: dictationはmacOS default inputを録音入力として使う" {
+  run "$TEST_ROOT/bin/local-dictation" start
+
+  [ "$status" -eq 0 ]
+  wait_for_file_contains "$TEST_LOG_DIR/ffmpeg.args" ":default"
+}
+
 @test "正常系: 録音開始から停止まで行うと文字起こし結果がクリップボードに入る" {
   run "$TEST_ROOT/bin/local-dictation" toggle
   [ "$status" -eq 0 ]
@@ -347,6 +463,35 @@ CONFIG
   [ "$status" -ne 0 ]
   wait_for_file_contains "$TEST_LOG_DIR/sounds.log" "Basso.aiff"
   [[ ! -f "$TEST_LOG_DIR/clipboard.txt" ]]
+}
+
+@test "異常系: pecoでキャンセルするとマイクを変更しない" {
+  run env PATH="$TEST_ROOT/stubs:/usr/bin:/bin" \
+    TEST_PECO_CANCEL="true" \
+    "$TEST_ROOT/bin/select-mic"
+
+  [ "$status" -eq 130 ]
+  [[ ! -f "$TEST_LOG_DIR/selected-mic.txt" ]]
+}
+
+@test "異常系: SwitchAudioSourceがないと失敗する" {
+  mv "$TEST_ROOT/stubs/SwitchAudioSource" "$TEST_ROOT/stubs/SwitchAudioSource.disabled"
+
+  run -127 env PATH="$TEST_ROOT/stubs:/usr/bin:/bin" "$TEST_ROOT/bin/select-mic"
+
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"SwitchAudioSource not found"* ]]
+  [[ ! -f "$TEST_LOG_DIR/selected-mic.txt" ]]
+}
+
+@test "異常系: pecoがないと失敗する" {
+  mv "$TEST_ROOT/stubs/peco" "$TEST_ROOT/stubs/peco.disabled"
+
+  run -127 env PATH="$TEST_ROOT/stubs:/usr/bin:/bin" "$TEST_ROOT/bin/select-mic"
+
+  [ "$status" -eq 127 ]
+  [[ "$output" == *"peco not found"* ]]
+  [[ ! -f "$TEST_LOG_DIR/selected-mic.txt" ]]
 }
 
 @test "異常系: 不明なサブコマンドのとき使い方を表示して失敗する" {

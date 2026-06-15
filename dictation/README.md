@@ -7,7 +7,7 @@ macOS ローカル音声入力。右 Control 単体押しを Karabiner-Elements 
 ## 必要なもの
 
 ```sh
-brew install whisper-cpp ffmpeg
+brew install whisper-cpp ffmpeg peco switchaudio-osx
 ```
 
 `whisper-cpp` はモデルを同梱しない。日本語では `.en` ではない multilingual model を使う。
@@ -27,7 +27,7 @@ brew install whisper-cpp ffmpeg
 ```sh
 MODEL_PATH="$HOME/models/whisper.cpp/ggml-medium.bin"
 VAD_MODEL_PATH="$HOME/models/whisper.cpp/ggml-silero-v6.2.0.bin"
-MIC_DEVICE=":6"
+MIC_DEVICE=":default"
 WHISPER_LANGUAGE="auto"
 WHISPER_ALLOWED_LANGUAGES="ja en"
 WHISPER_PROMPT="日英混在 transcript: local dictation, Right Control, clipboard, whisper.cpp, ffmpeg, Hammerspoon, Karabiner, AirPods Pro."
@@ -42,7 +42,7 @@ AUTO_PASTE="false"
 CLEANUP="false"
 ```
 
-- `MIC_DEVICE`: ffmpeg avfoundation の音声入力。環境に合わせて変更する。
+- `MIC_DEVICE`: ffmpeg avfoundation の音声入力。dictation は macOS のデフォルト入力を使うため、既定は `:default`。
 - `WHISPER_LANGUAGE`: whisper.cpp の言語指定。日本語と英語を混ぜる場合は `auto` を使う。
 - `WHISPER_ALLOWED_LANGUAGES`: `WHISPER_LANGUAGE="auto"` のとき、コピーを許可する検出言語。日英用途では `ja en`。
 - `WHISPER_PROMPT`: 日英混在の出力形式とよく使う英語語彙を whisper.cpp に渡す initial prompt。
@@ -58,15 +58,17 @@ CLEANUP="false"
 
 コマンドパスは Homebrew on Apple Silicon 前提で `/opt/homebrew/bin` を使う。Intel Mac や別 prefix の場合は `FFMPEG_BIN` と `WHISPER_BIN` を編集する。
 
-## マイクデバイス番号
+## マイク選択
 
-確認:
+マイク選択は dictation 専用設定ではなく、macOS のデフォルト入力として扱う。
 
 ```sh
-ffmpeg -f avfoundation -list_devices true -i ""
+bin/select-mic
 ```
 
-音声デバイスの番号を見て、`scripts/config.sh` の `MIC_DEVICE` を `:0` などにする。`:` の左側は映像入力、右側が音声入力。
+`select-mic` は `SwitchAudioSource -t input -f cli` で入力デバイスを取得し、`peco` で選んだデバイスを macOS の default input device に設定する。Zoom、Teams、Slack、ブラウザなど、dictation 以外のアプリの入力にも影響する。
+
+dictation は `MIC_DEVICE=":default"` で録音するため、右 Control で録音する前に `select-mic` で選んだマイクを使う。
 
 ## Hammerspoon
 
@@ -153,7 +155,13 @@ Terminal から `bin/local-dictation start` を直接実行した場合は、Ham
 `MODEL_PATH` に `ggml-medium.bin` などの multilingual model を配置する。
 
 録音ファイルが空:
-`ffmpeg -f avfoundation -list_devices true -i ""` で `MIC_DEVICE` を確認し、macOS のマイク権限を確認する。
+`bin/select-mic` で macOS のデフォルト入力を確認し、macOS のマイク権限を確認する。
+
+`select-mic` で `SwitchAudioSource not found`:
+`brew install switchaudio-osx` を確認する。
+
+`select-mic` で `peco not found`:
+`brew install peco` を確認する。
 
 右 Control で反応しない:
 Karabiner-Elements が F18 を送っているか EventViewer で確認し、Hammerspoon config を reload する。
