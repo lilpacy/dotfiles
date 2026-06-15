@@ -376,7 +376,7 @@ CONFIG
 
 @test "準正常系: 既知の字幕由来テキストが出たとき発話だけがコピーされる" {
   # shellcheck disable=SC2030,SC2031
-  export TEST_WHISPER_SILENCE_TEXT=$'Undertexter av Amara.org-gemenskapen\nClick the link in the description below if you want to subscribe to my channel and get notified of my new videos.\nThank you so much for watching until the end, and I will see you in the next video.\n実際の発話です。\n'
+  export TEST_WHISPER_SILENCE_TEXT=$'Undertexter av Amara.org-gemenskapen\nClick the link in the description below if you want to subscribe to my channel and get notified of my new videos.\nThank you so much for watching until the end, and I will see you in the next video.\n実際の発話です。\nご視聴ありがとうございました!\n'
   printf 'dummy audio\n' >"$TEST_STATE_DIR/dictation.wav"
 
   run "$TEST_ROOT/bin/local-dictation" transcribe
