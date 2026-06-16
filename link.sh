@@ -5,6 +5,7 @@ mkdir -p ~/.config/git/
 mkdir -p ~/.config/ghostty/
 mkdir -p ~/.config/agents/
 mkdir -p ~/.config/alacritty/
+mkdir -p ~/.hammerspoon
 mkdir -p "$HOME/Library/Application Support/lazygit"
 sudo mkdir -p /usr/local/bin/
 
@@ -29,6 +30,8 @@ ln -sf ~/dotfiles/codex/skills ~/.codex/skills
 ln -sf ~/dotfiles/.gitignore_global ~/.config/git/ignore
 ln -sf ~/dotfiles/.config/lazygit/config.yml "$HOME/Library/Application Support/lazygit/config.yml"
 ln -sf ~/dotfiles/.aerospace.toml ~/.aerospace.toml
+ln -sf ~/dotfiles/.hammerspoon/init.lua ~/.hammerspoon/init.lua
+ln -sfn ~/dotfiles/.hammerspoon/modules ~/.hammerspoon/modules
 ln -sf ~/dotfiles/ghostty ~/.config/ghostty/config
 ln -sf ~/dotfiles/alacritty/catppuccin-frappe.toml ~/.config/alacritty/catppuccin-frappe.toml
 
