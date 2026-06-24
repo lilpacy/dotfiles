@@ -30,7 +30,11 @@ Reply in just the same language as the user used.
 - Web検索・オンラインドキュメント参照では `web-doc-reading` skill を使う。See `skills/web-doc-reading/SKILL.md`
 - Linear issue を扱う作業では `linear-cli` skill を使う。See `skills/linear-cli/SKILL.md`
 
-## Browser Tool Policy
+## Development
 
-- デバッグは Chrome DevTools MCP を使う。
-- ブラウザ操作の自動化や E2E テストは Playwright を使う。
+- 「推測するな計測せよ」を徹底し、ただの仮定に想像を重ねて対策を実装しないこと
+
+## Browser Work
+
+- ブラウザ操作・E2E は `agent-browser` / `playwright-cli` skill を使う。
+- デバッグ・パフォーマンス確認は Chrome DevTools MCP 系 skill を使う。

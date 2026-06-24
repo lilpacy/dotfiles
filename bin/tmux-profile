@@ -1,0 +1,66 @@
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+  echo "Usage: tmux-profile [duration-seconds]" >&2
+  exit 2
+}
+
+duration="${1:-10}"
+[ "$#" -le 1 ] || usage
+
+case "$duration" in
+  ''|*[!0-9]*) usage ;;
+esac
+
+if [ "$duration" -lt 1 ]; then
+  usage
+fi
+
+if ! command -v sample >/dev/null 2>&1; then
+  echo "tmux-profile: sample command not found" >&2
+  exit 1
+fi
+
+if ! tmux_pid="$(tmux display-message -p '#{pid}' 2>/dev/null)"; then
+  echo "tmux-profile: no tmux server found" >&2
+  exit 1
+fi
+
+timestamp="$(date '+%Y%m%d-%H%M%S')"
+profile_dir="$HOME/.tmux/profiles/$timestamp"
+mkdir -p "$profile_dir"
+
+{
+  echo "date=$(date '+%Y-%m-%dT%H:%M:%S%z')"
+  echo "tmux_version=$(tmux -V)"
+  echo "tmux_pid=$tmux_pid"
+  echo "socket_path=$(tmux display-message -p '#{socket_path}')"
+  echo "duration_seconds=$duration"
+  echo
+  echo "process_before:"
+  ps -p "$tmux_pid" -o pid,ppid,%cpu,%mem,etime,command
+} > "$profile_dir/summary.txt"
+
+tmux list-windows -a -F '#{session_name}:#{window_index}:#{window_name} panes=#{window_panes} active=#{window_active} id=#{window_id}' \
+  > "$profile_dir/windows.txt"
+
+tmux list-panes -a -F '#{session_name}:#{window_index}.#{pane_index} id=#{pane_id} pid=#{pane_pid} active=#{pane_active} cmd=#{pane_current_command} waiting=#{@claude_waiting} working=#{@claude_working} path=#{pane_current_path}' \
+  > "$profile_dir/panes.txt"
+
+tmux show-hooks -g > "$profile_dir/hooks.txt"
+tmux show-options -g > "$profile_dir/options.txt"
+tmux show-window-options -g > "$profile_dir/window-options.txt"
+
+sample "$tmux_pid" "$duration" 5 -file "$profile_dir/sample.txt"
+
+{
+  echo
+  echo "process_after:"
+  ps -p "$tmux_pid" -o pid,ppid,%cpu,%mem,etime,command
+} >> "$profile_dir/summary.txt"
+
+echo "$profile_dir"
+echo "  summary: $profile_dir/summary.txt"
+echo "  sample:  $profile_dir/sample.txt"
+echo "  panes:   $profile_dir/panes.txt"
