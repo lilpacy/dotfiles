@@ -96,6 +96,69 @@
                                 "type": "basic"
                             }
                         ]
+                    },
+                    {
+                        "description": "Fn/Globe二度押しでローカルディクテーションをトグルする。",
+                        "manipulators": [
+                            {
+                                "conditions": [
+                                    {
+                                        "name": "dictation_fn_globe_pressed_once",
+                                        "type": "variable_if",
+                                        "value": 1
+                                    }
+                                ],
+                                "from": {
+                                    "key_code": "fn",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [
+                                    { "key_code": "fn" },
+                                    {
+                                        "set_variable": {
+                                            "name": "dictation_fn_globe_pressed_once",
+                                            "value": 0
+                                        }
+                                    }
+                                ],
+                                "to_if_alone": [{ "key_code": "f18" }],
+                                "type": "basic"
+                            },
+                            {
+                                "from": {
+                                    "key_code": "fn",
+                                    "modifiers": { "optional": ["any"] }
+                                },
+                                "to": [
+                                    { "key_code": "fn" },
+                                    {
+                                        "set_variable": {
+                                            "name": "dictation_fn_globe_pressed_once",
+                                            "value": 1
+                                        }
+                                    }
+                                ],
+                                "to_delayed_action": {
+                                    "to_if_canceled": [
+                                        {
+                                            "set_variable": {
+                                                "name": "dictation_fn_globe_pressed_once",
+                                                "value": 0
+                                            }
+                                        }
+                                    ],
+                                    "to_if_invoked": [
+                                        {
+                                            "set_variable": {
+                                                "name": "dictation_fn_globe_pressed_once",
+                                                "value": 0
+                                            }
+                                        }
+                                    ]
+                                },
+                                "type": "basic"
+                            }
+                        ]
                     }
                 ]
             },

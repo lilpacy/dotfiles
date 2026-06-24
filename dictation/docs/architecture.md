@@ -73,7 +73,7 @@ require("modules.dictation")
 
 Karabiner はさらにグローバル設定色が強く、`.config/karabiner/karabiner.json` が実設定の source of truth である。
 
-dictation 配下に Karabiner ルールの原本を別途置くと、実設定との二重管理になりやすい。そのため `dictation/` には Karabiner JSON のコピーや example を置かない。README には「右 Control 単体 -> F18 の設定は Karabiner 側にある」とだけ書く。
+dictation 配下に Karabiner ルールの原本を別途置くと、実設定との二重管理になりやすい。そのため `dictation/` には Karabiner JSON のコピーや example を置かない。README には「右 Control 単体 / Fn/Globe 二度押し -> F18 の設定は Karabiner 側にある」とだけ書く。
 
 ローカル環境への反映は `~/.config/karabiner/karabiner.json` を repo 内の `.config/karabiner/karabiner.json` へファイル単位でリンクする。`~/.config/karabiner` ディレクトリ自体は Karabiner の管理領域なので、ディレクトリごと symlink しない。
 
