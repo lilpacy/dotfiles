@@ -95,7 +95,7 @@
           },
           {
             "type": "command",
-            "command": "[ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 1; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 0; true",
+            "command": "[ -n \"$TMUX_PANE\" ] && ~/dotfiles/bin/tmux-claude-status waiting \"$TMUX_PANE\"; true",
             "timeout": 5
           }
         ]
@@ -107,7 +107,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Blow.aiff; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 1; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 0; true",
+            "command": "afplay /System/Library/Sounds/Blow.aiff; [ -n \"$TMUX_PANE\" ] && ~/dotfiles/bin/tmux-claude-status waiting \"$TMUX_PANE\"; true",
             "timeout": 5
           }
         ]
@@ -119,7 +119,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 0; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 1; true",
+            "command": "[ -n \"$TMUX_PANE\" ] && ~/dotfiles/bin/tmux-claude-status working \"$TMUX_PANE\"; true",
             "timeout": 5
           }
         ]
@@ -131,7 +131,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 0; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 1; true",
+            "command": "[ -n \"$TMUX_PANE\" ] && ~/dotfiles/bin/tmux-claude-status working \"$TMUX_PANE\"; true",
             "timeout": 5
           }
         ]
@@ -181,7 +181,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "[ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_waiting 0; [ -n \"$TMUX_PANE\" ] && tmux set -p -t $TMUX_PANE @claude_working 0; true",
+            "command": "[ -n \"$TMUX_PANE\" ] && ~/dotfiles/bin/tmux-claude-status clear \"$TMUX_PANE\"; true",
             "timeout": 5
           }
         ]

@@ -53,13 +53,17 @@ Reply in just the same language as the user used.
 - Web検索・オンラインドキュメント参照では `web-doc-reading` skill を使う。See `skills/web-doc-reading/SKILL.md`
 - Linear issue を扱う作業では `linear-cli` skill を使う。See `skills/linear-cli/SKILL.md`
 
+## Development
+
+- 「推測するな計測せよ」を徹底し、ただの仮定に想像を重ねて対策を実装しないこと
+
 ## Research And Browser Policy
 
 - 最新情報の単純な WebSearch は `Explore` エージェントに `WebSearch` / `WebFetch` を使わせる。
 - `WebSearch` / `WebFetch` で不十分なら `codex exec`、それでも不十分なら明示許可を得て `mcp__ais__*` を使う。
 - 調査・リサーチ目的で Chrome DevTools MCP を使わない。
-- デバッグは Chrome DevTools MCP を使う。
-- ブラウザ操作の自動化や E2E テストは Playwright を使う。
+- ブラウザ操作・E2E は `agent-browser` / `playwright-cli` skill を使う。
+- デバッグ・パフォーマンス確認は Chrome DevTools MCP 系 skill を使う。
 
 ## Token Strategy
 実装にあたってはトークンを節約するためにOpus/Sonnetを適切にサブエージェントとして切り出して実行し、このメインセッション(Fable 5)は設計と監査、レビューに専念してください。実装難易度が特に高いところはこのセッションでやってよいです  

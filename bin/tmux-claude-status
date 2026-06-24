@@ -1,0 +1,118 @@
+#!/bin/bash
+set -euo pipefail
+
+usage() {
+  echo "Usage: tmux-claude-status {waiting|working|clear|refresh|sweep} [target]" >&2
+  exit 2
+}
+
+action="${1:-}"
+[ -n "$action" ] || usage
+
+target="${2:-${TMUX_PANE:-}}"
+
+set_pane_state() {
+  local waiting="$1"
+  local working="$2"
+
+  [ -n "$target" ] || {
+    echo "tmux-claude-status: target pane is required" >&2
+    exit 1
+  }
+
+  tmux set-option -pq -t "$target" @claude_waiting "$waiting"
+  tmux set-option -pq -t "$target" @claude_working "$working"
+}
+
+window_for_target() {
+  if [ -n "$target" ]; then
+    tmux display-message -p -t "$target" '#{window_id}'
+    return
+  fi
+
+  tmux display-message -p '#{window_id}'
+}
+
+pane_has_claude_child() {
+  local pane_pid="$1"
+
+  ps -eo ppid,comm 2>/dev/null \
+    | awk -v ppid="$pane_pid" '$1 == ppid && $2 ~ /claude/ { found = 1 } END { exit !found }'
+}
+
+refresh_window() {
+  local window_id="$1"
+  local validate_stale="${2:-0}"
+  local refresh_client="${3:-1}"
+  local indicator=""
+  local has_working=0
+  local pane_id
+  local pane_pid
+  local waiting
+  local working
+
+  while IFS=' ' read -r pane_id waiting working pane_pid; do
+    if [ "$validate_stale" = "1" ] && { [ "$waiting" = "1" ] || [ "$working" = "1" ]; }; then
+      if ! pane_has_claude_child "$pane_pid"; then
+        tmux set-option -pq -t "$pane_id" @claude_waiting 0
+        tmux set-option -pq -t "$pane_id" @claude_working 0
+        waiting=0
+        working=0
+      fi
+    fi
+
+    if [ "$waiting" = "1" ]; then
+      indicator="⏳"
+      break
+    fi
+
+    if [ "$working" = "1" ]; then
+      has_working=1
+    fi
+  done < <(tmux list-panes -t "$window_id" -F '#{pane_id} #{@claude_waiting} #{@claude_working} #{pane_pid}')
+
+  if [ -z "$indicator" ] && [ "$has_working" = "1" ]; then
+    indicator="🔄"
+  fi
+
+  tmux set-window-option -q -t "$window_id" @claude_indicator "$indicator"
+  if [ "$refresh_client" = "1" ]; then
+    tmux refresh-client -S >/dev/null 2>&1
+  fi
+}
+
+sweep_windows() {
+  local window_id
+
+  while IFS= read -r window_id; do
+    refresh_window "$window_id" 1 0
+  done < <(tmux list-windows -a -F '#{window_id}')
+}
+
+case "$action" in
+  waiting)
+    set_pane_state 1 0
+    refresh_window "$(window_for_target)"
+    ;;
+  working)
+    set_pane_state 0 1
+    refresh_window "$(window_for_target)"
+    ;;
+  clear)
+    set_pane_state 0 0
+    refresh_window "$(window_for_target)"
+    ;;
+  refresh)
+    if [ -n "$target" ]; then
+      refresh_window "$target"
+    else
+      refresh_window "$(window_for_target)"
+    fi
+    ;;
+  sweep)
+    sweep_windows
+    ;;
+  *)
+    usage
+    ;;
+esac
