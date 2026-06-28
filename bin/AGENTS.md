@@ -61,16 +61,6 @@ Interactive ECS Exec helper (by [yuki777](https://github.com/yuki777)). Walks th
 - `sssh --port 8080 --local-port 8080` — port forwarding mode
 - Requires: `aws`, `session-manager-plugin`, `jq`, `peco`
 
-## tmux-claude-status
-
-Updates cached Claude Code status for tmux window labels without running shell jobs from the statusline.
-
-- `tmux-claude-status waiting [pane]` — marks the pane/window as waiting
-- `tmux-claude-status working [pane]` — marks the pane/window as working
-- `tmux-claude-status clear [pane]` — clears the pane flag and refreshes the window cache
-- `tmux-claude-status refresh [window]` — recomputes `@claude_indicator`
-- `tmux-claude-status sweep` — clears stale flags for panes without a Claude child process
-
 ## tmux-profile
 
 Captures a short tmux server diagnostic bundle using macOS `sample`.

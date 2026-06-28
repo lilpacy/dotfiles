@@ -92,11 +92,6 @@
             "type": "command",
             "command": "afplay /System/Library/Sounds/Blow.aiff",
             "timeout": 5
-          },
-          {
-            "type": "command",
-            "command": "[ -n \"$TMUX_PANE\" ] && ~/dotfiles/bin/tmux-claude-status waiting \"$TMUX_PANE\"; true",
-            "timeout": 5
           }
         ]
       }
@@ -107,31 +102,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "afplay /System/Library/Sounds/Blow.aiff; [ -n \"$TMUX_PANE\" ] && ~/dotfiles/bin/tmux-claude-status waiting \"$TMUX_PANE\"; true",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -n \"$TMUX_PANE\" ] && ~/dotfiles/bin/tmux-claude-status working \"$TMUX_PANE\"; true",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -n \"$TMUX_PANE\" ] && ~/dotfiles/bin/tmux-claude-status working \"$TMUX_PANE\"; true",
+            "command": "afplay /System/Library/Sounds/Blow.aiff",
             "timeout": 5
           }
         ]
@@ -171,18 +142,6 @@
             "command": "/Users/lilpacy/go/src/github.com/lilpacy/claude-otel/hooks/log-instructions-loaded.sh",
             "timeout": 5,
             "async": true
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "[ -n \"$TMUX_PANE\" ] && ~/dotfiles/bin/tmux-claude-status clear \"$TMUX_PANE\"; true",
-            "timeout": 5
           }
         ]
       }

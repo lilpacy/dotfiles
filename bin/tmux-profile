@@ -45,7 +45,7 @@ mkdir -p "$profile_dir"
 tmux list-windows -a -F '#{session_name}:#{window_index}:#{window_name} panes=#{window_panes} active=#{window_active} id=#{window_id}' \
   > "$profile_dir/windows.txt"
 
-tmux list-panes -a -F '#{session_name}:#{window_index}.#{pane_index} id=#{pane_id} pid=#{pane_pid} active=#{pane_active} cmd=#{pane_current_command} waiting=#{@claude_waiting} working=#{@claude_working} path=#{pane_current_path}' \
+tmux list-panes -a -F '#{session_name}:#{window_index}.#{pane_index} id=#{pane_id} pid=#{pane_pid} active=#{pane_active} cmd=#{pane_current_command} path=#{pane_current_path}' \
   > "$profile_dir/panes.txt"
 
 tmux show-hooks -g > "$profile_dir/hooks.txt"
