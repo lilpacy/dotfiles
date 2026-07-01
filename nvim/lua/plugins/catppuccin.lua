@@ -16,7 +16,7 @@ return {
         gitsigns = true,
         mini = { enabled = true },
         native_lsp = { enabled = true },
-        neotree = true,
+        nvimtree = true,
         render_markdown = true,
         snacks = true,
         telescope = { enabled = true },
@@ -25,7 +25,7 @@ return {
       },
       custom_highlights = function(colors)
         return {
-          NeoTreeIndentMarker = { fg = colors.surface1 },
+          NvimTreeIndentMarker = { fg = colors.surface1 },
         }
       end,
     })
