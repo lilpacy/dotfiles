@@ -1,0 +1,4 @@
+interface:
+  display_name: "View X Post"
+  short_description: "Read X posts and Articles"
+  default_prompt: "Use $view-x-post to read and summarize this X post or Article URL."
