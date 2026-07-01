@@ -159,34 +159,20 @@ vim.cmd([[menu PopUp.Toggle\ Comment <Cmd>lua require('Comment.api').toggle.line
 vim.cmd([[vmenu PopUp.Toggle\ Comment <Esc><Cmd>lua require('Comment.api').toggle.linewise(vim.fn.visualmode())<CR>]])
 
 -- =============================================
--- neo-tree用の右クリックメニュー
+-- nvim-tree用の右クリックメニュー
 -- =============================================
 
--- neo-tree用ヘルパー関数
-local function get_neo_tree_state()
-  local ok, manager = pcall(require, "neo-tree.sources.manager")
-  if not ok then return nil end
-  return manager.get_state("filesystem")
-end
-
-local function get_neo_tree_node()
-  local state = get_neo_tree_state()
-  if state and state.tree then
-    return state.tree:get_node()
-  end
-  return nil
-end
-
 -- ファイル内容をクリップボードにコピーする関数
-function _G.NeoTreeCopyFileContent()
-  local node = get_neo_tree_node()
+function _G.NvimTreeCopyFileContent()
+  local api = require('nvim-tree.api')
+  local node = api.tree.get_node_under_cursor()
 
   if not node or node.type ~= 'file' then
     print('Not a file')
     return
   end
 
-  local filepath = node:get_id()
+  local filepath = node.absolute_path
   local file = io.open(filepath, 'r')
 
   if not file then
@@ -201,16 +187,17 @@ function _G.NeoTreeCopyFileContent()
   print('Copied file content: ' .. node.name)
 end
 
--- neo-treeで選択中のパスをFinderで開く関数
-function _G.NeoTreeOpenInFinder()
-  local node = get_neo_tree_node()
+-- nvim-treeで選択中のパスをFinderで開く関数
+function _G.NvimTreeOpenInFinder()
+  local tree_api = require('nvim-tree.api')
+  local node = tree_api.tree.get_node_under_cursor()
 
   if not node then
     print('No node selected')
     return
   end
 
-  local path = node:get_id()
+  local path = node.absolute_path
   if node.type == 'file' then
     vim.fn.system({ 'open', '-R', path })
   else
@@ -218,9 +205,10 @@ function _G.NeoTreeOpenInFinder()
   end
 end
 
--- neo-treeで選択中のパスでlazygitをtmux popupで開く関数
-function _G.NeoTreeOpenLazygit()
-  local node = get_neo_tree_node()
+-- nvim-treeで選択中のパスでlazygitをtmux popupで開く関数
+function _G.NvimTreeOpenLazygit()
+  local tree_api = require('nvim-tree.api')
+  local node = tree_api.tree.get_node_under_cursor()
 
   if not node then
     print('No node selected')
@@ -232,7 +220,7 @@ function _G.NeoTreeOpenLazygit()
     return
   end
 
-  local path = node:get_id()
+  local path = node.absolute_path
   if node.type == 'file' then
     path = vim.fn.fnamemodify(path, ':h')
   end
@@ -247,16 +235,17 @@ function _G.NeoTreeOpenLazygit()
   })
 end
 
--- neo-treeで選択中のパスのリポジトリをwebで開く関数
-function _G.NeoTreeOpenRepoInWeb()
-  local node = get_neo_tree_node()
+-- nvim-treeで選択中のパスのリポジトリをwebで開く関数
+function _G.NvimTreeOpenRepoInWeb()
+  local tree_api = require('nvim-tree.api')
+  local node = tree_api.tree.get_node_under_cursor()
 
   if not node then
     print('No node selected')
     return
   end
 
-  local path = node:get_id()
+  local path = node.absolute_path
   if node.type == 'file' then
     path = vim.fn.fnamemodify(path, ':h')
   end
@@ -264,16 +253,17 @@ function _G.NeoTreeOpenRepoInWeb()
   vim.fn.jobstart('cd ' .. vim.fn.shellescape(path) .. ' && gh repo view --web', { detach = true })
 end
 
--- neo-treeで選択中のパスでgrug-farを開く関数
-function _G.NeoTreeSearchInPath()
-  local node = get_neo_tree_node()
+-- nvim-treeで選択中のパスでgrug-farを開く関数
+function _G.NvimTreeSearchInPath()
+  local tree_api = require('nvim-tree.api')
+  local node = tree_api.tree.get_node_under_cursor()
 
   if not node then
     print('No node selected')
     return
   end
 
-  local path = node:get_id()
+  local path = node.absolute_path
   vim.cmd("tab split")
   require("grug-far").open({
     prefills = { paths = path },
@@ -293,87 +283,61 @@ function _G.NeoTreeSearchInPath()
   end
 end
 
--- neo-tree用コピー関数
-function _G.NeoTreeCopyFilename()
-  local node = get_neo_tree_node()
-  if node then
-    vim.fn.setreg('+', node.name)
-    print('Copied: ' .. node.name)
-  end
-end
-
-function _G.NeoTreeCopyRelativePath()
-  local node = get_neo_tree_node()
-  if node then
-    local rel = vim.fn.fnamemodify(node:get_id(), ':.')
-    vim.fn.setreg('+', rel)
-    print('Copied: ' .. rel)
-  end
-end
-
-function _G.NeoTreeCopyAbsolutePath()
-  local node = get_neo_tree_node()
-  if node then
-    vim.fn.setreg('+', node:get_id())
-    print('Copied: ' .. node:get_id())
-  end
-end
-
 -- バッファタイプに応じてメニューを動的に切り替える
 vim.api.nvim_create_autocmd("BufEnter", {
   pattern = "*",
   callback = function()
     local ft = vim.bo.filetype
 
-    if ft == "neo-tree" then
-      -- neo-tree用メニューに切り替え
+    if ft == "NvimTree" then
+      -- nvim-tree用メニューに切り替え
       vim.cmd([[aunmenu PopUp]])
 
       -- ファイルパスコピー
-      vim.cmd([[menu PopUp.Copy\ Filename <Cmd>lua NeoTreeCopyFilename()<CR>]])
-      vim.cmd([[menu PopUp.Copy\ Relative\ Path <Cmd>lua NeoTreeCopyRelativePath()<CR>]])
-      vim.cmd([[menu PopUp.Copy\ Absolute\ Path <Cmd>lua NeoTreeCopyAbsolutePath()<CR>]])
+      vim.cmd([[menu PopUp.Copy\ Filename <Cmd>lua require('nvim-tree.api').fs.copy.filename()<CR>]])
+      vim.cmd([[menu PopUp.Copy\ Relative\ Path <Cmd>lua require('nvim-tree.api').fs.copy.relative_path()<CR>]])
+      vim.cmd([[menu PopUp.Copy\ Absolute\ Path <Cmd>lua require('nvim-tree.api').fs.copy.absolute_path()<CR>]])
 
       -- ファイル内容コピー
-      vim.cmd([[menu PopUp.Copy\ File\ Content <Cmd>lua NeoTreeCopyFileContent()<CR>]])
+      vim.cmd([[menu PopUp.Copy\ File\ Content <Cmd>lua NvimTreeCopyFileContent()<CR>]])
 
       vim.cmd([[menu PopUp.-sep1- :]])
 
       -- ファイル操作
-      vim.cmd([[menu PopUp.Open <Cmd>Neotree action=show reveal_force_cwd<CR>]])
-      vim.cmd([[menu PopUp.Open\ in\ Vertical\ Split <Cmd>lua require("neo-tree.sources.common.commands").open_vsplit(require("neo-tree.sources.manager").get_state("filesystem"))<CR>]])
-      vim.cmd([[menu PopUp.Open\ in\ Horizontal\ Split <Cmd>lua require("neo-tree.sources.common.commands").open_split(require("neo-tree.sources.manager").get_state("filesystem"))<CR>]])
-      vim.cmd([[menu PopUp.Open\ in\ New\ Tab <Cmd>lua require("neo-tree.sources.common.commands").open_tabnew(require("neo-tree.sources.manager").get_state("filesystem"))<CR>]])
+      vim.cmd([[menu PopUp.Open <Cmd>lua require('nvim-tree.api').node.open.edit()<CR>]])
+      vim.cmd([[menu PopUp.Open\ in\ Vertical\ Split <Cmd>lua require('nvim-tree.api').node.open.vertical()<CR>]])
+      vim.cmd([[menu PopUp.Open\ in\ Horizontal\ Split <Cmd>lua require('nvim-tree.api').node.open.horizontal()<CR>]])
+      vim.cmd([[menu PopUp.Open\ in\ New\ Tab <Cmd>lua require('nvim-tree.api').node.open.tab()<CR>]])
 
       vim.cmd([[menu PopUp.-sep2- :]])
 
       -- 編集
-      vim.cmd([[menu PopUp.Rename <Cmd>lua require("neo-tree.sources.filesystem.commands").rename(require("neo-tree.sources.manager").get_state("filesystem"))<CR>]])
-      vim.cmd([[menu PopUp.Delete <Cmd>lua require("neo-tree.sources.filesystem.commands").delete(require("neo-tree.sources.manager").get_state("filesystem"))<CR>]])
-      vim.cmd([[menu PopUp.Create\ File/Directory <Cmd>lua require("neo-tree.sources.filesystem.commands").add(require("neo-tree.sources.manager").get_state("filesystem"))<CR>]])
+      vim.cmd([[menu PopUp.Rename <Cmd>lua require('nvim-tree.api').fs.rename()<CR>]])
+      vim.cmd([[menu PopUp.Delete <Cmd>lua require('nvim-tree.api').fs.remove()<CR>]])
+      vim.cmd([[menu PopUp.Create\ File/Directory <Cmd>lua require('nvim-tree.api').fs.create()<CR>]])
 
       vim.cmd([[menu PopUp.-sep3- :]])
 
       -- カット/コピー/ペースト
-      vim.cmd([[menu PopUp.Cut <Cmd>lua require("neo-tree.sources.filesystem.commands").cut_to_clipboard(require("neo-tree.sources.manager").get_state("filesystem"))<CR>]])
-      vim.cmd([[menu PopUp.Copy <Cmd>lua require("neo-tree.sources.filesystem.commands").copy_to_clipboard(require("neo-tree.sources.manager").get_state("filesystem"))<CR>]])
-      vim.cmd([[menu PopUp.Paste <Cmd>lua require("neo-tree.sources.filesystem.commands").paste_from_clipboard(require("neo-tree.sources.manager").get_state("filesystem"))<CR>]])
+      vim.cmd([[menu PopUp.Cut <Cmd>lua require('nvim-tree.api').fs.cut()<CR>]])
+      vim.cmd([[menu PopUp.Copy <Cmd>lua require('nvim-tree.api').fs.copy.node()<CR>]])
+      vim.cmd([[menu PopUp.Paste <Cmd>lua require('nvim-tree.api').fs.paste()<CR>]])
 
       vim.cmd([[menu PopUp.-sep4- :]])
 
       -- 検索
-      vim.cmd([[menu PopUp.Search\ &\ Replace\ in\ Path <Cmd>lua NeoTreeSearchInPath()<CR>]])
+      vim.cmd([[menu PopUp.Search\ &\ Replace\ in\ Path <Cmd>lua NvimTreeSearchInPath()<CR>]])
 
       vim.cmd([[menu PopUp.-sep5- :]])
 
       -- Finderで開く
-      vim.cmd([[menu PopUp.Open\ in\ Finder <Cmd>lua NeoTreeOpenInFinder()<CR>]])
+      vim.cmd([[menu PopUp.Open\ in\ Finder <Cmd>lua NvimTreeOpenInFinder()<CR>]])
 
       -- Lazygitを開く
-      vim.cmd([[menu PopUp.Open\ Lazygit <Cmd>lua NeoTreeOpenLazygit()<CR>]])
+      vim.cmd([[menu PopUp.Open\ Lazygit <Cmd>lua NvimTreeOpenLazygit()<CR>]])
 
       -- リポジトリをWebで開く
-      vim.cmd([[menu PopUp.Open\ Repo\ in\ Web <Cmd>lua NeoTreeOpenRepoInWeb()<CR>]])
+      vim.cmd([[menu PopUp.Open\ Repo\ in\ Web <Cmd>lua NvimTreeOpenRepoInWeb()<CR>]])
     else
       -- 通常のバッファ用メニューに戻す
       vim.cmd([[aunmenu PopUp]])

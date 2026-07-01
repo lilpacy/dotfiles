@@ -2,6 +2,8 @@
 
 2026-02-05 に nvim-tree から neo-tree へ移行した。
 
+> 2026-06-29 に neo-tree から nvim-tree へ戻した。現在の実装は `nvim/lua/plugins/nvim-tree.lua`。
+
 ## 結論: ユーザー体験はほぼ変わらない
 
 移行後も以下の機能はすべてそのまま使える:
