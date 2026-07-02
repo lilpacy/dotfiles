@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [[ $# -ne 0 ]]; then
+  echo "Usage: herdrp" >&2
+  exit 2
+fi
+
+real_path="$(pwd -P)"
+raw_base="$(basename "$real_path")"
+base="$(
+  printf '%s' "$raw_base" \
+    | LC_ALL=C tr -c 'A-Za-z0-9._-' '-' \
+    | sed -E 's/^-+//; s/-+$//; s/-+/-/g'
+)"
+
+if [[ -z "$base" ]]; then
+  base="root"
+fi
+
+hash="$(printf '%s' "$real_path" | shasum -a 256 | cut -c1-10)"
+session_name="${base}-${hash}"
+
+exec herdr --session "$session_name"
