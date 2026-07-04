@@ -62,6 +62,22 @@ user can keep working in other apps while prompts are dispatched.
 
 5. When accepted, commit via the normal `git-commit-workflow` skill.
 
+## Branch / Worktree Control
+
+Control the editor state from the shell — never via UI automation:
+
+- Branch switch: run `git switch <branch>` in the repo. Cursor follows
+  the working tree automatically (file watcher); no IDE interaction
+  needed and no focus is taken.
+- Worktree / another repo: `cursor-compose --dir <path>` (wraps
+  `cursor <path>`). An already-open worktree reuses its window.
+- NEVER switch branches while Composer is mid-task in that window —
+  it will write into the post-switch tree. Switch only after the diff
+  has been verified. For parallel tasks, use one Cursor window per
+  worktree.
+- If the user is working in the same repo, coordinate: the PM should
+  take a worktree instead of switching the user's checkout.
+
 ## Notes
 
 - Dispatch is focus-free: AXValue is set on the Composer textarea and
@@ -78,6 +94,13 @@ user can keep working in other apps while prompts are dispatched.
   fix loops like "tests fail with X, fix it" work well).
 - If dispatch fails with "textarea not found", the Composer pane is
   closed in Cursor — ask the user to open it (cmd+i) once.
+- Dispatch targets the first Composer textarea found in the Cursor
+  process. With multiple Cursor windows open, the prompt may land in
+  another window's Composer — always confirm via the diff in the
+  expected repo, and treat "no diff appears" as a possible wrong-window
+  dispatch.
+- Architecture details and AX-tree debugging notes:
+  `~/dotfiles/docs/cursor-compose-ax-architecture.md`.
 - `--dir` runs `cursor <dir>`, which briefly activates Cursor (the one
   focus-affecting step). Dispatching to an already-open repo is fully
   interference-free.
