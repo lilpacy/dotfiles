@@ -151,3 +151,6 @@ dist
 # Python
 __pycache__/
 *.py[cod]
+
+# Compiled AX helper for cursor-compose (build from bin/src/cursor-compose.swift)
+bin/cursor-compose-ax

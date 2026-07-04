@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Send a prompt to Cursor IDE's Composer without stealing focus.
+# Uses the macOS Accessibility API (cursor-compose-ax, Swift) instead of
+# keystroke injection, so it never interferes with what the user is
+# typing and never touches the clipboard.
+#
+# Usage:
+#   cursor-compose [--dir <path>] [--new] "<prompt>"
+#   echo "<prompt>" | cursor-compose [--dir <path>] [--new]
+#
+# Requires: Cursor.app running with the Composer pane open, and
+# Accessibility permission for the calling terminal
+# (System Settings > Privacy & Security > Accessibility).
+
+usage() {
+  echo "Usage: cursor-compose [--dir <path>] [--new] [prompt]" >&2
+  exit 2
+}
+
+script_dir="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
+ax_bin="$script_dir/cursor-compose-ax"
+
+if [[ ! -x "$ax_bin" ]]; then
+  echo "cursor-compose: $ax_bin not found. Build it with:" >&2
+  echo "  swiftc -O $script_dir/src/cursor-compose.swift -o $ax_bin" >&2
+  exit 1
+fi
+
+dir=""
+new_flag=()
+prompt=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dir)
+      [[ $# -ge 2 ]] || usage
+      dir="$2"
+      shift 2
+      ;;
+    --new)
+      new_flag=(--new)
+      shift
+      ;;
+    -h|--help)
+      usage
+      ;;
+    *)
+      prompt="$1"
+      shift
+      ;;
+  esac
+done
+
+if [[ -z "$prompt" ]]; then
+  if [[ -t 0 ]]; then
+    usage
+  fi
+  prompt="$(cat)"
+fi
+
+if [[ -z "$prompt" ]]; then
+  echo "cursor-compose: empty prompt" >&2
+  exit 2
+fi
+
+if [[ -n "$dir" ]]; then
+  cursor "$dir"
+  sleep 2
+fi
+
+prompt_file="$(mktemp /tmp/cursor-compose.XXXXXX)"
+trap 'rm -f "$prompt_file"' EXIT
+printf '%s' "$prompt" > "$prompt_file"
+
+"$ax_bin" "${new_flag[@]}" "$prompt_file"

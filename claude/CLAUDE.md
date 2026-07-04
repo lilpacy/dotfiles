@@ -13,27 +13,11 @@
 Think in English.
 Reply in just the same language as the user used.
 
-## Output Rules
-
-- 人間向けの説明テキストは、1回の返信あたり最大40行に収める。
-- ツールに渡すコードやファイル内容、コードブロック内のコードは40行制限の対象外。
-- 長いファイル生成・編集は複数回のツール呼び出しに分割してよい。
-- 出力が打ち切られそうな場合でも、ユーザーに `continue` を入力させず、自分で次のステップを提案して続行する。
-
 ## Large File Writes
 
 - Write ツールや Skill 実行中に200行超のファイルを一括書き出すとフリーズすることがある。
 - 回避策: Bash の `cat <<'EOF' >> file` 形式で50-80行目安に分割して追記する。
 - 最初のチャンクは `>`、以降は `>>` を使う。
-
-## Claude/Codex Roles
-
-- `codex exec` は司令塔: 設計・計画・レビュー・問題定義。
-- Claude Code は実行者: 実装・修正・テスト生成・ファイル操作。
-- 設計判断・方針決定は `codex exec` に委ねる。Claude Code は自分の判断で設計を決めない。
-- 自明な変更（5行以内、設計判断不要）は `codex exec` 照会なしで直接行ってよい。
-- `codex exec` では `--model gpt-5.4` を明示する。
-- Plan のドラフト作成には `Plan` エージェントを使う。
 
 ## Global Safety Rules
 
@@ -53,16 +37,14 @@ Reply in just the same language as the user used.
 - Web検索・オンラインドキュメント参照では `web-doc-reading` skill を使う。See `skills/web-doc-reading/SKILL.md`
 - Linear issue を扱う作業では `linear-cli` skill を使う。See `skills/linear-cli/SKILL.md`
 - ユーザーからの訂正、知識ギャップ、再利用可能な改善学習、未対応機能の記録では `self-improvement` skill を使う。See `skills/self-improvement/SKILL.md`
+- コーディング作業を Cursor Composer に委譲する場合は `cursor-composer-delegation` skill を使う。See `skills/cursor-composer-delegation/SKILL.md`
 
 ## Development
 
 - 「推測するな計測せよ」を徹底し、ただの仮定に想像を重ねて対策を実装しないこと
 
-## Research And Browser Policy
+## Browser Work
 
-- 最新情報の単純な WebSearch は `Explore` エージェントに `WebSearch` / `WebFetch` を使わせる。
-- `WebSearch` / `WebFetch` で不十分なら `codex exec`、それでも不十分なら明示許可を得て `mcp__ais__*` を使う。
-- 調査・リサーチ目的で Chrome DevTools MCP を使わない。
 - ブラウザ操作・E2E は `agent-browser` / `playwright-cli` skill を使う。
 - デバッグ・パフォーマンス確認は Chrome DevTools MCP 系 skill を使う。
 
