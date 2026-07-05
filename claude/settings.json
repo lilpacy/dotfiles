@@ -1,21 +1,21 @@
 {
   "env": {
-    "CLAUDE_CODE_USE_BEDROCK": "1",
-    "AWS_REGION": "us-east-1",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "us.anthropic.claude-opus-4-6-v1",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "global.anthropic.claude-sonnet-4-6",
     "ANTHROPIC_MODEL": "global.anthropic.claude-fable-5",
+    "AWS_REGION": "us-east-1",
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "16384",
+    "CLAUDE_CODE_USE_BEDROCK": "1",
+    "ENABLE_TOOL_SEARCH": "true",
     "MAX_THINKING_TOKENS": "1024",
     "MCP_TOOL_TIMEOUT": "900000",
-    "ENABLE_TOOL_SEARCH": "true",
-    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
-    "OTEL_LOGS_EXPORTER": "otlp",
-    "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
     "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
+    "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
+    "OTEL_LOGS_EXPORTER": "otlp",
     "OTEL_LOG_TOOL_DETAILS": "1",
-    "OTEL_SERVICE_NAME": "claude-code",
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "us.anthropic.claude-opus-4-6-v1",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "global.anthropic.claude-sonnet-4-6"
+    "OTEL_SERVICE_NAME": "claude-code"
   },
   "attribution": {
     "commit": "",
@@ -84,6 +84,18 @@
   },
   "model": "opus",
   "hooks": {
+    "InstructionsLoaded": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/lilpacy/go/src/github.com/lilpacy/claude-otel/hooks/log-instructions-loaded.sh",
+            "timeout": 5,
+            "async": true
+          }
+        ]
+      }
+    ],
     "Notification": [
       {
         "matcher": "permission_prompt|idle_prompt",
@@ -92,6 +104,18 @@
             "type": "command",
             "command": "afplay /System/Library/Sounds/Blow.aiff",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/lilpacy/.claude/hooks/herdr-agent-state.sh' session",
+            "timeout": 10
           }
         ]
       }
@@ -133,18 +157,6 @@
           }
         ]
       }
-    ],
-    "InstructionsLoaded": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/lilpacy/go/src/github.com/lilpacy/claude-otel/hooks/log-instructions-loaded.sh",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
     ]
   },
   "statusLine": {
@@ -154,18 +166,25 @@
   "enabledPlugins": {
     "clangd-lsp@claude-plugins-official": true,
     "claude-hud@claude-hud": true,
+    "frontend-design@claude-plugins-official": false,
     "linear-cli@linear-cli": true,
-    "skill-creator@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": false
+    "skill-creator@claude-plugins-official": true
   },
   "outputStyle": "verbose",
   "sandbox": {
     "enabled": false,
     "autoAllowBashIfSandboxed": true,
     "network": {
-      "allowedDomains": ["github.com", "*.npmjs.org", "registry.npmjs.org"]
+      "allowedDomains": [
+        "github.com",
+        "*.npmjs.org",
+        "registry.npmjs.org"
+      ]
     },
-    "excludedCommands": ["docker", "docker-compose"]
+    "excludedCommands": [
+      "docker",
+      "docker-compose"
+    ]
   },
   "spinnerVerbs": {
     "mode": "replace",
