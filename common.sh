@@ -195,8 +195,8 @@ alias claude='claude --dangerously-skip-permissions --teammate-mode in-process'
 alias claude-mem='bun "/Users/lilpacy/.claude/plugins/marketplaces/thedotmack/plugin/scripts/worker-service.cjs"'
 
 # alias opus/sonnet の実体を Bedrock inference profile に割り当て、/model {opus,sonnet}で切り替え
-export ANTHROPIC_DEFAULT_OPUS_MODEL='global.anthropic.claude-opus-4-5-20251101-v1:0'
-export ANTHROPIC_DEFAULT_SONNET_MODEL='jp.anthropic.claude-sonnet-4-5-20250929-v1:0'
+export ANTHROPIC_DEFAULT_OPUS_MODEL='global.anthropic.claude-opus-4-8'
+export ANTHROPIC_DEFAULT_SONNET_MODEL='jp.anthropic.claude-sonnet-5'
 
 # codex
 alias codex='codex --yolo'
