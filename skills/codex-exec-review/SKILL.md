@@ -14,6 +14,13 @@ description: Use before presenting implementation plans and after non-trivial co
 
 ## Review Command Rules
 
+- Invoke as `command codex exec ...`, not `codex exec ...`. This
+  user's shell has `alias codex='codex --yolo'`
+  (`~/dotfiles/common.sh`), which silently overrides `--sandbox` —
+  verified empirically: a run through the alias showed
+  `sandbox: danger-full-access` even with `--sandbox read-only` passed.
+  `command codex` bypasses the alias. Check the run header's
+  `sandbox:` line to confirm read-only actually took effect.
 - Use `--sandbox read-only`.
 - Use `-c model_reasoning_effort=medium` only for review runs.
 - Use `-c service_tier=fast` and `-c features.fast_mode=true` when appropriate.
@@ -26,7 +33,7 @@ description: Use before presenting implementation plans and after non-trivial co
 ## Initial Review Template
 
 ```bash
-codex exec \
+command codex exec \
   --sandbox read-only \
   --model gpt-5.4 \
   -c model_reasoning_effort=medium \
@@ -40,7 +47,7 @@ codex exec \
 Use the same session for updated plan reviews:
 
 ```bash
-codex exec resume <SESSION_ID> \
+command codex exec resume <SESSION_ID> \
   "前回の指摘を反映してプランを更新した。もう一度レビューして。read-only sandboxなのでテスト・build・format・install・生成コマンドは実行せず、差分・設定・既存ログの読取だけで判断して。不足する実行結果があれば質問して。別の codex exec や外部レビューコマンドは絶対に起動しないで。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。新しく追加された問題がなければ、その旨を明示して: {plan_full_path} (ref: {CLAUDE_md_full_path})"
 ```
 

@@ -18,7 +18,7 @@ implementation (writes).
 ## Dispatch Template
 
 ```bash
-codex exec \
+command codex exec \
   -m gpt-5.3-codex-spark \
   --sandbox workspace-write \
   -C /path/to/repo \
@@ -28,13 +28,19 @@ codex exec \
 
 - `-m gpt-5.3-codex-spark` — the fast implementation model. Do NOT
   omit it; the config default is a different (slower, pricier) model.
-- `--sandbox workspace-write` — intended containment. CAVEAT: for repos
-  marked `trust_level = "trusted"` in `~/.codex/config.toml` (most of
-  this user's repos), codex silently escalates to
-  `danger-full-access` regardless of this flag — verified empirically
-  (a file write succeeded under `--sandbox read-only`). Check the run
-  header's `sandbox:` line; treat the flag as intent, not enforcement.
-  Real safety comes from prompt constraints and PM-side diff review.
+- `--sandbox workspace-write` — real containment, verified empirically:
+  under `--sandbox read-only` a file-write attempt failed with
+  `Operation not permitted`, and the run header showed
+  `sandbox: read-only`.
+- CAVEAT: this user's shell has `alias codex='codex --yolo'`
+  (`common.sh`). That alias silently overrides `--sandbox`/approval
+  flags — a run through the alias showed `sandbox: danger-full-access`
+  even with `--sandbox read-only` passed explicitly. Always invoke as
+  `command codex exec ...` (bypasses the alias) when running this
+  skill's commands from an interactive shell, and check the run
+  header's `sandbox:` line to confirm the mode actually took effect.
+  `trust_level` in `~/.codex/config.toml` is unrelated to sandbox
+  enforcement — it only gates loading project-local `.codex/` config.
 - `-C <repo>` — sets the agent's working root. Prefer this over `cd`.
 - `-o <file>` — writes the final message to a file so you can re-read
   the result without scraping stdout.
@@ -55,7 +61,7 @@ codex exec \
 Example:
 
 ```bash
-codex exec -m gpt-5.3-codex-spark --sandbox workspace-write -C ~/repo \
+command codex exec -m gpt-5.3-codex-spark --sandbox workspace-write -C ~/repo \
   -o /tmp/spark-out.txt \
   "src/foo.ts の parseConfig にバリデーションを追加して。
    受け入れ条件: 不正な port で Error を throw、既存テスト npm test が全て通る。
@@ -82,7 +88,7 @@ The run header prints `session id: <UUID>` — capture it from stdout.
 If the result is wrong, resume the same session so context is retained:
 
 ```bash
-codex exec resume <SESSION_ID> \
+command codex exec resume <SESSION_ID> \
   "npm test が X で落ちる。エラー: <paste>. Z には触らずに修正して。"
 ```
 
@@ -108,17 +114,17 @@ flight.
   answer arrives, the run succeeded (degraded); report the sidecar
   failure separately.
 - Treat a run as failed only when `codex exec` exits without a final
-  answer. Then try `codex exec resume <SESSION_ID>` once before
-  rerunning from scratch.
+  answer. Then try `command codex exec resume <SESSION_ID>` once
+  before rerunning from scratch.
 - Do not report "implementation done" unless the final answer was
   obtained AND you verified the diff/tests yourself.
 
 ## When to Use Which Delegate
 
 - `codex-spark-delegation` (this): synchronous and scriptable; best
-  default for well-specified implementation tasks. NOT reliably
-  sandboxed on trusted repos (see caveat above) — the guardrail is
-  prompt constraints plus your diff review, same as any delegate.
+  default for well-specified implementation tasks. Sandbox is real
+  containment as long as it's invoked via `command codex` (see caveat
+  above) — but still verify the diff yourself, same as any delegate.
 - `cursor-composer-delegation`: when the user wants work visible in the
   Cursor IDE, or wants to keep working while tasks run fire-and-forget.
 - Claude subagents (Agent tool): when the task needs this session's
