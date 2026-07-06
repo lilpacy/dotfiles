@@ -20,6 +20,10 @@ user can keep working in other apps while prompts are dispatched.
   its compiled helper `cursor-compose-ax` next to it. Rebuild after
   editing the source:
   `swiftc -O ~/dotfiles/bin/src/cursor-compose.swift -o ~/dotfiles/bin/cursor-compose-ax`
+- `cursor-compose-status` is on PATH (`~/dotfiles/bin/cursor-compose-status`),
+  a compiled Swift helper that reports whether Composer is generating.
+  Rebuild after editing the source:
+  `swiftc -O ~/dotfiles/bin/src/cursor-compose-status.swift -o ~/dotfiles/bin/cursor-compose-status`
 - The terminal running this session has Accessibility permission
   (System Settings > Privacy & Security > Accessibility).
 - Cursor's Composer is set to the desired model (e.g. Composer) and
@@ -41,17 +45,34 @@ user can keep working in other apps while prompts are dispatched.
    - Exact file paths when known.
    - "Do not commit" — commits are the PM's job.
 
-3. Wait, then verify from the filesystem. Cursor edits the working
-   tree directly, so poll with:
+3. Wait for Composer to finish, then verify from the filesystem.
+   Cursor edits the working tree directly. Instead of blind
+   fixed-interval `sleep`, block on the generation state:
+
+   ```bash
+   cursor-compose-status              # prints "busy" (exit 0) or "idle" (exit 1)
+   cursor-compose-status --wait 1200  # poll every 5s until idle (or timeout seconds)
+   ```
+
+   `--wait` detects generation by finding Composer's inline "Stop
+   generation" AXButton; it requires 2 consecutive idle reads so a
+   brief gap between tool-calls is not mistaken for completion.
+
+   CRITICAL: dispatch is asynchronous — `cursor-compose` returns before
+   Composer starts generating. Calling `cursor-compose-status --wait`
+   too fast can observe the pre-generation idle state and return
+   instantly with zero diff. After dispatching, either `sleep 30-45`
+   first, or confirm `cursor-compose-status` prints `busy` before you
+   `--wait`. Once idle, verify with:
 
    ```bash
    git -C /path/to/repo status --porcelain
    git -C /path/to/repo diff
    ```
 
-   Small tasks typically land within ~15 seconds; poll every 15-30
-   seconds until the diff stabilizes. Run the project's tests/linters
-   yourself to accept or reject the work.
+   Run the project's tests/linters yourself to accept or reject the work.
+   If no diff appeared, the prompt may have queued behind a still-running
+   task (see Notes on queuing) or landed in the wrong Cursor window.
 
 4. If the result is wrong, send a follow-up in the same chat
    (omit `--new`):
@@ -99,6 +120,14 @@ Control the editor state from the shell — never via UI automation:
   another window's Composer — always confirm via the diff in the
   expected repo, and treat "no diff appears" as a possible wrong-window
   dispatch.
+- `cursor-compose-status` matches the exact AXButton description
+  `Stop generation` (Cursor's inline stop control). If a Cursor update
+  renames that control, `--wait` will report `idle` while Composer is
+  still generating. To re-derive the current name, dump Composer's
+  AXButton descriptions while a generation is in flight (a small Swift
+  walker over the Cursor AX tree filtering `role == "AXButton"`), find
+  the stop/cancel control, and update the needle list in
+  `~/dotfiles/bin/src/cursor-compose-status.swift`, then rebuild.
 - Architecture details and AX-tree debugging notes:
   `~/dotfiles/docs/cursor-compose-ax-architecture.md`.
 - `--dir` runs `cursor <dir>`, which briefly activates Cursor (the one
