@@ -22,7 +22,8 @@ description: Use before presenting implementation plans and after non-trivial co
 - Use `--safe-mode` and a minimal review settings JSON. Do not use `--bare` for default reviews because Claude Code 2.1.197 exposes only `Read` in that mode, even when `WebFetch` is requested.
 - Use `--permission-mode default`. Do not use `--permission-mode plan` for default reviews because it suppresses `WebFetch`, `Grep`, `Glob`, and `Bash` in the measured review setup.
 - Prefer `--output-format stream-json --include-partial-messages --verbose` so progress remains visible while the final result is still machine-checkable.
-- Allow only `Read`, `Grep`, `Glob`, `WebFetch`, optional `WebSearch`/`Fetch` when Claude Code exposes them, and read-only `Bash` commands for inspecting files, diffs, and logs.
+- Allow `Bash` broadly and control risk with a denylist plus prompt constraints. Fable review quality depends on being able to run unknown local CLI introspection such as `--help`, `--version`, `--default-config`, status, and list commands without adding one-off allowlist entries.
+- Keep the denylist focused on external review/agent launches, destructive git commands, obvious filesystem mutation, install/deploy entry points, and code execution snippets. Do not deny broad test/build command names because that also blocks their `--help` output; rely on the review prompt to forbid running tests/builds.
 - Allow `WebFetch` by default for currentness checks against public primary sources. Request `WebSearch` and `Fetch` too, but do not require them in environments where Claude Code does not expose those tools.
 - Instruct the reviewer not to paste private code, secrets, env values, customer data, or large local diffs into web queries.
 - Instruct the reviewer not to run tests, build, format, install, generation, mutation, deployment, or external review commands.
@@ -51,20 +52,24 @@ CLAUDE_REVIEW_SETTINGS_JSON=$(jq --arg review_model "$CLAUDE_REVIEW_MODEL" -c '{
   permissions: {
     allow: [
       "Read(~/**)", "Grep", "Glob", "WebSearch", "WebFetch", "Fetch",
-      "Bash(pwd:*)", "Bash(ls:*)", "Bash(find:*)", "Bash(sed:*)",
-      "Bash(head:*)", "Bash(tail:*)", "Bash(wc:*)",
-      "Bash(git status:*)", "Bash(git diff:*)",
-      "Bash(git show:*)", "Bash(git log:*)"
+      "Bash"
     ],
     deny: [
       "Edit(*)", "Write(*)",
       "Bash(codex exec:*)", "Bash(claude:*)",
-      "Bash(npm:*)", "Bash(npx:*)", "Bash(pnpm:*)",
-      "Bash(yarn:*)", "Bash(bun:*)", "Bash(pip:*)",
-      "Bash(python:*)", "Bash(python3:*)", "Bash(ruby:*)",
-      "Bash(go test:*)", "Bash(cargo test:*)", "Bash(make:*)",
       "Bash(git reset:*)", "Bash(git checkout:*)",
       "Bash(git clean:*)", "Bash(git push:*)",
+      "Bash(rm:*)", "Bash(rmdir:*)", "Bash(mv:*)",
+      "Bash(cp:*)", "Bash(mkdir:*)", "Bash(touch:*)",
+      "Bash(chmod:*)", "Bash(chown:*)", "Bash(sudo:*)",
+      "Bash(npx:*)", "Bash(pnpx:*)", "Bash(bunx:*)",
+      "Bash(brew install:*)", "Bash(brew upgrade:*)",
+      "Bash(brew uninstall:*)", "Bash(npm install:*)",
+      "Bash(npm i:*)", "Bash(npm ci:*)",
+      "Bash(pnpm install:*)", "Bash(yarn install:*)",
+      "Bash(bun install:*)",
+      "Bash(pip install:*)", "Bash(pip3 install:*)",
+      "Bash(python -c:*)", "Bash(python3 -c:*)", "Bash(ruby -e:*)",
       "mcp__ais__*"
     ]
   },
@@ -78,7 +83,7 @@ env claude -p \
   --effort "$CLAUDE_REVIEW_EFFORT" \
   --permission-mode default \
   --tools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash" \
-  --allowedTools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash(pwd:*),Bash(ls:*),Bash(find:*),Bash(sed:*),Bash(head:*),Bash(tail:*),Bash(wc:*),Bash(git status:*),Bash(git diff:*),Bash(git show:*),Bash(git log:*)" \
+  --allowedTools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash" \
   --output-format stream-json \
   --include-partial-messages \
   --verbose \
@@ -108,7 +113,7 @@ env claude -p \
   --effort "$CLAUDE_REVIEW_EFFORT" \
   --permission-mode default \
   --tools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash" \
-  --allowedTools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash(pwd:*),Bash(ls:*),Bash(find:*),Bash(sed:*),Bash(head:*),Bash(tail:*),Bash(wc:*),Bash(git status:*),Bash(git diff:*),Bash(git show:*),Bash(git log:*)" \
+  --allowedTools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash" \
   --output-format stream-json \
   --include-partial-messages \
   --verbose \
@@ -121,7 +126,8 @@ For non-interactive automation where progress visibility is irrelevant, `--outpu
 
 ## Permission Caveats
 
-- Claude Code `--permission-mode default` with denied edit/write tools is not the same security boundary as `codex exec --sandbox read-only`.
+- Claude Code `--permission-mode default` with broad Bash and a denylist is not the same security boundary as `codex exec --sandbox read-only`.
+- This review mode is intentionally blacklist-based so current local CLI documentation can be inspected without one-off permission churn. Keep review prompts explicit that tests, builds, installs, generation, mutation, and deployment are forbidden.
 - Treat the review as complete only when a final `type == "result"` stream event is returned and the command used the explicit minimal settings above.
 - If the command runs without the explicit Fable model, without `--safe-mode`, or with the full normal `claude/settings.json`, treat it as `review incomplete`.
 - If the stream `init` event does not list `WebFetch`, treat the review command as misconfigured and rerun with the default `--safe-mode --permission-mode default` template. If `WebSearch` or `Fetch` are absent but `WebFetch` is present, the review can proceed.
