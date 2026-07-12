@@ -19,11 +19,11 @@ description: Use before presenting implementation plans and after non-trivial co
 - Pass `--model "$CLAUDE_REVIEW_MODEL"` explicitly. Do not rely on the root `"model"` setting.
 - Use `CLAUDE_REVIEW_EFFORT=${CLAUDE_REVIEW_EFFORT:-medium}` and pass `--effort "$CLAUDE_REVIEW_EFFORT"`.
 - Do not pass `/Users/lilpacy/dotfiles/claude/settings.json` as the runtime settings file. Its normal permissions are broader than review mode.
-- Use `--bare` and a minimal review settings JSON.
-- Use `--permission-mode plan`.
+- Use `--safe-mode` and a minimal review settings JSON. Do not use `--bare` for default reviews because Claude Code 2.1.197 exposes only `Read` in that mode, even when `WebFetch` is requested.
+- Use `--permission-mode default`. Do not use `--permission-mode plan` for default reviews because it suppresses `WebFetch`, `Grep`, `Glob`, and `Bash` in the measured review setup.
 - Prefer `--output-format stream-json --include-partial-messages --verbose` so progress remains visible while the final result is still machine-checkable.
-- Allow only `Read`, `Grep`, `Glob`, `WebSearch`, `WebFetch`, `Fetch`, and read-only `Bash` commands for inspecting files, diffs, and logs.
-- Allow web tools only for currentness checks against public primary sources.
+- Allow only `Read`, `Grep`, `Glob`, `WebFetch`, optional `WebSearch`/`Fetch` when Claude Code exposes them, and read-only `Bash` commands for inspecting files, diffs, and logs.
+- Allow `WebFetch` by default for currentness checks against public primary sources. Request `WebSearch` and `Fetch` too, but do not require them in environments where Claude Code does not expose those tools.
 - Instruct the reviewer not to paste private code, secrets, env values, customer data, or large local diffs into web queries.
 - Instruct the reviewer not to run tests, build, format, install, generation, mutation, deployment, or external review commands.
 - Instruct the reviewer not to start another `claude -p`, `codex exec`, or `mcp__ais` call.
@@ -57,7 +57,7 @@ CLAUDE_REVIEW_SETTINGS_JSON=$(jq --arg review_model "$CLAUDE_REVIEW_MODEL" -c '{
       "Bash(git show:*)", "Bash(git log:*)"
     ],
     deny: [
-      "Edit(*)", "Write(*)", "MultiEdit(*)",
+      "Edit(*)", "Write(*)",
       "Bash(codex exec:*)", "Bash(claude:*)",
       "Bash(npm:*)", "Bash(npx:*)", "Bash(pnpm:*)",
       "Bash(yarn:*)", "Bash(bun:*)", "Bash(pip:*)",
@@ -72,17 +72,17 @@ CLAUDE_REVIEW_SETTINGS_JSON=$(jq --arg review_model "$CLAUDE_REVIEW_MODEL" -c '{
 }' "$CLAUDE_MAIN_SETTINGS")
 
 env claude -p \
-  --bare \
+  --safe-mode \
   --settings "$CLAUDE_REVIEW_SETTINGS_JSON" \
   --model "$CLAUDE_REVIEW_MODEL" \
   --effort "$CLAUDE_REVIEW_EFFORT" \
-  --permission-mode plan \
+  --permission-mode default \
   --tools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash" \
   --allowedTools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash(pwd:*),Bash(ls:*),Bash(find:*),Bash(sed:*),Bash(head:*),Bash(tail:*),Bash(wc:*),Bash(git status:*),Bash(git diff:*),Bash(git show:*),Bash(git log:*)" \
   --output-format stream-json \
   --include-partial-messages \
   --verbose \
-  "このプランまたは差分をレビューして。Claude Code の plan permission mode なので、テスト・build・format・install・生成・編集・mutation・deploy コマンドは実行せず、差分・設定・既存ログの読取を主材料に判断して。現行仕様確認に限って WebSearch/WebFetch/Fetch を使ってよいが、公式 docs・release notes・standards・package registry・source repository など public primary sources を優先し、private code・secret・env 値・customer data・大きな local diff を検索クエリに貼らないで。不足する実行結果があれば質問して。別の claude -p、codex exec、mcp__ais、外部レビューコマンドは絶対に起動しないで。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて。Web を使った場合は参照 URL と判断への使い方を短く添えて: $PLAN_OR_DIFF_REF" \
+  "このプランまたは差分をレビューして。レビュー用の許可設定では編集系ツールと危険な Bash を禁止しているので、テスト・build・format・install・生成・編集・mutation・deploy コマンドは実行せず、差分・設定・既存ログの読取を主材料に判断して。現行仕様確認に限って WebFetch を使ってよい。WebSearch/Fetch が利用可能なら使ってもよいが、利用不能なら WebFetch 可能な public primary sources を直接読むこと。公式 docs・release notes・standards・package registry・source repository など public primary sources を優先し、private code・secret・env 値・customer data・大きな local diff を検索クエリや取得 URL に貼らないで。不足する実行結果があれば質問して。別の claude -p、codex exec、mcp__ais、外部レビューコマンドは絶対に起動しないで。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて。Web を使った場合は参照 URL と判断への使い方を短く添えて: $PLAN_OR_DIFF_REF" \
   | tee "$REVIEW_LOG"
 ```
 
@@ -102,18 +102,18 @@ set -o pipefail
 REVIEW_LOG=${REVIEW_LOG:-review-result.jsonl}
 
 env claude -p \
-  --bare \
+  --safe-mode \
   --settings "$CLAUDE_REVIEW_SETTINGS_JSON" \
   --model "$CLAUDE_REVIEW_MODEL" \
   --effort "$CLAUDE_REVIEW_EFFORT" \
-  --permission-mode plan \
+  --permission-mode default \
   --tools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash" \
   --allowedTools "Read,Grep,Glob,WebSearch,WebFetch,Fetch,Bash(pwd:*),Bash(ls:*),Bash(find:*),Bash(sed:*),Bash(head:*),Bash(tail:*),Bash(wc:*),Bash(git status:*),Bash(git diff:*),Bash(git show:*),Bash(git log:*)" \
   --output-format stream-json \
   --include-partial-messages \
   --verbose \
   --resume "$SESSION_ID" \
-  "前回の指摘を反映してプランまたは差分を更新した。もう一度レビューして。前回と同じ制約で、テスト・build・format・install・生成・編集・mutation・deploy・外部レビューコマンドは実行しないで。現行仕様確認に限って public primary sources への WebSearch/WebFetch/Fetch は使ってよい。致命的な点だけ指摘して。新しく追加された問題がなければ、その旨を明示して: $PLAN_OR_DIFF_REF" \
+  "前回の指摘を反映してプランまたは差分を更新した。もう一度レビューして。前回と同じ制約で、テスト・build・format・install・生成・編集・mutation・deploy・外部レビューコマンドは実行しないで。現行仕様確認に限って public primary sources への WebFetch は使ってよい。WebSearch/Fetch が利用可能なら使ってもよい。致命的な点だけ指摘して。新しく追加された問題がなければ、その旨を明示して: $PLAN_OR_DIFF_REF" \
   | tee "$REVIEW_LOG"
 ```
 
@@ -121,10 +121,10 @@ For non-interactive automation where progress visibility is irrelevant, `--outpu
 
 ## Permission Caveats
 
-- Claude Code `--permission-mode plan` is not the same security boundary as `codex exec --sandbox read-only`.
+- Claude Code `--permission-mode default` with denied edit/write tools is not the same security boundary as `codex exec --sandbox read-only`.
 - Treat the review as complete only when a final `type == "result"` stream event is returned and the command used the explicit minimal settings above.
-- If the command runs without the explicit Fable model, without `--bare`, or with the full normal `claude/settings.json`, treat it as `review incomplete`.
-- If the stream `init` event does not list `WebSearch`, `WebFetch`, or `Fetch`, treat web currentness checks as unavailable in that run. Do not drop `--bare` just to enable web tools unless the user accepts the broader startup context.
+- If the command runs without the explicit Fable model, without `--safe-mode`, or with the full normal `claude/settings.json`, treat it as `review incomplete`.
+- If the stream `init` event does not list `WebFetch`, treat the review command as misconfigured and rerun with the default `--safe-mode --permission-mode default` template. If `WebSearch` or `Fetch` are absent but `WebFetch` is present, the review can proceed.
 - If a denied tool appears in `permission_denials`, treat that denial as evidence the permission gate worked, not as a review failure.
 - If the reviewer needs command output that was intentionally blocked, provide existing logs or run the command yourself outside this review gate when appropriate.
 
@@ -142,8 +142,9 @@ For non-interactive automation where progress visibility is irrelevant, `--outpu
 
 ## Validation
 
-- `--bare`, `--settings <json>`, explicit Fable `--model`, default `--effort medium`, `--output-format stream-json --include-partial-messages --verbose`, and `--resume` were verified with Claude Code 2.1.153.
+- `--safe-mode`, `--settings <json>`, explicit Fable `--model`, default `--effort medium`, `--output-format stream-json --include-partial-messages --verbose`, and `--resume` were verified with Claude Code 2.1.197.
 - The stream output ends with `type == "result"` and includes `.session_id` and `modelUsage."global.anthropic.claude-fable-5"`.
+- In Claude Code 2.1.197, `--bare` and `--permission-mode plan` exposed only `Read`; `--safe-mode --permission-mode default` exposed `Bash`, `Glob`, `Grep`, `Read`, and `WebFetch`.
 - A dry run attempting `Bash(claude -p hi)` returned a permission denial instead of executing.
 - After editing this skill, run:
 
