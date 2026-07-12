@@ -1,24 +1,67 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-if [[ $# -ne 0 ]]; then
-  echo "Usage: herdrp" >&2
-  exit 2
+usage() {
+  cat >&2 <<'EOF'
+Usage: herdrp
+
+Start or attach the shared Herdr session, then focus/create a workspace for
+the current directory.
+EOF
+}
+
+die() {
+  echo "herdrp: $*" >&2
+  exit 1
+}
+
+if [[ $# -gt 0 ]]; then
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      usage
+      exit 2
+      ;;
+  esac
 fi
 
+command -v herdr >/dev/null 2>&1 || die "herdr is required"
+
+session="${HERDR_SHARED_SESSION:-work}"
 real_path="$(pwd -P)"
-raw_base="$(basename "$real_path")"
-base="$(
-  printf '%s' "$raw_base" \
-    | LC_ALL=C tr -c 'A-Za-z0-9._-' '-' \
-    | sed -E 's/^-+//; s/-+$//; s/-+/-/g'
-)"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+herdrw_bin="$script_dir/herdrw"
+[[ -x "$herdrw_bin" ]] || die "missing executable: $herdrw_bin"
 
-if [[ -z "$base" ]]; then
-  base="root"
+herdr_session() {
+  herdr --session "$session" "$@"
+}
+
+server_running() {
+  local status
+  status="$(herdr_session status server 2>/dev/null || true)"
+  [[ "$status" == *"status: running"* ]]
+}
+
+if ! server_running; then
+  safe_session="$(
+    printf '%s' "$session" \
+      | LC_ALL=C tr -c 'A-Za-z0-9._-' '-' \
+      | sed -E 's/^-+//; s/-+$//; s/-+/-/g'
+  )"
+  log_file="${TMPDIR:-/tmp}/herdr-${safe_session:-shared}-server.log"
+  nohup herdr --session "$session" server >"$log_file" 2>&1 </dev/null &
+
+  for _ in {1..80}; do
+    server_running && break
+    sleep 0.1
+  done
+
+  server_running || die "server did not start for session '$session' (log: $log_file)"
 fi
 
-hash="$(printf '%s' "$real_path" | shasum -a 256 | cut -c1-10)"
-session_name="${base}-${hash}"
-
-exec herdr --session "$session_name"
+"$herdrw_bin" --session "$session" "$real_path" >/dev/null
+exec herdr --session "$session"

@@ -1,0 +1,172 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+Usage: herdrw [--session NAME] [path]
+
+Open or focus a Herdr workspace for path. Defaults to the current directory.
+EOF
+}
+
+die() {
+  echo "herdrw: $*" >&2
+  exit 1
+}
+
+require_cmd() {
+  command -v "$1" >/dev/null 2>&1 || die "$1 is required"
+}
+
+session=""
+path=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --session)
+      [[ $# -ge 2 ]] || die "--session requires a value"
+      session="$2"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      die "unknown option: $1"
+      ;;
+    *)
+      [[ -z "$path" ]] || die "only one path can be provided"
+      path="$1"
+      shift
+      ;;
+  esac
+done
+
+if [[ $# -gt 0 ]]; then
+  [[ -z "$path" ]] || die "only one path can be provided"
+  path="$1"
+  shift
+fi
+
+[[ $# -eq 0 ]] || die "only one path can be provided"
+
+require_cmd herdr
+require_cmd jq
+
+target_path="${path:-$PWD}"
+[[ -d "$target_path" ]] || die "not a directory: $target_path"
+real_path="$(cd "$target_path" && pwd -P)"
+
+herdr_cmd() {
+  if [[ -n "$session" ]]; then
+    herdr --session "$session" "$@"
+  else
+    herdr "$@"
+  fi
+}
+
+server_status="$(herdr_cmd status server 2>/dev/null || true)"
+if ! grep -q 'status: running' <<<"$server_status"; then
+  if [[ -n "$session" ]]; then
+    die "Herdr session '$session' is not running. Start it with: HERDR_SHARED_SESSION=$session herdrp"
+  fi
+  die "Herdr server is not running. Start the shared session with: herdrp"
+fi
+
+workspace_label() {
+  local raw_base base
+  raw_base="$(basename "$real_path")"
+  base="$(
+    printf '%s' "$raw_base" \
+      | LC_ALL=C tr -c 'A-Za-z0-9._-' '-' \
+      | sed -E 's/^-+//; s/-+$//; s/-+/-/g'
+  )"
+  printf '%s\n' "${base:-root}"
+}
+
+focus_unique_workspace() {
+  local source="$1"
+  local ids="$2"
+  local count workspace_id
+
+  ids="$(printf '%s\n' "$ids" | sed '/^$/d' | sort -u)"
+  [[ -n "$ids" ]] || return 1
+
+  count="$(printf '%s\n' "$ids" | wc -l | tr -d ' ')"
+  if [[ "$count" -gt 1 ]]; then
+    echo "herdrw: multiple workspaces match $real_path via $source:" >&2
+    while IFS= read -r workspace_id; do
+      printf '  %s\n' "$workspace_id" >&2
+    done <<<"$ids"
+    return 2
+  fi
+
+  workspace_id="$ids"
+  if ! herdr_cmd workspace focus "$workspace_id" >/dev/null; then
+    echo "herdrw: failed to focus workspace '$workspace_id' matched via $source" >&2
+    return 3
+  fi
+  printf '%s\n' "$workspace_id"
+  return 0
+}
+
+try_focus() {
+  local source="$1"
+  local ids="$2"
+
+  set +e
+  focus_unique_workspace "$source" "$ids"
+  local status=$?
+  set -e
+
+  case "$status" in
+    0) exit 0 ;;
+    1) return 0 ;;
+    2) exit 2 ;;
+    3) exit 1 ;;
+    *) exit "$status" ;;
+  esac
+}
+
+worktree_json="$(herdr_cmd worktree list --cwd "$real_path" --json 2>/dev/null || true)"
+if jq -e . >/dev/null 2>&1 <<<"$worktree_json"; then
+  ids="$(
+    jq -r --arg cwd "$real_path" '
+      [
+        (.result.source? | select(.source_checkout_path == $cwd) | .source_workspace_id?),
+        (.result.worktrees[]? | select(.path == $cwd) | .open_workspace_id?)
+      ]
+      | map(select(. != null and . != ""))
+      | unique
+      | .[]
+    ' <<<"$worktree_json"
+  )"
+  try_focus "worktree list" "$ids"
+fi
+
+workspace_json="$(herdr_cmd workspace list)"
+ids="$(
+  jq -r --arg cwd "$real_path" '
+    .result.workspaces[]?
+    | select(.worktree != null and .worktree.checkout_path == $cwd)
+    | .workspace_id
+  ' <<<"$workspace_json"
+)"
+try_focus "workspace list" "$ids"
+
+snapshot_json="$(herdr_cmd api snapshot)"
+ids="$(
+  jq -r --arg cwd "$real_path" '
+    .result.snapshot.panes[]?
+    | select(.cwd == $cwd or .foreground_cwd == $cwd)
+    | .workspace_id
+  ' <<<"$snapshot_json"
+)"
+try_focus "snapshot pane cwd" "$ids"
+
+herdr_cmd workspace create --cwd "$real_path" --label "$(workspace_label)" --focus
