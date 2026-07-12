@@ -48,6 +48,3 @@ Reply in just the same language as the user used.
 
 - ブラウザ操作・E2E は `agent-browser` / `playwright-cli` skill を使う。
 - デバッグ・パフォーマンス確認は Chrome DevTools MCP 系 skill を使う。
-
-## Token Strategy
-実装にあたってはトークンを節約するためにOpus/Sonnetを適切にサブエージェントとして切り出して実行し、このメインセッション(Fable 5)は設計と監査、レビューに専念してください。実装難易度が特に高いところはこのセッションでやってよいです  
