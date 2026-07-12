@@ -82,7 +82,7 @@
       "Bash(git reset:*)"
     ]
   },
-  "model": "opus",
+  "model": "sonnet",
   "hooks": {
     "InstructionsLoaded": [
       {
