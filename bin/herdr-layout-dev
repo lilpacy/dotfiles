@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+Usage: herdr-layout-dev [--session NAME] [--replace]
+
+Create a Herdr dev tab with a 4-pane tmux-style layout in the focused workspace.
+EOF
+}
+
+die() {
+  echo "herdr-layout-dev: $*" >&2
+  exit 1
+}
+
+session=""
+replace=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --session)
+      [[ $# -ge 2 ]] || die "--session requires a value"
+      session="$2"
+      shift 2
+      ;;
+    --replace)
+      replace=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      die "unknown argument: $1"
+      ;;
+  esac
+done
+
+command -v herdr >/dev/null 2>&1 || die "herdr is required"
+command -v jq >/dev/null 2>&1 || die "jq is required"
+
+herdr_cmd() {
+  if [[ -n "$session" ]]; then
+    herdr --session "$session" "$@"
+  else
+    herdr "$@"
+  fi
+}
+
+snapshot() {
+  herdr_cmd api snapshot
+}
+
+pane_ids() {
+  jq -r '.result.snapshot.panes[]?.pane_id' | sort
+}
+
+tab_ids() {
+  jq -r '.result.snapshot.tabs[]?.tab_id' | sort
+}
+
+split_pane() {
+  local target="$1"
+  local direction="$2"
+  local ratio="$3"
+  local before after new_pane
+
+  before="$(mktemp)"
+  after="$(mktemp)"
+  snapshot | pane_ids >"$before"
+  herdr_cmd pane split "$target" --direction "$direction" --ratio "$ratio" --cwd "$cwd" --no-focus >/dev/null
+  snapshot | pane_ids >"$after"
+  new_pane="$(comm -13 "$before" "$after" | head -n 1)"
+  rm -f "$before" "$after"
+
+  [[ -n "$new_pane" ]] || die "failed to detect new pane after split"
+  printf '%s\n' "$new_pane"
+}
+
+create_tab() {
+  local before after new_tab
+
+  before="$(mktemp)"
+  after="$(mktemp)"
+  printf '%s\n' "$json" | tab_ids >"$before"
+  herdr_cmd tab create --workspace "$workspace_id" --cwd "$cwd" --label dev --focus >/dev/null
+  json="$(snapshot)"
+  printf '%s\n' "$json" | tab_ids >"$after"
+  new_tab="$(comm -13 "$before" "$after" | head -n 1)"
+  rm -f "$before" "$after"
+
+  [[ -n "$new_tab" ]] || die "failed to detect new dev tab"
+  created_tab_id="$new_tab"
+}
+
+json="$(snapshot)"
+workspace_id="$(jq -r '.result.snapshot.focused_workspace_id // empty' <<<"$json")"
+focused_pane_id="$(jq -r '.result.snapshot.focused_pane_id // empty' <<<"$json")"
+
+[[ -n "$workspace_id" ]] || die "no focused workspace"
+[[ -n "$focused_pane_id" ]] || die "no focused pane"
+
+cwd="$(
+  jq -r --arg pane "$focused_pane_id" '
+    .result.snapshot.panes[]?
+    | select(.pane_id == $pane)
+    | (.foreground_cwd // .cwd // empty)
+  ' <<<"$json"
+)"
+[[ -n "$cwd" ]] || die "focused pane has no cwd"
+
+existing_tabs="$(
+  jq -r --arg workspace "$workspace_id" --arg label "dev" '
+    .result.snapshot.tabs[]?
+    | select(.workspace_id == $workspace and .label == $label)
+    | .tab_id
+  ' <<<"$json" | sort -u
+)"
+
+if [[ -n "$existing_tabs" ]]; then
+  if [[ "$replace" -eq 0 ]]; then
+    count="$(printf '%s\n' "$existing_tabs" | wc -l | tr -d ' ')"
+    [[ "$count" -eq 1 ]] || die "multiple dev tabs exist; rerun with --replace or close duplicates"
+    herdr_cmd tab focus "$existing_tabs" >/dev/null
+    exit 0
+  fi
+
+  while IFS= read -r tab_id; do
+    [[ -n "$tab_id" ]] && herdr_cmd tab close "$tab_id" >/dev/null
+  done <<<"$existing_tabs"
+fi
+
+created_tab_id=""
+create_tab
+tab_id="$created_tab_id"
+editor="$(
+  jq -r --arg tab "$tab_id" '
+    .result.snapshot.panes[]?
+    | select(.tab_id == $tab)
+    | .pane_id
+  ' <<<"$json" | head -n 1
+)"
+[[ -n "$editor" ]] || die "failed to create dev tab"
+
+shell_pane="$(split_pane "$editor" right 0.60)"
+agent_pane="$(split_pane "$editor" down 0.80)"
+logs_pane="$(split_pane "$shell_pane" down 0.80)"
+
+herdr_cmd pane rename "$editor" editor >/dev/null
+herdr_cmd pane rename "$shell_pane" shell >/dev/null
+herdr_cmd pane rename "$agent_pane" agent >/dev/null
+herdr_cmd pane rename "$logs_pane" logs >/dev/null

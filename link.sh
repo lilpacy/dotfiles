@@ -39,4 +39,8 @@ sudo ln -sf ~/dotfiles/bin/task_cal /usr/local/bin/task_cal
 sudo ln -sf ~/dotfiles/bin/sssh /usr/local/bin/sssh
 sudo ln -sf ~/dotfiles/bin/ecs-sh /usr/local/bin/ecs-sh
 sudo ln -sf ~/dotfiles/bin/tmux-dev /usr/local/bin/tmux-dev
+sudo ln -sf ~/dotfiles/bin/herdrw /usr/local/bin/herdrw
+sudo ln -sf ~/dotfiles/bin/herdrp /usr/local/bin/herdrp
+sudo ln -sf ~/dotfiles/bin/herdr-layout-dev /usr/local/bin/herdr-layout-dev
+sudo ln -sf ~/dotfiles/bin/herdr-layout-dev-wide /usr/local/bin/herdr-layout-dev-wide
 find bin -type f | xargs chmod 755
