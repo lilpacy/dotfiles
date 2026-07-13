@@ -279,7 +279,7 @@ Before loading any visual ruleset, **read the slim index at [`references/macrost
 
 If the previous output was Specimen (light · high-contrast-serif · warm), the next can be Studio (light · high-contrast-serif · chromatic-green) — the *accent hue* differs. But the next can't be Newsprint (light · roman-serif · warm) which only differs on display style and shares both paper band and accent — pick a more distant theme.
 
-The per-theme axis values live as comments at the top of each theme's tokens block in [`site/css/tokens.css`](../../site/css/tokens.css). When in doubt, name your candidate theme out loud and identify its three axis values; if two of three match the previous output, redirect.
+The per-theme axis values live in [`references/theme-catalog.md`](references/theme-catalog.md). Optional files under `references/themes/` can refine a theme with named drops and signature moves. When in doubt, name your candidate theme out loud and identify its three axis values; if two of three match the previous output, redirect.
 
 **State your pick.** Before writing any code, say "Macrostructure: <name>. Theme: <name>. Differs from the last on: <axes>." in plain text. This is a deliberate accountability step — picking on the page (not in your head) prevents the default-attractor sameness that kept the skill emitting Specimen output.
 
@@ -351,6 +351,7 @@ The non-negotiables live in [`references/`](references/). **Be precise about wha
 
 **Always-load (eager — 1–2 files):**
 - The genre file picked in Step 1 — [`genres/editorial.md`](references/genres/editorial.md), [`genres/modern-minimal.md`](references/genres/modern-minimal.md), [`genres/atmospheric.md`](references/genres/atmospheric.md), or [`genres/playful.md`](references/genres/playful.md). Scopes everything downstream.
+- [`theme-catalog.md`](references/theme-catalog.md) — local axis table for the 20 catalog themes. This replaces any external token-file dependency for rotation.
 - **If `references/themes/<theme>.md` exists for the catalog theme picked in Step 2.6, load it eagerly.** Opt-in per-theme spec — carries signature moves, macrostructure affinity / rejection, voice fixtures, and anti-patterns that the tokens block cannot encode. Most themes have no spec file; the load is a silent no-op when absent. Studied-DNA and custom routes skip this load.
 
 **Index-then-pick (read the slim index, then load only the picks):**
@@ -387,8 +388,7 @@ The non-negotiables live in [`references/`](references/). **Be precise about wha
 - [`study.md`](references/study.md) — load only when `hallmark study` runs.
 
 **Human-only (do NOT auto-load):**
-- [`../../docs/recipes.md`](../../docs/recipes.md) — eight worked briefs for human readers.
-- [`../../docs/study-examples.md`](../../docs/study-examples.md) — three worked DNA-extractions for human readers.
+- No human-only docs are shipped in this install. Treat the reference files above as the complete local package.
 
 ### 4. Decide on hero enrichment
 
