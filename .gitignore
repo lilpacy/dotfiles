@@ -154,3 +154,6 @@ __pycache__/
 
 # Compiled AX helper for cursor-compose (build from bin/src/cursor-compose.swift)
 bin/cursor-compose-ax
+
+# self-improvement skill
+.learnings/
