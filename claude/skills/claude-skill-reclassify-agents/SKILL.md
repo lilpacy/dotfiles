@@ -1,3 +1,8 @@
+---
+name: claude-skill-reclassify-agents
+description: Reclassify existing Claude Code subagents and skills, then migrate files into the appropriate structure with backups and a report.
+---
+
 # Skill: Reclassify existing subagents vs skills and migrate
 
 ## Intent

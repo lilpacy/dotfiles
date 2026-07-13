@@ -1,3 +1,8 @@
+---
+name: skills-index-generator
+description: Generate a compact skills index from a skills directory for use in AGENTS.md and related agent instructions.
+---
+
 # Skills Index Generator
 
 skillsディレクトリを走査し、AGENTS.md等に貼り付けられる **圧縮SKILLS-INDEX** を生成するSkill。

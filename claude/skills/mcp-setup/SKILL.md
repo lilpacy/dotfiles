@@ -1,3 +1,8 @@
+---
+name: mcp-setup
+description: Claude Code に MCP サーバーを追加・削除・一覧・確認するためのセットアップ手順を実行する。
+---
+
 # MCP Setup
 
 Claude Code に MCP サーバーを実際にセットアップ（追加・削除・一覧・確認）するSkill。

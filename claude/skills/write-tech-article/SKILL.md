@@ -1,4 +1,5 @@
 ---
+name: write-tech-article
 description: lilpacyのスタイルで技術記事を執筆・レビュー・改善する
 location: user
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob, WebFetch, WebSearch
@@ -351,4 +352,3 @@ E_{H_i} & \text{if } |E_{H_i}| \leq \alpha
 - 技術的な内容も織り交ぜる
 - 読者への問いかけや提案を含める
 - 軽いユーモアを交える
-

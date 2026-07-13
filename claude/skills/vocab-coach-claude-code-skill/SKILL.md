@@ -1,3 +1,8 @@
+---
+name: vocab-coach-claude-code-skill
+description: 課題に関連する専門語彙や隣接語彙を探索し、次の調査クエリへ落とし込む語彙コーチ。
+---
+
 # Vocabulary Coach (語彙コーチ) — Claude Code Skill
 
 ## TL;DR
