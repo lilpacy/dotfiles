@@ -101,15 +101,18 @@ Persist and restore tmux window names + working directories across sessions.
 Herdr migration model:
 
 - tmux window per folder -> Herdr workspace per folder
-- tmux pane layout per window -> Herdr tab layout inside a workspace
+- tmux pane layout per window -> Herdr tabs and panes inside a workspace
 - per-directory Herdr session names are avoided by default
 
 Commands:
 
 - `herdrp` — start/attach the shared Herdr session (`HERDR_SHARED_SESSION`, default `work`) and focus/create a workspace for `$PWD`
-- `herdrw [path]` — focus/create a workspace for a directory in the running Herdr session
-- `herdrw --session <name> [path]` — same, but targets a named Herdr session
-- `herdr-layout-dev [--replace]` — create or focus the `dev` tab with 4 panes: `editor`, `shell`, `agent`, `logs`
-- `herdr-layout-dev-wide [--replace]` — create or focus the `wide` tab with 5 panes: `editor`, `shell`, `agent`, `review`, `logs`
+- `herdrw list` — show open workspaces, focused marker, IDs, and paths
+- `herdrw open [path]` — focus/create a workspace for a directory in the running Herdr session, then save history
+- `herdrw save` — save workspace labels, canonical paths, active path, session, and timestamp
+- `herdrw restore` — restore saved workspace paths, skipping missing directories
+- `herdrw --session <name> ...` — target a named Herdr session
 
-Layout helpers focus an existing same-name tab by default. They only close and recreate that tab when `--replace` is provided.
+Herdr helpers must not stop/delete Herdr servers or user sessions. The old
+`herdr-layout-dev` and `herdr-layout-dev-wide` helpers were removed because
+they encoded the wrong tmux-compatibility goal.

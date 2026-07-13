@@ -3,9 +3,14 @@ set -euo pipefail
 
 usage() {
   cat >&2 <<'EOF'
-Usage: herdrw [--session NAME] [path]
+Usage:
+  herdrw [--session NAME] list
+  herdrw [--session NAME] open [path]
+  herdrw [--session NAME] save
+  herdrw [--session NAME] restore
 
-Open or focus a Herdr workspace for path. Defaults to the current directory.
+Manage the current Herdr workspace set. Helpers never stop or delete Herdr
+servers, sessions, workspaces, tabs, or panes.
 EOF
 }
 
@@ -19,7 +24,6 @@ require_cmd() {
 }
 
 session=""
-path=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -40,27 +44,17 @@ while [[ $# -gt 0 ]]; do
       die "unknown option: $1"
       ;;
     *)
-      [[ -z "$path" ]] || die "only one path can be provided"
-      path="$1"
-      shift
+      break
       ;;
   esac
 done
 
-if [[ $# -gt 0 ]]; then
-  [[ -z "$path" ]] || die "only one path can be provided"
-  path="$1"
-  shift
-fi
-
-[[ $# -eq 0 ]] || die "only one path can be provided"
+command_name="${1:-}"
+[[ -n "$command_name" ]] || { usage; exit 2; }
+shift || true
 
 require_cmd herdr
 require_cmd jq
-
-target_path="${path:-$PWD}"
-[[ -d "$target_path" ]] || die "not a directory: $target_path"
-real_path="$(cd "$target_path" && pwd -P)"
 
 herdr_cmd() {
   if [[ -n "$session" ]]; then
@@ -70,15 +64,54 @@ herdr_cmd() {
   fi
 }
 
-server_status="$(herdr_cmd status server 2>/dev/null || true)"
-if ! grep -q 'status: running' <<<"$server_status"; then
+session_name() {
+  if [[ -n "$session" ]]; then
+    printf '%s\n' "$session"
+    return
+  fi
+
+  if [[ -n "${HERDR_SESSION:-}" ]]; then
+    printf '%s\n' "$HERDR_SESSION"
+    return
+  fi
+
+  printf '%s\n' default
+}
+
+safe_name() {
+  printf '%s' "$1" \
+    | LC_ALL=C tr -c 'A-Za-z0-9._-' '-' \
+    | sed -E 's/^-+//; s/-+$//; s/-+/-/g'
+}
+
+history_file() {
+  local state_home safe_session
+  state_home="${XDG_STATE_HOME:-$HOME/.local/state}"
+  safe_session="$(safe_name "$(session_name)")"
+  printf '%s\n' "${HERDRW_HISTORY_FILE:-$state_home/herdr/workspace-history-${safe_session:-default}.json}"
+}
+
+ensure_server_running() {
+  local server_status
+  server_status="$(herdr_cmd status server 2>/dev/null || true)"
+  if grep -q 'status: running' <<<"$server_status"; then
+    return
+  fi
+
   if [[ -n "$session" ]]; then
     die "Herdr session '$session' is not running. Start it with: HERDR_SHARED_SESSION=$session herdrp"
   fi
   die "Herdr server is not running. Start the shared session with: herdrp"
-fi
+}
 
-workspace_label() {
+canonical_dir() {
+  local path="$1"
+  [[ -d "$path" ]] || return 1
+  cd "$path" && pwd -P
+}
+
+workspace_label_for_path() {
+  local real_path="$1"
   local raw_base base
   raw_base="$(basename "$real_path")"
   base="$(
@@ -89,9 +122,46 @@ workspace_label() {
   printf '%s\n' "${base:-root}"
 }
 
+snapshot() {
+  herdr_cmd api snapshot
+}
+
+workspace_path_rows() {
+  jq -r '
+    .result.snapshot as $s
+    | $s.workspaces[]? as $w
+    | [
+        $w.number,
+        (if $w.focused then "*" else " " end),
+        $w.label,
+        $w.workspace_id,
+        (
+          $w.worktree.checkout_path
+          // ([
+            $s.panes[]?
+            | select(.workspace_id == $w.workspace_id)
+            | (.foreground_cwd // .cwd)
+            | select(. != null and . != "")
+          ][0] // "")
+        )
+      ]
+    | @tsv
+  '
+}
+
+list_workspaces() {
+  ensure_server_running
+
+  printf '%-4s %-1s %-24s %-10s %s\n' "No" "" "Label" "ID" "Path"
+  snapshot | workspace_path_rows | while IFS=$'\t' read -r number focused label workspace_id path; do
+    printf '%-4s %-1s %-24s %-10s %s\n' "$number" "$focused" "$label" "$workspace_id" "$path"
+  done
+}
+
 focus_unique_workspace() {
   local source="$1"
   local ids="$2"
+  local target_path="$3"
   local count workspace_id
 
   ids="$(printf '%s\n' "$ids" | sed '/^$/d' | sort -u)"
@@ -99,7 +169,7 @@ focus_unique_workspace() {
 
   count="$(printf '%s\n' "$ids" | wc -l | tr -d ' ')"
   if [[ "$count" -gt 1 ]]; then
-    echo "herdrw: multiple workspaces match $real_path via $source:" >&2
+    echo "herdrw: multiple workspaces match $target_path via $source:" >&2
     while IFS= read -r workspace_id; do
       printf '  %s\n' "$workspace_id" >&2
     done <<<"$ids"
@@ -118,55 +188,215 @@ focus_unique_workspace() {
 try_focus() {
   local source="$1"
   local ids="$2"
+  local target_path="$3"
+  local focused_id
 
   set +e
-  focus_unique_workspace "$source" "$ids"
+  focused_id="$(focus_unique_workspace "$source" "$ids" "$target_path")"
   local status=$?
   set -e
 
   case "$status" in
-    0) exit 0 ;;
-    1) return 0 ;;
+    0)
+      printf '%s\n' "$focused_id"
+      return 0
+      ;;
+    1) return 1 ;;
     2) exit 2 ;;
     3) exit 1 ;;
     *) exit "$status" ;;
   esac
 }
 
-worktree_json="$(herdr_cmd worktree list --cwd "$real_path" --json 2>/dev/null || true)"
-if jq -e . >/dev/null 2>&1 <<<"$worktree_json"; then
+focus_or_create_workspace() {
+  local real_path="$1"
+  local label="${2:-}"
+  local worktree_json ids workspace_json snapshot_json workspace_id
+
+  worktree_json="$(herdr_cmd worktree list --cwd "$real_path" --json 2>/dev/null || true)"
+  if jq -e . >/dev/null 2>&1 <<<"$worktree_json"; then
+    ids="$(
+      jq -r --arg cwd "$real_path" '
+        [
+          (.result.source? | select(.source_checkout_path == $cwd) | .source_workspace_id?),
+          (.result.worktrees[]? | select(.path == $cwd) | .open_workspace_id?)
+        ]
+        | map(select(. != null and . != ""))
+        | unique
+        | .[]
+      ' <<<"$worktree_json"
+    )"
+    if workspace_id="$(try_focus "worktree list" "$ids" "$real_path")"; then
+      printf '%s\n' "$workspace_id"
+      return
+    fi
+  fi
+
+  workspace_json="$(herdr_cmd workspace list)"
   ids="$(
     jq -r --arg cwd "$real_path" '
-      [
-        (.result.source? | select(.source_checkout_path == $cwd) | .source_workspace_id?),
-        (.result.worktrees[]? | select(.path == $cwd) | .open_workspace_id?)
-      ]
-      | map(select(. != null and . != ""))
-      | unique
-      | .[]
-    ' <<<"$worktree_json"
+      .result.workspaces[]?
+      | select(.worktree != null and .worktree.checkout_path == $cwd)
+      | .workspace_id
+    ' <<<"$workspace_json"
   )"
-  try_focus "worktree list" "$ids"
-fi
+  if workspace_id="$(try_focus "workspace list" "$ids" "$real_path")"; then
+    printf '%s\n' "$workspace_id"
+    return
+  fi
 
-workspace_json="$(herdr_cmd workspace list)"
-ids="$(
-  jq -r --arg cwd "$real_path" '
-    .result.workspaces[]?
-    | select(.worktree != null and .worktree.checkout_path == $cwd)
-    | .workspace_id
-  ' <<<"$workspace_json"
-)"
-try_focus "workspace list" "$ids"
+  snapshot_json="$(snapshot)"
+  ids="$(
+    jq -r --arg cwd "$real_path" '
+      .result.snapshot.panes[]?
+      | select(.cwd == $cwd or .foreground_cwd == $cwd)
+      | .workspace_id
+    ' <<<"$snapshot_json"
+  )"
+  if workspace_id="$(try_focus "snapshot pane cwd" "$ids" "$real_path")"; then
+    printf '%s\n' "$workspace_id"
+    return
+  fi
 
-snapshot_json="$(herdr_cmd api snapshot)"
-ids="$(
-  jq -r --arg cwd "$real_path" '
-    .result.snapshot.panes[]?
-    | select(.cwd == $cwd or .foreground_cwd == $cwd)
-    | .workspace_id
-  ' <<<"$snapshot_json"
-)"
-try_focus "snapshot pane cwd" "$ids"
+  label="${label:-$(workspace_label_for_path "$real_path")}"
+  herdr_cmd workspace create --cwd "$real_path" --label "$label" --focus \
+    | jq -r '.result.workspace.workspace_id // .result.workspace_id // empty'
+}
 
-herdr_cmd workspace create --cwd "$real_path" --label "$(workspace_label)" --focus
+save_history() {
+  ensure_server_running
+
+  local file dir tmp entries_tmp snap saved_at active_candidate active_path
+  file="$(history_file)"
+  dir="$(dirname "$file")"
+  mkdir -p "$dir"
+
+  tmp="$(mktemp "${TMPDIR:-/tmp}/herdrw-history.XXXXXX")"
+  entries_tmp="$(mktemp "${TMPDIR:-/tmp}/herdrw-workspaces.XXXXXX")"
+  trap 'rm -f "$tmp" "$entries_tmp"' RETURN
+
+  snap="$(snapshot)"
+  saved_at="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+  active_candidate="$(
+    jq -r '
+      .result.snapshot as $s
+      | ($s.workspaces[]? | select(.focused) | .worktree.checkout_path) //
+        ($s.panes[]? | select(.focused) | (.foreground_cwd // .cwd)) //
+        ""
+    ' <<<"$snap"
+  )"
+  active_path=""
+  if [[ -n "$active_candidate" && -d "$active_candidate" ]]; then
+    active_path="$(canonical_dir "$active_candidate" || true)"
+  fi
+
+  jq -r '
+    .result.snapshot as $s
+    | $s.workspaces[]? as $w
+    | [
+        $w.label,
+        (
+          $w.worktree.checkout_path
+          // ([
+            $s.panes[]?
+            | select(.workspace_id == $w.workspace_id)
+            | (.foreground_cwd // .cwd)
+            | select(. != null and . != "")
+          ][0] // "")
+        )
+      ]
+    | @tsv
+  ' <<<"$snap" | while IFS=$'\t' read -r label path; do
+    [[ -n "$path" && -d "$path" ]] || continue
+    real_path="$(canonical_dir "$path" || true)"
+    [[ -n "$real_path" ]] || continue
+    jq -n --arg label "$label" --arg path "$real_path" \
+      '{label: $label, path: $path}' >>"$entries_tmp"
+  done
+
+  jq -s \
+    --arg session "$(session_name)" \
+    --arg saved_at "$saved_at" \
+    --arg active "$active_path" \
+    '{
+      session: $session,
+      saved_at: $saved_at,
+      active_workspace_path: (if $active == "" then null else $active end),
+      workspaces: .
+    }' "$entries_tmp" >"$tmp"
+
+  mv "$tmp" "$file"
+  trap - RETURN
+  rm -f "$entries_tmp"
+  printf 'saved %s\n' "$file"
+}
+
+open_workspace() {
+  ensure_server_running
+
+  local target_path="${1:-$PWD}"
+  local label="${2:-}"
+  local real_path workspace_id
+  [[ -d "$target_path" ]] || die "not a directory: $target_path"
+  real_path="$(canonical_dir "$target_path")"
+
+  workspace_id="$(focus_or_create_workspace "$real_path" "$label")"
+  save_history >/dev/null
+  printf '%s %s\n' "${workspace_id:-workspace}" "$real_path"
+}
+
+restore_history() {
+  ensure_server_running
+
+  local file first_path active_path restored_path restored_count
+  file="$(history_file)"
+  [[ -f "$file" ]] || die "no workspace history: $file"
+
+  first_path=""
+  restored_count=0
+
+  jq -r '.workspaces[]? | [.label, .path] | @tsv' "$file" \
+    | while IFS=$'\t' read -r label path; do
+      [[ -n "$path" && -d "$path" ]] || continue
+      restored_path="$(canonical_dir "$path" || true)"
+      [[ -n "$restored_path" ]] || continue
+      [[ -n "$first_path" ]] || first_path="$restored_path"
+      focus_or_create_workspace "$restored_path" "$label" >/dev/null
+      restored_count=$((restored_count + 1))
+      printf '%s\n' "$restored_path" >"${TMPDIR:-/tmp}/herdrw-restore-last.$$"
+    done
+
+  active_path="$(jq -r '.active_workspace_path // ""' "$file")"
+  if [[ -n "$active_path" && -d "$active_path" ]]; then
+    focus_or_create_workspace "$(canonical_dir "$active_path")" >/dev/null
+  elif [[ -f "${TMPDIR:-/tmp}/herdrw-restore-last.$$" ]]; then
+    focus_or_create_workspace "$(cat "${TMPDIR:-/tmp}/herdrw-restore-last.$$")" >/dev/null
+  fi
+  rm -f "${TMPDIR:-/tmp}/herdrw-restore-last.$$"
+
+  save_history >/dev/null
+  printf 'restored from %s\n' "$file"
+}
+
+case "$command_name" in
+  list)
+    [[ $# -eq 0 ]] || die "list does not accept arguments"
+    list_workspaces
+    ;;
+  open)
+    [[ $# -le 1 ]] || die "open accepts at most one path"
+    open_workspace "${1:-$PWD}"
+    ;;
+  save)
+    [[ $# -eq 0 ]] || die "save does not accept arguments"
+    save_history
+    ;;
+  restore)
+    [[ $# -eq 0 ]] || die "restore does not accept arguments"
+    restore_history
+    ;;
+  *)
+    usage
+    exit 2
+    ;;
+esac

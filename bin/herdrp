@@ -63,5 +63,5 @@ if ! server_running; then
   server_running || die "server did not start for session '$session' (log: $log_file)"
 fi
 
-"$herdrw_bin" --session "$session" "$real_path" >/dev/null
+"$herdrw_bin" --session "$session" open "$real_path" >/dev/null
 exec herdr --session "$session"

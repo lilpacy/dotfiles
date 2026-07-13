@@ -1,8 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 mkdir -p ~/.config
 mkdir -p ~/.config/sheldon/
 mkdir -p ~/.config/karabiner/
 mkdir -p ~/.config/git/
 mkdir -p ~/.config/ghostty/
+mkdir -p ~/.config/herdr/
 mkdir -p ~/.config/agents/
 mkdir -p ~/.config/alacritty/
 mkdir -p ~/.hammerspoon
@@ -34,6 +38,7 @@ ln -sf ~/dotfiles/.aerospace.toml ~/.aerospace.toml
 ln -sf ~/dotfiles/.hammerspoon/init.lua ~/.hammerspoon/init.lua
 ln -sfn ~/dotfiles/.hammerspoon/modules ~/.hammerspoon/modules
 ln -sf ~/dotfiles/ghostty ~/.config/ghostty/config
+ln -sf ~/dotfiles/.config/herdr/config.toml ~/.config/herdr/config.toml
 ln -sf ~/dotfiles/alacritty/catppuccin-frappe.toml ~/.config/alacritty/catppuccin-frappe.toml
 
 sudo ln -sf ~/dotfiles/bin/task_cal /usr/local/bin/task_cal
@@ -42,6 +47,10 @@ sudo ln -sf ~/dotfiles/bin/ecs-sh /usr/local/bin/ecs-sh
 sudo ln -sf ~/dotfiles/bin/tmux-dev /usr/local/bin/tmux-dev
 sudo ln -sf ~/dotfiles/bin/herdrw /usr/local/bin/herdrw
 sudo ln -sf ~/dotfiles/bin/herdrp /usr/local/bin/herdrp
-sudo ln -sf ~/dotfiles/bin/herdr-layout-dev /usr/local/bin/herdr-layout-dev
-sudo ln -sf ~/dotfiles/bin/herdr-layout-dev-wide /usr/local/bin/herdr-layout-dev-wide
-find bin -type f | xargs chmod 755
+for obsolete in herdr-layout-dev herdr-layout-dev-wide; do
+  target="/usr/local/bin/$obsolete"
+  if [[ -L "$target" && "$(readlink "$target")" == "$HOME/dotfiles/bin/$obsolete" ]]; then
+    sudo rm -f "$target"
+  fi
+done
+find bin -type f -print0 | xargs -0 chmod 755

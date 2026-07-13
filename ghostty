@@ -15,3 +15,5 @@ background-opacity-cells = true
 # Link settings
 link-url = true
 
+# Top-level Ghostty shells may enter Herdr from .zshrc.
+env = HERDR_AUTO_ENTRY=1

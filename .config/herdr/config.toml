@@ -1,0 +1,90 @@
+onboarding = false
+
+[keys]
+prefix = "ctrl+b"
+
+help = "prefix+?"
+settings = "prefix+comma"
+detach = "prefix+q"
+reload_config = "prefix+shift+r"
+
+workspace_picker = "prefix+w"
+goto = ""
+new_workspace = "prefix+shift+n"
+rename_workspace = "prefix+shift+w"
+close_workspace = "prefix+shift+d"
+previous_workspace = "prefix+shift+left"
+next_workspace = "prefix+shift+right"
+switch_workspace = "prefix+shift+1..9"
+
+new_tab = "prefix+c"
+rename_tab = "prefix+shift+t"
+previous_tab = "prefix+p"
+next_tab = "prefix+n"
+switch_tab = "prefix+1..9"
+close_tab = "prefix+shift+x"
+
+rename_pane = ""
+edit_scrollback = "prefix+e"
+focus_pane_left = "prefix+h"
+focus_pane_down = "prefix+j"
+focus_pane_up = "prefix+k"
+focus_pane_right = "prefix+l"
+cycle_pane_next = "prefix+tab"
+cycle_pane_previous = "prefix+shift+tab"
+split_vertical = "prefix+%"
+split_horizontal = "prefix+\""
+close_pane = "prefix+x"
+zoom = "prefix+z"
+resize_mode = "prefix+r"
+toggle_sidebar = "prefix+b"
+
+[[keys.command]]
+key = "prefix+shift+p"
+type = "pane"
+command = "cd \"${HERDR_ACTIVE_PANE_CWD:-${PWD:-$HOME}}\" && exec ${SHELL:-/bin/zsh} -l"
+
+[[keys.command]]
+key = "prefix+g"
+type = "pane"
+command = "cd \"${HERDR_ACTIVE_PANE_CWD:-${PWD:-$HOME}}\" && exec lazygit"
+
+[[keys.command]]
+key = "prefix+s"
+type = "pane"
+command = "cd \"${HERDR_ACTIVE_PANE_CWD:-${PWD:-$HOME}}\" && exec lazysql"
+
+[[keys.command]]
+key = "prefix+v"
+type = "pane"
+command = "cd \"${HERDR_ACTIVE_PANE_CWD:-${PWD:-$HOME}}\" && exec nvim"
+
+[[keys.command]]
+key = "prefix+t"
+type = "pane"
+command = "exec top"
+
+[[keys.command]]
+key = "prefix+f"
+type = "pane"
+command = "cd \"${HERDR_ACTIVE_PANE_CWD:-${PWD:-$HOME}}\" && file=$(fzf) && [ -n \"$file\" ] && exec nvim \"$file\""
+
+[[keys.command]]
+key = "prefix+shift+c"
+type = "pane"
+command = "herdrw save && herdrw list && printf '\\nPress Enter to close '; read _"
+
+[ui]
+sidebar_width = 32
+sidebar_min_width = 24
+sidebar_max_width = 48
+sidebar_collapsed_mode = "compact"
+mouse_capture = true
+right_click_passthrough_modifier = "alt"
+pane_borders = true
+pane_gaps = true
+hide_tab_bar_when_single_tab = false
+agent_panel_sort = "spaces"
+
+[experimental]
+pane_history = false

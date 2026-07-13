@@ -1,14 +1,31 @@
 source ${ZDOTDIR:-$HOME}/dotfiles/common.sh
 
-# Conductorではtmux自動アタッチしない
-if [[ -n "$CONDUCTOR_WORKSPACE_PATH" || -n "$CONDUCTOR_ROOT_PATH" ]]; then
-	export DISABLE_AUTO_TMUX=1
-fi
+# Ghostty top-level shells enter the shared Herdr session only when explicitly
+# marked by Ghostty config. Herdr panes, tmux, SSH, Codex, and Conductor must
+# remain normal shells.
+function should_auto_enter_herdr() {
+    [[ "${HERDR_AUTO_ENTRY:-}" == "1" ]] || return 1
+    [[ -z "${HERDR_ENV:-}" ]] || return 1
+    [[ -z "${HERDR_SESSION:-}" ]] || return 1
+    [[ -z "${HERDR_SOCKET_PATH:-}" ]] || return 1
+    [[ -z "${TMUX:-}" ]] || return 1
+    [[ -z "${DISABLE_AUTO_HERDR:-}" ]] || return 1
+    [[ -z "${CONDUCTOR_WORKSPACE_PATH:-}" ]] || return 1
+    [[ -z "${CONDUCTOR_ROOT_PATH:-}" ]] || return 1
+    [[ -z "${CODEX_THREAD_ID:-}" ]] || return 1
+    [[ -z "${CODEX_CI:-}" ]] || return 1
+    [[ -z "${CODEX_HOME:-}" ]] || return 1
+    [[ -z "${CODEX_SANDBOX_NETWORK_DISABLED:-}" ]] || return 1
+    [[ -z "${SSH_CONNECTION:-}" ]] || return 1
+    [[ -z "${SSH_TTY:-}" ]] || return 1
+    command -v herdrp >/dev/null 2>&1 || return 1
+}
 
-# tmux
-	if [[ -z "$TMUX" && -z "$DISABLE_AUTO_TMUX" ]] && [[ ! "$TERM" =~ "screen" ]]; then
-		tmux attach -t default || tmux new -s default
-	fi
+if should_auto_enter_herdr; then
+    unset HERDR_AUTO_ENTRY
+    exec herdrp
+fi
+unset HERDR_AUTO_ENTRY
 
 # direnv
 eval "$(direnv hook zsh)"
@@ -56,7 +73,11 @@ bindkey '^]' peco-src
 function peco-src() {
     local src=$(ghq list --full-path | peco --query "$LBUFFER")
     if [ -n "$src" ]; then
-        BUFFER="cd $src"
+        if [[ -n "${HERDR_SESSION:-}" || -n "${HERDR_SOCKET_PATH:-}" ]]; then
+            BUFFER="herdrw open ${(q)src}"
+        else
+            BUFFER="cd ${(q)src}"
+        fi
         zle accept-line
     fi
     zle -R -c
