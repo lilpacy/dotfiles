@@ -157,3 +157,9 @@ bin/cursor-compose-ax
 
 # self-improvement skill
 .learnings/
+
+# agmsg local runtime state
+.codex/hooks.json
+skills/agmsg/db/
+skills/agmsg/run/
+skills/agmsg/teams/
