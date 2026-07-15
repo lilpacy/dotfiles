@@ -107,6 +107,7 @@ function norm(value) {
   if (line ~ /^\(speaking in .*Japanese.*\)$/) {
     next
   }
+  gsub(/交番表|拷貼表|黄板表/, "香盤表", line)
   normalized = norm(line)
   if (normalized == "ご視聴ありがとうございました" || normalized ~ /^字幕.*ありがとうございました$/) {
     next

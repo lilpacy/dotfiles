@@ -257,7 +257,7 @@ VAD_MODEL_PATH="$TEST_ROOT/vad.bin"
 MIC_DEVICE=":default"
 WHISPER_LANGUAGE="auto"
 WHISPER_ALLOWED_LANGUAGES="ja en"
-WHISPER_PROMPT="日英混在 transcript: local dictation, Right Control, clipboard, whisper.cpp, ffmpeg, Hammerspoon, Karabiner, AirPods Pro."
+WHISPER_PROMPT="日英混在 transcript: local dictation, Right Control, clipboard, whisper.cpp, ffmpeg, Hammerspoon, Karabiner, AirPods Pro, 香盤表."
 WHISPER_MAX_CONTEXT="64"
 WHISPER_TEMPERATURE="0"
 WHISPER_TEMPERATURE_INC="0"
@@ -340,7 +340,7 @@ CONFIG
   run "$TEST_ROOT/bin/local-dictation" transcribe
 
   [ "$status" -eq 0 ]
-  grep -Fq -- "--prompt 日英混在 transcript: local dictation, Right Control, clipboard, whisper.cpp, ffmpeg, Hammerspoon, Karabiner, AirPods Pro." "$TEST_LOG_DIR/whisper.args"
+  grep -Fq -- "--prompt 日英混在 transcript: local dictation, Right Control, clipboard, whisper.cpp, ffmpeg, Hammerspoon, Karabiner, AirPods Pro, 香盤表." "$TEST_LOG_DIR/whisper.args"
   grep -Fq -- "--carry-initial-prompt" "$TEST_LOG_DIR/whisper.args"
   grep -Fq -- "-mc 64" "$TEST_LOG_DIR/whisper.args"
   grep -Fq -- "-tp 0" "$TEST_LOG_DIR/whisper.args"
@@ -385,8 +385,19 @@ CONFIG
   [ "$(cat "$TEST_LOG_DIR/clipboard.txt")" = "実際の発話です。" ]
 }
 
+@test "正常系: 誤認識されやすい専門用語は正しい表記でコピーされる" {
+  # shellcheck disable=SC2030,SC2031
+  export TEST_WHISPER_JAPANESE_TEXT=$'交番表、カットリスト、撮影リスト、拷貼表、黄板表について話しています。\n'
+  printf 'dummy audio\n' >"$TEST_STATE_DIR/dictation.wav"
+
+  run "$TEST_ROOT/bin/local-dictation" transcribe
+
+  [ "$status" -eq 0 ]
+  [ "$(cat "$TEST_LOG_DIR/clipboard.txt")" = "香盤表、カットリスト、撮影リスト、香盤表、香盤表について話しています。" ]
+}
+
 @test "正常系: プロンプト内の語彙を話したときそのままコピーされる" {
-  # shellcheck disable=SC2030
+  # shellcheck disable=SC2030,SC2031
   export TEST_WHISPER_JAPANESE_TEXT=$'local dictation, Right Control, clipboard, whisper.cpp を設定します。\n'
   printf 'dummy audio\n' >"$TEST_STATE_DIR/dictation.wav"
 
