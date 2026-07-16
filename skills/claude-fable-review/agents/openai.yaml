@@ -1,4 +1,4 @@
 interface:
   display_name: "Claude Fable Review"
-  short_description: "Run Fable review gates from Claude Code"
-  default_prompt: "Use $claude-fable-review to review this implementation plan before I present it."
+  short_description: "Run Fable review only when explicitly requested"
+  default_prompt: "Use $claude-fable-review only if the user explicitly asked for Fable review or to consult Fable."
