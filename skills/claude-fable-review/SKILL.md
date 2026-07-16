@@ -1,16 +1,22 @@
 ---
 name: claude-fable-review
-description: Use before presenting implementation plans and after non-trivial commits when the review should run through Claude Code with the configured Fable model. Runs claude -p in streaming review mode, derives the Fable model from claude/settings.json, constrains tools for read-only review plus currentness checks, handles resume, and defines review timeout semantics.
+description: Use only when the user explicitly asks for Fable/Claude review. Runs claude -p in streaming review mode with the configured Fable model, constrains tools for read-only review plus currentness checks, handles resume, and defines review timeout semantics.
 ---
 
 # Claude Fable Review
 
-## Required Gates
+## Trigger Rule
 
-- Before presenting an implementation plan to the user, run `claude -p` with Fable to review the plan.
-- After a non-trivial commit, run `claude -p` with Fable to review the committed change.
+- Use this skill only when the user explicitly asks for Fable review, Claude review, or to consult Fable.
+- Do not auto-trigger this skill for generic "review", planning, or post-commit review requests.
+- Default review path remains `codex-exec-review` unless the user explicitly selects Fable.
+
+## When Invoked
+
+- Before presenting an implementation plan to the user, run `claude -p` with Fable to review the plan if the user explicitly asked for Fable review.
+- After a non-trivial commit, run `claude -p` with Fable to review the committed change if the user explicitly asked for Fable review.
 - Repeat review up to 3 times. Stop when no critical issue remains.
-- Do not replace a required review with local tests or your own judgment.
+- Do not replace a requested Fable review with local tests or your own judgment.
 
 ## Review Command Rules
 

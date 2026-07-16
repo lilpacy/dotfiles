@@ -16,6 +16,7 @@ Reply in just the same language as the user used.
 ## Global Safety Rules
 
 - `mcp__ais__*` はユーザーが明示的に指示した場合のみ使用する。
+- `claude-fable-review` skill は、ユーザーが「Fable に相談して」「Fable にレビューして」のように明示的に依頼した場合のみ使用する。明示依頼がない限り発動しない。
 - `mcp__ais__*` は常に `start_gpt5_job` -> `get_gpt5_job_result` の順に使い、ポーリングは1分間隔で行う。
 - CLI ツールは基本的に `brew install` する。
 - `brew` にない package は `npx` などアドホックに実行できるコマンドを使う。
@@ -26,6 +27,7 @@ Reply in just the same language as the user used.
 - 実装・修正・リファクタ・テスト追加では `development-workflow` skill を使う。See `skills/development-workflow/SKILL.md`
 - テスト作成・修正では `japanese-test-conventions` skill を使う。See `skills/japanese-test-conventions/SKILL.md`
 - 実装計画をユーザーに提示する前、および非自明な commit 後レビューでは `codex-exec-review` skill を使う。See `skills/codex-exec-review/SKILL.md`
+- `claude-fable-review` skill は `codex-exec-review` の代替ではなく、ユーザー明示指定時の opt-in review としてのみ使う。See `skills/claude-fable-review/SKILL.md`
 - commit・push・PR 作成では `git-commit-workflow` skill を使う。See `skills/git-commit-workflow/SKILL.md`
 - Web検索・オンラインドキュメント参照では `web-doc-reading` skill を使う。See `skills/web-doc-reading/SKILL.md`
 - Linear issue を扱う作業では `linear-cli` skill を使う。See `skills/linear-cli/SKILL.md`
