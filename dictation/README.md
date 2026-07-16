@@ -90,6 +90,7 @@ Hammerspoon のメニューから Reload Config する。
 right_control 単体押し -> f18
 right_control + 他キー -> right_control
 fn/globe 二度押し -> f18
+right_option 単体押し -> f18
 ```
 
 この設定はKarabiner全体の設定ファイルに置く。dictation 側にルールのコピーは持たない。Karabiner-Elements 側で設定を再読み込みする。
@@ -103,7 +104,7 @@ bin/local-dictation stop
 bin/local-dictation transcribe
 ```
 
-通常は右 Control を 1 回押す、または Fn/Globe を 2 回押すと録音開始、同じ操作でもう一度トグルすると録音停止と文字起こしを行う。結果は `pbcopy` でクリップボードに入る。
+通常は右 Control を 1 回押す、Fn/Globe を 2 回押す、または右 Option を 1 回押すと録音開始、同じ操作でもう一度トグルすると録音停止と文字起こしを行う。結果は `pbcopy` でクリップボードに入る。
 
 ## 状態音
 
