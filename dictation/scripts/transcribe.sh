@@ -108,6 +108,7 @@ function norm(value) {
     next
   }
   gsub(/交番表|拷貼表|黄板表/, "香盤表", line)
+  gsub(/費表示/, "非表示", line)
   normalized = norm(line)
   if (normalized == "ご視聴ありがとうございました" || normalized ~ /^字幕.*ありがとうございました$/) {
     next

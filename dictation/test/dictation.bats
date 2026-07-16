@@ -387,13 +387,13 @@ CONFIG
 
 @test "正常系: 誤認識されやすい専門用語は正しい表記でコピーされる" {
   # shellcheck disable=SC2030,SC2031
-  export TEST_WHISPER_JAPANESE_TEXT=$'交番表、カットリスト、撮影リスト、拷貼表、黄板表について話しています。\n'
+  export TEST_WHISPER_JAPANESE_TEXT=$'交番表、カットリスト、撮影リスト、拷貼表、黄板表、費表示について話しています。\n'
   printf 'dummy audio\n' >"$TEST_STATE_DIR/dictation.wav"
 
   run "$TEST_ROOT/bin/local-dictation" transcribe
 
   [ "$status" -eq 0 ]
-  [ "$(cat "$TEST_LOG_DIR/clipboard.txt")" = "香盤表、カットリスト、撮影リスト、香盤表、香盤表について話しています。" ]
+  [ "$(cat "$TEST_LOG_DIR/clipboard.txt")" = "香盤表、カットリスト、撮影リスト、香盤表、香盤表、非表示について話しています。" ]
 }
 
 @test "正常系: プロンプト内の語彙を話したときそのままコピーされる" {
