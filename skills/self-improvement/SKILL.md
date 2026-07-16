@@ -47,10 +47,17 @@ Log learnings and errors to markdown files for continuous improvement. Coding ag
 
 ## Setup
 
-Create `.learnings/` directory in project root if it doesn't exist:
+Keep learning storage centralized. Do not create a real `.learnings/`
+directory directly inside an individual repo. If a repo needs `.learnings`,
+create the real directory under `~/dotfiles/learnings/<repo-name>/.learnings`
+and symlink the repo-local `.learnings` to it.
+
+Use the repository directory name as `<repo-name>` unless the user specifies a
+different stable name:
 
 ```bash
-mkdir -p .learnings
+mkdir -p "$HOME/dotfiles/learnings/$(basename "$PWD")/.learnings"
+ln -s "$HOME/dotfiles/learnings/$(basename "$PWD")/.learnings" .learnings
 ```
 
 Copy the file templates from `assets/` (`LEARNINGS.md`, `ERRORS.md`, `FEATURE_REQUESTS.md`) or create files with headers.
@@ -380,19 +387,14 @@ Use to filter learnings by codebase region:
 
 ## Gitignore Options
 
-**Keep learnings local** (per-developer):
+**Default: keep repo-local path as a symlink to centralized storage**
 ```gitignore
 .learnings/
 ```
 
-**Track learnings in repo** (team-wide):
-Don't add to .gitignore - learnings become shared knowledge.
-
-**Hybrid** (track templates, ignore entries):
-```gitignore
-.learnings/*.md
-!.learnings/.gitkeep
-```
+Do not track repo-specific learning markdown files in the target repo. If a
+learning should become shared project policy, promote it into the repo's agent
+instructions or documentation instead of committing `.learnings` contents.
 
 ## Hook Integration
 

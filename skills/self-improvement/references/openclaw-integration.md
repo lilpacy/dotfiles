@@ -10,7 +10,7 @@ OpenClaw is a terminal-based AI coding assistant that uses workspace-based promp
 
 | Feature | Claude Code | OpenClaw |
 |---------|------------|----------|
-| Learning storage | `.learnings/` in project | Workspace files (`~/clawd/`) |
+| Learning storage | `.learnings/` symlink in project, real files under `~/dotfiles/learnings/<repo-name>/.learnings` | Workspace files (`~/clawd/`) |
 | Activation | Hooks (UserPromptSubmit) | Workspace injection at start |
 | Promotion targets | `CLAUDE.md`, `AGENTS.md` | `SOUL.md`, `TOOLS.md`, `AGENTS.md` |
 | Inter-agent comms | Not built-in | `sessions_*` tools |
@@ -123,14 +123,14 @@ Purpose: Tool capabilities, MCP server knowledge, integration gotchas.
 
 ### Capturing Learnings
 
-1. **In-session**: Log to `.learnings/` as usual (project-specific)
+1. **In-session**: Log to `.learnings/` as usual; it must be a symlink to centralized project-specific storage
 2. **Cross-project**: Promote to workspace files (openclaw)
 
 ### Promotion Decision Tree
 
 ```
 Is the learning project-specific?
-├── Yes → Promote to CLAUDE.md or .learnings/
+├── Yes → Promote to CLAUDE.md or repo-local .learnings symlink
 └── No → Is it behavioral/style-related?
     ├── Yes → Promote to SOUL.md
     └── No → Is it tool/MCP-related?
@@ -229,7 +229,7 @@ When using both tools on the same codebase:
 | Concern | Where to Store |
 |---------|---------------|
 | Project conventions | `CLAUDE.md` (in repo) |
-| Project learnings | `.learnings/` (in repo) |
+| Project learnings | `.learnings/` symlink in repo, real files under `~/dotfiles/learnings/<repo-name>/.learnings` |
 | Personal preferences | `SOUL.md` (openclaw workspace) |
 | Tool knowledge | `TOOLS.md` (openclaw workspace) |
 | Cross-project workflows | `AGENTS.md` (openclaw workspace) |
@@ -238,7 +238,7 @@ When using both tools on the same codebase:
 
 High-value learnings should exist in both:
 
-1. Log to `.learnings/` first (project context)
+1. Log to `.learnings/` first (project context via centralized symlink)
 2. If broadly applicable, also add to openclaw workspace
 3. Use consistent formatting for easy grep
 
@@ -308,4 +308,4 @@ Check `~/.openclaw/openclaw.json`:
 
 OpenClaw doesn't auto-persist learnings. You must:
 1. Explicitly write to workspace files
-2. Or use `.learnings/` for project-specific storage
+2. Or use `.learnings/` for project-specific storage, with the repo-local path symlinked to `~/dotfiles/learnings/<repo-name>/.learnings`
