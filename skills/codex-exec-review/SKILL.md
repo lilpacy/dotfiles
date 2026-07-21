@@ -22,6 +22,11 @@ description: Use before presenting implementation plans and after non-trivial co
   `command codex` bypasses the alias. Check the run header's
   `sandbox:` line to confirm read-only actually took effect.
 - Use `--sandbox read-only`.
+- For `codex exec resume`, `--sandbox` is not available. Use
+  `-c 'sandbox_mode="read-only"'` and check the run header. If the
+  header is anything other than `sandbox: read-only`, stop using that
+  resumed run for the required review and rerun the review with a fresh
+  `command codex exec --sandbox read-only ...` invocation.
 - Use `-c model_reasoning_effort=medium` only for review runs.
 - Use `-c service_tier=fast` and `-c features.fast_mode=true` when appropriate.
 - Add `--skip-git-repo-check` only when the review must run outside a Git repository.
@@ -47,9 +52,20 @@ command codex exec \
 Use the same session for updated plan reviews:
 
 ```bash
-command codex exec resume <SESSION_ID> \
+command codex exec resume \
+  -c 'sandbox_mode="read-only"' \
+  --model gpt-5.4 \
+  -c model_reasoning_effort=medium \
+  -c service_tier=fast \
+  -c features.fast_mode=true \
+  <SESSION_ID> \
   "前回の指摘を反映してプランを更新した。もう一度レビューして。read-only sandboxなのでテスト・build・format・install・生成コマンドは実行せず、差分・設定・既存ログの読取だけで判断して。不足する実行結果があれば質問して。別の codex exec や外部レビューコマンドは絶対に起動しないで。瑣末な点へのクソリプはしないで。致命的な点だけ指摘して。新しく追加された問題がなければ、その旨を明示して: {plan_full_path} (ref: {CLAUDE_md_full_path})"
 ```
+
+After starting a resumed review, read the run header before waiting on
+the final answer. Treat `sandbox: workspace-write`, `sandbox:
+danger-full-access`, or a missing sandbox line as review setup failure,
+even if the reviewer was instructed in the prompt to behave read-only.
 
 ## MCP Transport Errors
 
@@ -67,6 +83,8 @@ command codex exec resume <SESSION_ID> \
   - about 180s for normal review tasks
 - If intermediate output is still arriving, keep waiting until the review ends.
 - `review started but final result not yet returned` is not `review complete`.
-- For a required review, if the final answer is missing, try at least one `codex exec resume <SESSION_ID>` or rerun.
+- For a required review, if the final answer is missing, try at least one
+  `codex exec resume -c 'sandbox_mode="read-only"' <SESSION_ID>` or rerun
+  with a fresh `command codex exec --sandbox read-only ...`.
 - If the final answer still cannot be recovered, report `review incomplete` and ask the user how to proceed.
 - Do not say a review passed unless the final review answer was obtained.
