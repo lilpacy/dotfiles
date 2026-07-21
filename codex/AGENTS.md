@@ -24,6 +24,7 @@ Reply in just the same language as the user used.
 
 ## Task Skills
 
+- 回答作成・出力では `structured-answer` skill を使う。See `skills/structured-answer/SKILL.md`
 - 実装・修正・リファクタ・テスト追加では `development-workflow` skill を使う。See `skills/development-workflow/SKILL.md`
 - テスト作成・修正では `japanese-test-conventions` skill を使う。See `skills/japanese-test-conventions/SKILL.md`
 - 実装計画をユーザーに提示する前、および非自明な commit 後レビューでは `codex-exec-review` skill を使う。See `skills/codex-exec-review/SKILL.md`

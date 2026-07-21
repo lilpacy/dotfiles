@@ -1,0 +1,4 @@
+interface:
+  display_name: "構造化回答"
+  short_description: "図表と表で曖昧さを減らす"
+  default_prompt: "$structured-answer を使って、必要な箇所を表や Mermaid で一意化してください。"
