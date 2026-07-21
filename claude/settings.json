@@ -96,18 +96,6 @@
         ]
       }
     ],
-    "Notification": [
-      {
-        "matcher": "permission_prompt|idle_prompt",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "afplay /System/Library/Sounds/Blow.aiff",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "matcher": "*",
@@ -116,18 +104,6 @@
             "type": "command",
             "command": "bash '/Users/lilpacy/.claude/hooks/herdr-agent-state.sh' session",
             "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "afplay /System/Library/Sounds/Blow.aiff",
-            "timeout": 5
           }
         ]
       }
