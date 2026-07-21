@@ -2,5 +2,5 @@
 set -euo pipefail
 
 cat <<'EOF'
-structured-answer skill を使う。
+Use structured-answer skill.
 EOF
