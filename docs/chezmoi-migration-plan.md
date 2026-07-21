@@ -1,5 +1,7 @@
 # chezmoi 移行計画案
 
+> **Status: 見送り（2026-07-21）** — 移行しない判断とその理由は [chezmoi-migration-decision.md](./chezmoi-migration-decision.md) を参照。本計画は再検討時の参考として残す。
+
 ## レビュー状態
 
 | 項目 | 結果 |
