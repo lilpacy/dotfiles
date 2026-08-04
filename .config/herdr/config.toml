@@ -75,6 +75,16 @@ type = "pane"
 command = "herdrw save && herdrw list && printf '\\nPress Enter to close '; read _"
 
 [[keys.command]]
+key = "prefix+shift+h"
+type = "shell"
+command = "herdr pane swap --direction left --current"
+
+[[keys.command]]
+key = "prefix+shift+l"
+type = "shell"
+command = "herdr pane swap --direction right --current"
+
+[[keys.command]]
 key = "prefix+m"
 type = "plugin_action"
 command = "dev.volpestyle.mermaid-preview.open"
@@ -95,4 +105,3 @@ agent_panel_sort = "priority"
 [experimental]
 pane_history = false
 kitty_graphics = true
-
