@@ -1,0 +1,762 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "Cross-agent skill management",
+    "scope": "CodexとClaude Codeがagent管理Skillを作成・共有・利用・監査・復元するローカル管理UX",
+    "status": "draft",
+    "success_conditions": [
+      {
+        "id": "SC1",
+        "statement": "共有対象のSkillがCodexとClaude Codeの双方から同じ内容として利用できる",
+        "verification": "両CLIのSkill一覧と実体hashが一致する",
+        "status": "provisional"
+      },
+      {
+        "id": "SC2",
+        "statement": "user管理Skillの保護とagent管理Skillの自律更新を両立する",
+        "verification": "無許可のuser管理Skill変更は拒否され、agent管理Skillの変更はauditと履歴に残る",
+        "status": "provisional"
+      },
+      {
+        "id": "SC3",
+        "statement": "ユーザーがSkillの出所・共有範囲・状態・最近の変更を短時間で把握できる",
+        "verification": "一覧から30秒以内に対象Skillのowner、共有先、最終変更、復元可否を説明できる",
+        "status": "provisional"
+      }
+    ]
+  },
+  "pipeline": {
+    "current_stage": "decision_flow",
+    "stages": [
+      {
+        "id": "business_workflow",
+        "status": "ready_for_review",
+        "review_notes": [
+          "新規Skillは作成時の検証後、Codex・Claude Code双方へ即時共有する"
+        ]
+      },
+      {
+        "id": "decision_flow",
+        "status": "in_progress",
+        "review_notes": [
+          "非競合更新はbase hash一致時だけ自動適用し、競合時だけユーザーへ通知する",
+          "各Skillは単一masterを正本とし、Codex・Claude Codeの既存Skill rootへ個別symlinkで投影する。製品固有差分は持たない",
+          "candidate・再利用回数・昇格状態は持たず、作成時の検証後に即時sharedとする",
+          "投影先に同名Skillがある場合は双方への投影を中止し、既存Skillを変更せず通知する",
+          "正常系の価値体験を先に確定し、準正常系・異常系の詳細はその後に扱う",
+          "作成・更新をユーザーへどう見せるかが未確定",
+          "master・registry・symlinkの更新途中における回復単位は異常系backlogへ延期"
+        ]
+      },
+      {
+        "id": "decision_table",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "design_principles",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "contradiction_check",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "state_machine",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "information_architecture",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "ui_behavior",
+        "status": "not_started",
+        "review_notes": []
+      }
+    ]
+  },
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "agent管理Skillの正本は/Users/lilpacy/dotfiles/skillsにある",
+      "source": "local inspection",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F2",
+      "statement": "Codexは~/.agents/skills経由で正本を参照できる",
+      "source": "local inspection",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F3",
+      "statement": "Claude Codeの個人Skill rootは~/.claude/skillsで、現在agent管理Skillは投影されていない",
+      "source": "local inspection and official documentation",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F4",
+      "statement": "現在のregistryはuser管理とagent管理を区別し、helper経由の変更にauditと履歴を持つ",
+      "source": "local inspection",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F5",
+      "statement": "Full Access運用ではapproval UIではなくCLI警告とguidanceを境界として使う",
+      "source": "user decision",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F6",
+      "statement": "新規agent管理Skillは作成時の検証後、Codex・Claude Code双方へ即時共有する",
+      "source": "user decision",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F7",
+      "statement": "shared Skillの更新はbase hash一致時だけ自動適用し、競合時だけユーザーへ通知する",
+      "source": "user decision",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F8",
+      "statement": "各共有Skillは単一masterを正本とし、Codex・Claude Codeの既存Skill rootへSkill単位のsymlinkで投影する。製品固有版やoverlayは作らない",
+      "source": "user decision",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F9",
+      "statement": "投影先に異なる同名Skillまたはsymlinkが存在する場合、双方への投影を中止し、既存Skillを変更せずユーザーへ通知する",
+      "source": "user decision",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F10",
+      "statement": "UXレビューでは準正常系・異常系を先に掘り下げず、正常系のコア体験を優先して設計する",
+      "source": "user correction",
+      "confidence": "confirmed"
+    }
+  ],
+  "actors": [
+    {
+      "id": "A1",
+      "name": "ユーザー",
+      "role": "所有者・ポリシー決定者",
+      "authority": [
+        "共有ポリシー変更",
+        "user/agent ownership変更",
+        "復元・削除"
+      ],
+      "responsibilities": [
+        "例外時の最終判断"
+      ]
+    },
+    {
+      "id": "A2",
+      "name": "作成元agent",
+      "role": "Skillを作成したCodexまたはClaude Code",
+      "authority": [
+        "agent管理Skillの作成・更新"
+      ],
+      "responsibilities": [
+        "検証済み手順のみ保存",
+        "変更理由の記録"
+      ]
+    },
+    {
+      "id": "A3",
+      "name": "共有先agent",
+      "role": "作成元ではないCodexまたはClaude Code",
+      "authority": [
+        "agent管理Skillの作成・更新"
+      ],
+      "responsibilities": [
+        "検証済み手順のみ保存",
+        "変更理由の記録"
+      ]
+    },
+    {
+      "id": "A4",
+      "name": "Skill manager",
+      "role": "正本・投影・履歴の管理者",
+      "authority": [
+        "検証",
+        "atomic write",
+        "投影更新",
+        "audit記録"
+      ],
+      "responsibilities": [
+        "ownership境界の強制",
+        "複数エージェント間の整合維持",
+        "復元可能性の維持"
+      ]
+    }
+  ],
+  "constraints": [
+    {
+      "id": "K1",
+      "type": "technical",
+      "statement": "CodexとClaude Codeは異なる個人Skill探索rootを持つ",
+      "status": "confirmed"
+    },
+    {
+      "id": "K2",
+      "type": "quality",
+      "statement": "未検証・機密情報・一時ID・会話全文をSkillへ保存しない",
+      "status": "confirmed"
+    },
+    {
+      "id": "K3",
+      "type": "organizational",
+      "statement": "user管理Skillは保護し、agent管理Skillだけを自律更新対象にする",
+      "status": "confirmed"
+    },
+    {
+      "id": "K4",
+      "type": "time",
+      "statement": "初期版では再利用成功回数や昇格状態を保持せず、作成時の検証後に共有を即時反映する",
+      "status": "confirmed"
+    },
+    {
+      "id": "K5",
+      "type": "cost",
+      "statement": "ローカルCLI中心とし、常時稼働サービスは前提にしない",
+      "status": "provisional"
+    }
+  ],
+  "business_workflow": {
+    "start_event": "CodexまたはClaude Codeが再利用可能な検証済み手順を発見する",
+    "end_event": "意図された利用者へSkillが配布され、利用結果・変更・復元点を追跡できる",
+    "steps": [
+      {
+        "id": "W1",
+        "actor_id": "A2",
+        "action": "再利用可能な手順を候補としてまとめる",
+        "input": [
+          "完了した作業",
+          "検証結果"
+        ],
+        "output": [
+          "Skill候補"
+        ],
+        "next_step_ids": [
+          "W2"
+        ]
+      },
+      {
+        "id": "W2",
+        "actor_id": "A4",
+        "action": "候補を検証し、単一masterをsharedとしてowner・origin・versionとともに登録し、Codex・Claude Code双方の既存Skill rootへ個別symlinkで即時投影する",
+        "input": [
+          "Skill候補"
+        ],
+        "output": [
+          "双方から利用できるshared Skill"
+        ],
+        "next_step_ids": [
+          "W5"
+        ]
+      },
+      {
+        "id": "W5",
+        "actor_id": "A3",
+        "action": "共有済みSkillを利用し、成功・失敗・改善点を記録する",
+        "input": [
+          "shared Skill",
+          "対象作業"
+        ],
+        "output": [
+          "共有先での利用結果"
+        ],
+        "next_step_ids": [
+          "W6"
+        ]
+      },
+      {
+        "id": "W6",
+        "actor_id": "A1",
+        "action": "失敗・競合時だけ共有範囲・ownership・versionを確認または復元する",
+        "input": [
+          "audit",
+          "共有先での利用結果",
+          "履歴"
+        ],
+        "output": [
+          "維持された共有Skill"
+        ],
+        "next_step_ids": []
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "id": "D1",
+      "question": "新規agent管理Skillをいつ他方のエージェントへ共有するか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "作成直後に共有",
+          "effects": {
+            "speed": "fast",
+            "propagation_risk": "high"
+          }
+        },
+        {
+          "id": "O2",
+          "label": "作成元で1回成功後に自動共有",
+          "effects": {
+            "speed": "medium",
+            "propagation_risk": "medium"
+          }
+        },
+        {
+          "id": "O3",
+          "label": "ユーザーが明示的に共有",
+          "effects": {
+            "speed": "slow",
+            "propagation_risk": "low"
+          }
+        }
+      ],
+      "selected_option_id": "O1",
+      "owner": "user",
+      "applies_when": "新規agent管理Skillの作成時検証が成功したとき",
+      "reversible": true,
+      "cost_impact": "candidate・成功判定・昇格状態の実装が不要になる",
+      "latency_impact": "作成直後に共有",
+      "risk": "作成時検証を通過した未成熟なSkillが双方へ伝播する可能性がある",
+      "rationale": "初期版では再利用成功の判定と状態保持の複雑さを避ける。品質境界は作成時の検証に置き、問題発生時はauditと履歴から復元する",
+      "principle_ids": [],
+      "workflow_step_ids": [
+        "W2"
+      ],
+      "tags": [
+        "sharing",
+        "quality"
+      ]
+    },
+    {
+      "id": "D2",
+      "question": "共有後に複数agentが同じSkillを更新するとき、競合をどう扱うか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "双方が直接更新し後勝ちにする",
+          "effects": {
+            "autonomy": "high",
+            "lost_update_risk": "high"
+          }
+        },
+        {
+          "id": "O2",
+          "label": "base hash一致時だけ自動適用し、競合時だけユーザーへ通知する",
+          "effects": {
+            "autonomy": "high",
+            "lost_update_risk": "low"
+          }
+        },
+        {
+          "id": "O3",
+          "label": "作成元だけが更新し、共有先は改善提案だけ送る",
+          "effects": {
+            "autonomy": "medium",
+            "lost_update_risk": "low"
+          }
+        }
+      ],
+      "selected_option_id": "O2",
+      "owner": "user",
+      "applies_when": "shared Skillに対してCodexまたはClaude Codeが変更を提案したとき",
+      "reversible": true,
+      "cost_impact": "競合時だけユーザー判断が発生する",
+      "latency_impact": "非競合時は即時、競合時は解消待ち",
+      "risk": "後勝ちでは有効な更新が無言で失われる",
+      "rationale": "通常時の自律更新を止めず、同じbaseから分岐した変更だけを人間の判断へ上げて学習の無言消失を防ぐ",
+      "principle_ids": [],
+      "workflow_step_ids": [
+        "W5",
+        "W6"
+      ],
+      "tags": [
+        "concurrency",
+        "authority",
+        "recovery"
+      ]
+    },
+    {
+      "id": "D3",
+      "question": "Codex専用・Claude Code専用の設定や手順を共有Skillでどう表現するか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "両製品の共通部分だけを許可する",
+          "effects": {
+            "consistency": "high",
+            "platform_capability": "low"
+          }
+        },
+        {
+          "id": "O2",
+          "label": "共通coreと製品別overlayを持ち、投影時に合成する",
+          "effects": {
+            "consistency": "high",
+            "platform_capability": "high"
+          }
+        },
+        {
+          "id": "O3",
+          "label": "Codex版とClaude Code版を別Skillとして複製する",
+          "effects": {
+            "consistency": "low",
+            "platform_capability": "high"
+          }
+        }
+      ],
+      "selected_option_id": "O1",
+      "owner": "user",
+      "applies_when": "共通SKILL.mdだけでは製品固有のfrontmatter・tool・command・hookを表現できないとき",
+      "reversible": true,
+      "cost_impact": "overlay合成または重複保守の実装コスト",
+      "latency_impact": "投影時のローカル合成のみ",
+      "risk": "別Skillへ複製すると内容が徐々に乖離する",
+      "rationale": "現段階では製品固有差分を対象外とし、各Skillの正本を1つに固定する。Codex・Claude Code双方の既存Skill rootは置き換えず、Skill単位のsymlinkで同じmasterを公開することで、重複保守と内容の乖離を避ける",
+      "principle_ids": [],
+      "workflow_step_ids": [
+        "W2"
+      ],
+      "tags": [
+        "compatibility",
+        "projection",
+        "maintainability"
+      ]
+    },
+    {
+      "id": "D4",
+      "question": "candidateをsharedへ昇格する『再利用成功1回』を何で判定するか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "利用agentが作業の検証完了後にmanagerへsuccessを明示記録する",
+          "effects": {
+            "auditability": "high",
+            "false_positive_risk": "low"
+          }
+        },
+        {
+          "id": "O2",
+          "label": "background reviewが会話と実行結果から成功を推定する",
+          "effects": {
+            "auditability": "medium",
+            "false_positive_risk": "medium"
+          }
+        },
+        {
+          "id": "O3",
+          "label": "Skillが呼び出されて処理エラーがなければ成功とみなす",
+          "effects": {
+            "auditability": "low",
+            "false_positive_risk": "high"
+          }
+        },
+        {
+          "id": "O4",
+          "label": "再利用成功を判定せず、作成時の検証後に即時sharedとする",
+          "effects": {
+            "auditability": "作成時検証に集約",
+            "false_positive_risk": "medium"
+          }
+        }
+      ],
+      "selected_option_id": "O4",
+      "owner": "user",
+      "applies_when": "初期版で新規agent管理Skillを共有するとき",
+      "reversible": true,
+      "cost_impact": "再利用成功イベントと昇格状態の実装は不要",
+      "latency_impact": "再利用を待たず即時共有",
+      "risk": "作成時検証だけでは実利用上の欠陥を見逃す可能性がある",
+      "rationale": "再利用成功を客観判定するには追加状態と証跡が必要になるため初期版から外し、作成時検証・audit・復元でリスクを管理する",
+      "principle_ids": [],
+      "workflow_step_ids": [
+        "W2"
+      ],
+      "tags": [
+        "promotion",
+        "verification",
+        "audit"
+      ]
+    },
+    {
+      "id": "D5",
+      "question": "即時共有時にCodexまたはClaude Codeの投影先へ同名Skillが既に存在する場合、どう扱うか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "双方への投影を中止し、既存Skillを変更せずユーザーへ通知する",
+          "effects": {
+            "consistency": "high",
+            "overwrite_risk": "none"
+          }
+        },
+        {
+          "id": "O2",
+          "label": "衝突しない側だけへ投影し、部分共有として警告する",
+          "effects": {
+            "consistency": "low",
+            "overwrite_risk": "none"
+          }
+        },
+        {
+          "id": "O3",
+          "label": "共有Skillを自動改名して双方へ投影する",
+          "effects": {
+            "consistency": "medium",
+            "overwrite_risk": "none"
+          }
+        }
+      ],
+      "selected_option_id": "O1",
+      "owner": "user",
+      "applies_when": "新規shared Skillの名前と異なる既存Skillまたはsymlinkの名前が衝突したとき",
+      "reversible": true,
+      "cost_impact": "衝突解消時だけユーザー判断が発生する",
+      "latency_impact": "衝突時は共有開始が解消まで停止する",
+      "risk": "部分共有は両agentが同じ内容を利用するという成功条件を破り、自動改名はSkill名の予測可能性を下げる",
+      "rationale": "既存Skillの保護と両agent間の一貫性を優先し、部分共有・暗黙の上書き・自動改名を行わない",
+      "principle_ids": [],
+      "workflow_step_ids": [
+        "W2"
+      ],
+      "tags": [
+        "collision",
+        "projection",
+        "atomicity"
+      ]
+    },
+    {
+      "id": "D6",
+      "question": "master・registry・symlinkの更新途中に技術的失敗が起きた場合、どの単位で回復するか",
+      "status": "unresolved",
+      "options": [
+        {
+          "id": "O1",
+          "label": "変更をすべて取り消して操作前の状態へ戻し、ユーザーへ通知する",
+          "effects": {
+            "consistency": "high",
+            "recovery_complexity": "medium"
+          }
+        },
+        {
+          "id": "O2",
+          "label": "作成済みmasterや一部symlinkをfailed状態で保持し、後から修復する",
+          "effects": {
+            "consistency": "medium",
+            "recovery_complexity": "high"
+          }
+        },
+        {
+          "id": "O3",
+          "label": "自動再試行し、失敗が続けば途中状態を残して通知する",
+          "effects": {
+            "consistency": "low",
+            "recovery_complexity": "high"
+          }
+        }
+      ],
+      "selected_option_id": null,
+      "owner": "user",
+      "applies_when": "Skillの作成・更新・投影の途中でI/Oエラーやsymlink作成失敗が起きたとき",
+      "reversible": true,
+      "cost_impact": "原子的な書き込みとrollback処理の実装コスト",
+      "latency_impact": "失敗時のrollback時間のみ",
+      "risk": "途中状態を残すと両agentの可視Skillとregistryが一致しなくなる",
+      "rationale": "",
+      "principle_ids": [],
+      "workflow_step_ids": [
+        "W2",
+        "W5"
+      ],
+      "tags": [
+        "failure",
+        "rollback",
+        "atomicity",
+        "deferred"
+      ]
+    },
+    {
+      "id": "D7",
+      "question": "正常系でagentがSkillを作成・更新したことを、ユーザーへどう見せるか",
+      "status": "unresolved",
+      "options": [
+        {
+          "id": "O1",
+          "label": "何も表示せず、完全に裏側で処理する",
+          "effects": {
+            "friction": "lowest",
+            "visibility": "low"
+          }
+        },
+        {
+          "id": "O2",
+          "label": "処理後にSkill名と作成・更新理由を1行だけ通知する",
+          "effects": {
+            "friction": "low",
+            "visibility": "high"
+          }
+        },
+        {
+          "id": "O3",
+          "label": "作成・更新の前に毎回ユーザー確認を求める",
+          "effects": {
+            "friction": "high",
+            "visibility": "high"
+          }
+        }
+      ],
+      "selected_option_id": null,
+      "owner": "user",
+      "applies_when": "agentが通常タスクの完了時にagent管理Skillを新規作成または非競合更新したとき",
+      "reversible": true,
+      "cost_impact": "通常タスク完了時の表示量と確認回数に影響する",
+      "latency_impact": "事後通知なら待ち時間なし、事前確認ならユーザー応答待ち",
+      "risk": "完全に無通知だと自律変更への信頼を失いやすく、毎回確認だと自己改善が摩擦になる",
+      "rationale": "",
+      "principle_ids": [],
+      "workflow_step_ids": [
+        "W2",
+        "W5"
+      ],
+      "tags": [
+        "normal-flow",
+        "feedback",
+        "trust"
+      ]
+    }
+  ],
+  "decision_table": {
+    "conditions": [],
+    "actions": [],
+    "cases": []
+  },
+  "principles": [],
+  "contradictions": [],
+  "state_machine": {
+    "initial_state_id": null,
+    "states": [],
+    "transitions": []
+  },
+  "information_architecture": {
+    "nodes": [],
+    "relationships": []
+  },
+  "ui_behaviors": [],
+  "questions": [
+    {
+      "id": "Q1",
+      "stage": "business_workflow",
+      "question": "新規agent管理Skillは、どのタイミングで他方のエージェントにも共有しますか？",
+      "priority": 90,
+      "reason": "共有速度と品質リスクを決め、以降のworkflow・状態・権限を同時に確定するため",
+      "status": "answered",
+      "answer": "再利用成功は待たず、作成時の検証後にCodex・Claude Code双方へ即時共有する"
+    },
+    {
+      "id": "Q2",
+      "stage": "decision_flow",
+      "question": "共有後に複数agentの更新が競合した場合、どのルールで扱いますか？",
+      "priority": 100,
+      "reason": "無言の上書きによる学習喪失を防ぎ、通常時の自律性と例外時の責任主体を決めるため",
+      "status": "answered",
+      "answer": "base hash一致時だけ自動適用し、競合時だけユーザーへ通知する"
+    },
+    {
+      "id": "Q3",
+      "stage": "decision_flow",
+      "question": "製品固有の設定や手順は、共通coreと製品別overlayへ分けますか？",
+      "priority": 80,
+      "reason": "単一正本を維持しながら両製品の機能差を扱う境界を決めるため",
+      "status": "answered",
+      "answer": "各Skillはmasterを1つだけ持ち、Codex側とClaude Code側の既存Skill rootへ個別symlinkで投影する。製品固有版は作らない"
+    },
+    {
+      "id": "Q4",
+      "stage": "decision_flow",
+      "question": "candidateをsharedへ昇格する『再利用成功1回』は何で判定しますか？",
+      "priority": 90,
+      "reason": "未検証Skillの誤共有を防ぎつつ、ユーザー操作なしで昇格できる客観的な成功シグナルを決めるため",
+      "status": "answered",
+      "answer": "初期版では再利用成功を判定せず、candidateや昇格状態を持たない。作成時の検証後に即時sharedとする"
+    },
+    {
+      "id": "Q5",
+      "stage": "decision_flow",
+      "question": "即時共有時に投影先へ同名Skillが既に存在したら、共有全体を中止しますか？",
+      "priority": 100,
+      "reason": "既存Skillの上書きと、Codex・Claude Code間の部分共有を防ぐ原子性の境界を決めるため",
+      "status": "answered",
+      "answer": "双方への投影を中止し、既存Skillを変更せずユーザーへ通知する"
+    },
+    {
+      "id": "Q6",
+      "stage": "decision_flow",
+      "question": "作成・更新途中の技術的失敗では、変更をすべて取り消して操作前へ戻しますか？",
+      "priority": 10,
+      "reason": "途中状態を残すかどうかは復元設計、状態数、両agent間の整合性を同時に決めるため",
+      "status": "deferred",
+      "answer": "正常系のコアUX確定後に扱う"
+    },
+    {
+      "id": "Q7",
+      "stage": "decision_flow",
+      "question": "正常系でSkillを自動作成・更新した後、ユーザーへどの程度知らせますか？",
+      "priority": 100,
+      "reason": "自己改善を『透明だが邪魔しない体験』にするか、『完全な裏側の処理』にするかを決めるコアUXだから",
+      "status": "open",
+      "answer": ""
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "AS1",
+      "statement": "共有Skillは両製品が解釈できるSKILL.md共通部分を正本とする",
+      "impact": "製品固有frontmatter・tool・command・hookは現段階の共有対象外とする",
+      "status": "confirmed"
+    }
+  ],
+  "traceability": [
+    {
+      "from": "SC1",
+      "to": [
+        "F1",
+        "F2",
+        "F3",
+        "F8",
+        "F9",
+        "W2",
+        "D1",
+        "D3",
+        "D5"
+      ]
+    },
+    {
+      "from": "SC2",
+      "to": [
+        "F4",
+        "F5",
+        "K2",
+        "K3",
+        "W2",
+        "W6"
+      ]
+    }
+  ]
+}
