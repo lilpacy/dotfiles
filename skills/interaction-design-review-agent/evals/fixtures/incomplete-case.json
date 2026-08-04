@@ -1,0 +1,714 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "Anime Key-Pose Generation UI",
+    "scope": "",
+    "status": "review",
+    "success_conditions": []
+  },
+  "pipeline": {
+    "current_stage": "business_workflow",
+    "stages": [
+      {
+        "id": "business_workflow",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "decision_flow",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "decision_table",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "design_principles",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "contradiction_check",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "state_machine",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "information_architecture",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "ui_behavior",
+        "status": "not_started",
+        "review_notes": []
+      }
+    ]
+  },
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "1回の生成は100円、約160秒、4枚出力",
+      "source": "user",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F2",
+      "statement": "最終採否は作監が判断する",
+      "source": "user",
+      "confidence": "confirmed"
+    }
+  ],
+  "actors": [
+    {
+      "id": "A1",
+      "name": "アシスタント",
+      "role": "素材準備・生成・一次確認",
+      "authority": [
+        "明白な崩れの一次確認"
+      ],
+      "responsibilities": [
+        "素材準備",
+        "候補保存"
+      ]
+    },
+    {
+      "id": "A2",
+      "name": "作監",
+      "role": "専門品質レビュー",
+      "authority": [
+        "最終採否"
+      ],
+      "responsibilities": [
+        "採用判断",
+        "修正方針"
+      ]
+    }
+  ],
+  "constraints": [
+    {
+      "id": "K1",
+      "type": "cost",
+      "statement": "1回100円",
+      "status": "confirmed"
+    },
+    {
+      "id": "K2",
+      "type": "time",
+      "statement": "約160秒",
+      "status": "confirmed"
+    },
+    {
+      "id": "K3",
+      "type": "quality",
+      "statement": "アシスタントは最終品質を正確に判断できない",
+      "status": "confirmed"
+    }
+  ],
+  "business_workflow": {
+    "start_event": "レイアウトを受領",
+    "end_event": "作監確認後に次工程へ引き渡す",
+    "steps": [
+      {
+        "id": "W1",
+        "actor_id": "A1",
+        "action": "対象カットを確認",
+        "input": [
+          "レイアウト"
+        ],
+        "output": [
+          "対象カット"
+        ],
+        "next_step_ids": [
+          "W2"
+        ]
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "id": "D1",
+      "question": "初回理解のために実生成させるか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "生成済み見本を表示",
+          "effects": {
+            "first_visit_demo": "precomputed",
+            "paid_generation": "not_required"
+          }
+        },
+        {
+          "id": "O2",
+          "label": "サンプルで実生成",
+          "effects": {
+            "first_visit_demo": "live",
+            "paid_generation": "required"
+          }
+        }
+      ],
+      "selected_option_id": "O1",
+      "owner": "system",
+      "applies_when": "first_visit",
+      "reversible": true,
+      "cost_impact": "無料",
+      "latency_impact": "即時",
+      "risk": "実データの感触が弱い",
+      "rationale": "初回理解のための有料・長時間処理を避ける",
+      "principle_ids": [
+        "P1",
+        "P2"
+      ],
+      "workflow_step_ids": [
+        "W2"
+      ],
+      "tags": [
+        "onboarding"
+      ]
+    },
+    {
+      "id": "D2",
+      "question": "生成前に費用・待ち時間・出力枚数を表示するか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "毎回表示",
+          "effects": {
+            "preflight_disclosure": "always"
+          }
+        },
+        {
+          "id": "O2",
+          "label": "初回のみ",
+          "effects": {
+            "preflight_disclosure": "first_visit_only"
+          }
+        }
+      ],
+      "selected_option_id": "O1",
+      "owner": "system",
+      "applies_when": "before_generation",
+      "reversible": true,
+      "cost_impact": "",
+      "latency_impact": "",
+      "risk": "",
+      "rationale": "費用と待ち時間は毎回の実行判断に影響する",
+      "principle_ids": [
+        "P1"
+      ],
+      "workflow_step_ids": [
+        "W3"
+      ],
+      "tags": [
+        "costly_action",
+        "long_running_action"
+      ]
+    },
+    {
+      "id": "D3",
+      "question": "最終採否を誰が行うか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "アシスタント",
+          "effects": {
+            "final_quality_owner": "assistant"
+          }
+        },
+        {
+          "id": "O2",
+          "label": "作監",
+          "effects": {
+            "final_quality_owner": "expert"
+          }
+        }
+      ],
+      "selected_option_id": "O2",
+      "owner": "expert",
+      "applies_when": "after_candidate_review",
+      "reversible": false,
+      "cost_impact": "",
+      "latency_impact": "",
+      "risk": "誤採用",
+      "rationale": "専門品質判断は作監の権限",
+      "principle_ids": [
+        "P3"
+      ],
+      "workflow_step_ids": [
+        "W5"
+      ],
+      "tags": [
+        "expert_judgment"
+      ]
+    }
+  ],
+  "decision_table": {
+    "conditions": [
+      {
+        "id": "CND1",
+        "statement": "初回利用"
+      },
+      {
+        "id": "CND2",
+        "statement": "前回状態が存在"
+      }
+    ],
+    "actions": [
+      {
+        "id": "ACT1",
+        "statement": "生成済み見本を表示"
+      },
+      {
+        "id": "ACT2",
+        "statement": "前回状態を復元"
+      },
+      {
+        "id": "ACT3",
+        "statement": "空の編集状態を表示"
+      }
+    ],
+    "cases": [
+      {
+        "id": "CASE1",
+        "conditions": {
+          "CND1": "Y",
+          "CND2": "-"
+        },
+        "actions": {
+          "ACT1": "X",
+          "ACT2": "-",
+          "ACT3": "-"
+        },
+        "notes": ""
+      },
+      {
+        "id": "CASE2",
+        "conditions": {
+          "CND1": "N",
+          "CND2": "Y"
+        },
+        "actions": {
+          "ACT1": "-",
+          "ACT2": "X",
+          "ACT3": "-"
+        },
+        "notes": ""
+      },
+      {
+        "id": "CASE3",
+        "conditions": {
+          "CND1": "N",
+          "CND2": "N"
+        },
+        "actions": {
+          "ACT1": "-",
+          "ACT2": "-",
+          "ACT3": "X"
+        },
+        "notes": ""
+      }
+    ]
+  },
+  "principles": [
+    {
+      "id": "P1",
+      "priority": 1,
+      "statement": "有料・長時間処理の前に費用・時間・出力単位を予測可能にする",
+      "verification": "生成前に毎回表示",
+      "success_condition_ids": [
+        "SC2"
+      ],
+      "status": "confirmed"
+    },
+    {
+      "id": "P2",
+      "priority": 2,
+      "statement": "初回理解と反復利用を別状態として設計する",
+      "verification": "FirstVisitとRestoredを分離",
+      "success_condition_ids": [
+        "SC1"
+      ],
+      "status": "confirmed"
+    },
+    {
+      "id": "P3",
+      "priority": 3,
+      "statement": "専門品質判断は作監に残す",
+      "verification": "最終採否owner=expert",
+      "success_condition_ids": [
+        "SC1"
+      ],
+      "status": "confirmed"
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "X1",
+      "rule_id": "C01",
+      "severity": "blocking",
+      "stage": "design_principles",
+      "evidence_refs": [
+        "D1",
+        "P1"
+      ],
+      "reason": "初回実生成は無料理解と衝突",
+      "status": "resolved",
+      "resolution": "生成済み見本へ変更",
+      "accepted_by": ""
+    }
+  ],
+  "state_machine": {
+    "initial_state_id": "S1",
+    "states": [
+      {
+        "id": "S1",
+        "name": "FirstVisit",
+        "type": "initial",
+        "entry_condition": "初回訪問",
+        "visible": [
+          "生成済み見本"
+        ],
+        "exit_condition": "見本を使うまたは空で始める"
+      },
+      {
+        "id": "S2",
+        "name": "Editing",
+        "type": "normal",
+        "entry_condition": "編集開始",
+        "visible": [
+          "入力欄"
+        ],
+        "exit_condition": "必須入力が有効"
+      },
+      {
+        "id": "S3",
+        "name": "Ready",
+        "type": "normal",
+        "entry_condition": "入力有効",
+        "visible": [
+          "費用・時間・4枚",
+          "生成"
+        ],
+        "exit_condition": "生成開始"
+      },
+      {
+        "id": "S4",
+        "name": "Processing",
+        "type": "processing",
+        "entry_condition": "生成開始",
+        "visible": [
+          "進捗",
+          "取消可否"
+        ],
+        "exit_condition": "完了または失敗"
+      },
+      {
+        "id": "S5",
+        "name": "Results",
+        "type": "success",
+        "entry_condition": "生成完了",
+        "visible": [
+          "元画像",
+          "4候補"
+        ],
+        "exit_condition": "保存または再編集"
+      },
+      {
+        "id": "S6",
+        "name": "Failure",
+        "type": "failure",
+        "entry_condition": "生成失敗",
+        "visible": [
+          "エラー",
+          "再試行"
+        ],
+        "exit_condition": "再編集"
+      }
+    ],
+    "transitions": [
+      {
+        "id": "T1",
+        "from_state_id": "S1",
+        "to_state_id": "S2",
+        "event": "use_sample_or_blank",
+        "guard": "",
+        "decision_ids": [
+          "D1"
+        ],
+        "workflow_step_ids": [
+          "W2"
+        ],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T2",
+        "from_state_id": "S2",
+        "to_state_id": "S3",
+        "event": "inputs_valid",
+        "guard": "required_inputs_valid",
+        "decision_ids": [],
+        "workflow_step_ids": [
+          "W2"
+        ],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T3",
+        "from_state_id": "S3",
+        "to_state_id": "S4",
+        "event": "generate",
+        "guard": "cost_disclosed",
+        "decision_ids": [
+          "D2"
+        ],
+        "workflow_step_ids": [
+          "W3"
+        ],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T4",
+        "from_state_id": "S4",
+        "to_state_id": "S5",
+        "event": "completed",
+        "guard": "",
+        "decision_ids": [],
+        "workflow_step_ids": [
+          "W3"
+        ],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T5",
+        "from_state_id": "S4",
+        "to_state_id": "S6",
+        "event": "failed",
+        "guard": "",
+        "decision_ids": [],
+        "workflow_step_ids": [
+          "W3"
+        ],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T6",
+        "from_state_id": "S6",
+        "to_state_id": "S2",
+        "event": "retry",
+        "guard": "",
+        "decision_ids": [],
+        "workflow_step_ids": [
+          "W3"
+        ],
+        "recovery": true,
+        "assumption": false
+      },
+      {
+        "id": "T7",
+        "from_state_id": "S5",
+        "to_state_id": "S2",
+        "event": "adjust",
+        "guard": "",
+        "decision_ids": [],
+        "workflow_step_ids": [
+          "W4"
+        ],
+        "recovery": true,
+        "assumption": false
+      }
+    ]
+  },
+  "information_architecture": {
+    "nodes": [
+      {
+        "id": "IA1",
+        "label": "Generation Workspace",
+        "type": "workspace",
+        "parent_id": null,
+        "priority": "primary",
+        "state_ids": [
+          "S1",
+          "S2",
+          "S3",
+          "S4",
+          "S5",
+          "S6"
+        ],
+        "decision_ids": []
+      },
+      {
+        "id": "IA2",
+        "label": "Input",
+        "type": "section",
+        "parent_id": "IA1",
+        "priority": "primary",
+        "state_ids": [
+          "S2",
+          "S3"
+        ],
+        "decision_ids": [
+          "D1"
+        ]
+      },
+      {
+        "id": "IA3",
+        "label": "Execution",
+        "type": "section",
+        "parent_id": "IA1",
+        "priority": "primary",
+        "state_ids": [
+          "S3",
+          "S4"
+        ],
+        "decision_ids": [
+          "D2"
+        ]
+      },
+      {
+        "id": "IA4",
+        "label": "Comparison",
+        "type": "section",
+        "parent_id": "IA1",
+        "priority": "primary",
+        "state_ids": [
+          "S5"
+        ],
+        "decision_ids": [
+          "D3"
+        ]
+      }
+    ],
+    "relationships": []
+  },
+  "ui_behaviors": [
+    {
+      "id": "UI1",
+      "label": "初回見本",
+      "state_ids": [
+        "S1"
+      ],
+      "display_condition": "first_visit",
+      "user_action": "見本を使う／空で始める",
+      "system_result": "Editingへ",
+      "feedback": "入力と出力の対応を表示",
+      "recovery": "いつでも見本へ戻れる",
+      "decision_ids": [
+        "D1"
+      ],
+      "principle_ids": [
+        "P1",
+        "P2"
+      ],
+      "ia_node_ids": [
+        "IA1"
+      ],
+      "status": "review"
+    },
+    {
+      "id": "UI2",
+      "label": "生成前開示",
+      "state_ids": [
+        "S3"
+      ],
+      "display_condition": "before_generation",
+      "user_action": "生成",
+      "system_result": "Processingへ",
+      "feedback": "100円・約160秒・4枚を実行前表示",
+      "recovery": "編集へ戻る",
+      "decision_ids": [
+        "D2"
+      ],
+      "principle_ids": [
+        "P1"
+      ],
+      "ia_node_ids": [
+        "IA3"
+      ],
+      "status": "review"
+    },
+    {
+      "id": "UI3",
+      "label": "結果比較",
+      "state_ids": [
+        "S5"
+      ],
+      "display_condition": "generation_completed",
+      "user_action": "保存または再編集",
+      "system_result": "候補保存またはEditingへ",
+      "feedback": "元画像と4候補を同条件で比較",
+      "recovery": "再編集",
+      "decision_ids": [
+        "D3"
+      ],
+      "principle_ids": [
+        "P3"
+      ],
+      "ia_node_ids": [
+        "IA4"
+      ],
+      "status": "review"
+    }
+  ],
+  "questions": [
+    {
+      "id": "Q1",
+      "stage": "business_workflow",
+      "question": "この設計で成功とみなす具体的な状態は何ですか？",
+      "priority": 90,
+      "reason": "成功条件が未定義",
+      "status": "open",
+      "answer": ""
+    },
+    {
+      "id": "Q2",
+      "stage": "business_workflow",
+      "question": "対象業務の終了点はどこですか？",
+      "priority": 70,
+      "reason": "end_eventの確認",
+      "status": "open",
+      "answer": ""
+    }
+  ],
+  "assumptions": [],
+  "traceability": [
+    {
+      "from": "SC1",
+      "to": "P2",
+      "type": "supports"
+    },
+    {
+      "from": "P2",
+      "to": "D1",
+      "type": "governs"
+    },
+    {
+      "from": "D1",
+      "to": "T1",
+      "type": "realized_by"
+    },
+    {
+      "from": "T1",
+      "to": "IA1",
+      "type": "requires"
+    },
+    {
+      "from": "IA1",
+      "to": "UI1",
+      "type": "presented_by"
+    }
+  ]
+}

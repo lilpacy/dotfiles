@@ -1,0 +1,76 @@
+{
+  "version": "1.0",
+  "stages": [
+    {
+      "id": "business_workflow",
+      "order": 1,
+      "label": "Business Workflow",
+      "depends_on": []
+    },
+    {
+      "id": "decision_flow",
+      "order": 2,
+      "label": "Decision Flow",
+      "depends_on": [
+        "business_workflow"
+      ]
+    },
+    {
+      "id": "decision_table",
+      "order": 3,
+      "label": "Decision Table",
+      "depends_on": [
+        "decision_flow"
+      ]
+    },
+    {
+      "id": "design_principles",
+      "order": 4,
+      "label": "Design Principles",
+      "depends_on": [
+        "decision_table"
+      ]
+    },
+    {
+      "id": "contradiction_check",
+      "order": 5,
+      "label": "Contradiction Check",
+      "depends_on": [
+        "design_principles"
+      ]
+    },
+    {
+      "id": "state_machine",
+      "order": 6,
+      "label": "State Machine",
+      "depends_on": [
+        "contradiction_check"
+      ]
+    },
+    {
+      "id": "information_architecture",
+      "order": 7,
+      "label": "Information Architecture",
+      "depends_on": [
+        "state_machine"
+      ]
+    },
+    {
+      "id": "ui_behavior",
+      "order": 8,
+      "label": "UI Behavior",
+      "depends_on": [
+        "information_architecture"
+      ]
+    }
+  ],
+  "blocking_policy": {
+    "open_blocking_contradiction_blocks_from": "contradiction_check",
+    "allow_provisional_override": true,
+    "override_requires": [
+      "explicit_user_request",
+      "assumption_ids",
+      "provisional_status"
+    ]
+  }
+}

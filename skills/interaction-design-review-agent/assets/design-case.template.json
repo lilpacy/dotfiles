@@ -1,0 +1,260 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "",
+    "scope": "",
+    "status": "draft",
+    "success_conditions": [
+      {
+        "id": "SC1",
+        "statement": "",
+        "verification": "",
+        "status": "provisional"
+      }
+    ]
+  },
+  "pipeline": {
+    "current_stage": "business_workflow",
+    "stages": [
+      {
+        "id": "business_workflow",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "decision_flow",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "decision_table",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "design_principles",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "contradiction_check",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "state_machine",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "information_architecture",
+        "status": "not_started",
+        "review_notes": []
+      },
+      {
+        "id": "ui_behavior",
+        "status": "not_started",
+        "review_notes": []
+      }
+    ]
+  },
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "",
+      "source": "user",
+      "confidence": "confirmed"
+    }
+  ],
+  "actors": [
+    {
+      "id": "A1",
+      "name": "",
+      "role": "",
+      "authority": [],
+      "responsibilities": []
+    }
+  ],
+  "constraints": [
+    {
+      "id": "K1",
+      "type": "time|cost|quality|technical|organizational|legal",
+      "statement": "",
+      "status": "confirmed"
+    }
+  ],
+  "business_workflow": {
+    "start_event": "",
+    "end_event": "",
+    "steps": [
+      {
+        "id": "W1",
+        "actor_id": "A1",
+        "action": "",
+        "input": [],
+        "output": [],
+        "next_step_ids": []
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "id": "D1",
+      "question": "",
+      "status": "unresolved",
+      "options": [
+        {
+          "id": "O1",
+          "label": "",
+          "effects": {}
+        }
+      ],
+      "selected_option_id": null,
+      "owner": "user|system|expert|hybrid",
+      "applies_when": "",
+      "reversible": true,
+      "cost_impact": "",
+      "latency_impact": "",
+      "risk": "",
+      "rationale": "",
+      "principle_ids": [],
+      "workflow_step_ids": [
+        "W1"
+      ],
+      "tags": []
+    }
+  ],
+  "decision_table": {
+    "conditions": [
+      {
+        "id": "CND1",
+        "statement": ""
+      }
+    ],
+    "actions": [
+      {
+        "id": "ACT1",
+        "statement": ""
+      }
+    ],
+    "cases": [
+      {
+        "id": "CASE1",
+        "conditions": {
+          "CND1": "Y"
+        },
+        "actions": {
+          "ACT1": "X"
+        },
+        "notes": ""
+      }
+    ]
+  },
+  "principles": [
+    {
+      "id": "P1",
+      "priority": 1,
+      "statement": "",
+      "verification": "",
+      "success_condition_ids": [
+        "SC1"
+      ],
+      "status": "provisional"
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "X1",
+      "rule_id": "C01",
+      "severity": "warning",
+      "stage": "design_principles",
+      "evidence_refs": [],
+      "reason": "",
+      "status": "open",
+      "resolution": "",
+      "accepted_by": ""
+    }
+  ],
+  "state_machine": {
+    "initial_state_id": "S1",
+    "states": [
+      {
+        "id": "S1",
+        "name": "",
+        "type": "initial|normal|processing|success|failure|terminal",
+        "entry_condition": "",
+        "visible": [],
+        "exit_condition": ""
+      }
+    ],
+    "transitions": [
+      {
+        "id": "T1",
+        "from_state_id": "S1",
+        "to_state_id": "S1",
+        "event": "",
+        "guard": "",
+        "decision_ids": [],
+        "workflow_step_ids": [],
+        "recovery": false,
+        "assumption": false
+      }
+    ]
+  },
+  "information_architecture": {
+    "nodes": [
+      {
+        "id": "IA1",
+        "label": "",
+        "type": "workspace|section|screen|panel|information|action",
+        "parent_id": null,
+        "priority": "primary|secondary|tertiary",
+        "state_ids": [
+          "S1"
+        ],
+        "decision_ids": []
+      }
+    ],
+    "relationships": []
+  },
+  "ui_behaviors": [
+    {
+      "id": "UI1",
+      "label": "",
+      "state_ids": [
+        "S1"
+      ],
+      "display_condition": "",
+      "user_action": "",
+      "system_result": "",
+      "feedback": "",
+      "recovery": "",
+      "decision_ids": [],
+      "principle_ids": [],
+      "ia_node_ids": [
+        "IA1"
+      ],
+      "status": "draft"
+    }
+  ],
+  "questions": [
+    {
+      "id": "Q1",
+      "stage": "business_workflow",
+      "question": "",
+      "priority": 50,
+      "reason": "",
+      "status": "open",
+      "answer": ""
+    }
+  ],
+  "assumptions": [
+    {
+      "id": "AS1",
+      "statement": "",
+      "impact": "",
+      "status": "open"
+    }
+  ],
+  "traceability": []
+}

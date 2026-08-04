@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.local/interaction-design-review-agent/design-case.schema.json",
+  "title": "Interaction Design Review Case",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project",
+    "pipeline",
+    "actors",
+    "business_workflow",
+    "decisions",
+    "decision_table",
+    "principles",
+    "contradictions",
+    "state_machine",
+    "information_architecture",
+    "ui_behaviors",
+    "questions",
+    "assumptions"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "project": {
+      "type": "object",
+      "required": [
+        "name",
+        "scope",
+        "success_conditions"
+      ]
+    },
+    "pipeline": {
+      "type": "object",
+      "required": [
+        "current_stage",
+        "stages"
+      ]
+    },
+    "actors": {
+      "type": "array"
+    },
+    "business_workflow": {
+      "type": "object"
+    },
+    "decisions": {
+      "type": "array"
+    },
+    "decision_table": {
+      "type": "object"
+    },
+    "principles": {
+      "type": "array"
+    },
+    "contradictions": {
+      "type": "array"
+    },
+    "state_machine": {
+      "type": "object"
+    },
+    "information_architecture": {
+      "type": "object"
+    },
+    "ui_behaviors": {
+      "type": "array"
+    },
+    "questions": {
+      "type": "array"
+    },
+    "assumptions": {
+      "type": "array"
+    },
+    "traceability": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": true
+}
