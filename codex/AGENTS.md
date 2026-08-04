@@ -45,3 +45,33 @@ Reply in just the same language as the user used.
 
 - ブラウザ操作・E2E は `agent-browser` / `playwright-cli` skill を使う。
 - デバッグ・パフォーマンス確認は Chrome DevTools MCP 系 skill を使う。
+
+<!-- BEGIN HERMES-CODEX FAITHFUL SELF-IMPROVEMENT -->
+## Hermes-compatible skill self-improvement
+
+The following upstream Hermes guidance applies, with `skill_manage` mapped to the guarded command described below:
+
+> After completing a complex task (5+ tool calls), fixing a tricky error, or discovering a non-trivial workflow, save the approach as a skill with skill_manage so you can reuse it next time.
+> When using a skill and finding it outdated, incomplete, or wrong, patch it immediately with skill_manage(action='patch') — don't wait to be asked. Skills that aren't maintained become liabilities.
+>
+> ## Skill Safety Rule
+> 1. **UNAVAILABLE** — If a skill placeholder contains `[SKILL_PRUNED]`, the skill content was lost in compression and is inaccessible.
+> 2. **RELOAD** — Before performing any action that depends on a skill, re-check its content with `skill_view(name='...')` if it shows `[SKILL_PRUNED]`.
+> 3. **WAIT** — If a skill is loading or was just pruned, wait for the reload confirmation before proceeding.
+> 4. **DEDUP** — After reloading a pruned skill, **ignore any remaining `[SKILL_PRUNED]` markers for that same skill** — they are historical artifacts from previous compactions and do not need further action.
+
+### Guarded Codex adapter
+
+- Use the exact executable `/Users/lilpacy/.local/bin/hermes-codex-skill` for every global skill create/update/delete. Never edit `~/.agents/skills` directly.
+- Before changing a skill, run `/Users/lilpacy/.local/bin/hermes-codex-skill list`, then `/Users/lilpacy/.local/bin/hermes-codex-skill view <name>` and read the complete current `SKILL.md`.
+- Autonomous creation: write a complete candidate `SKILL.md` in the current workspace or `/tmp`, then run `/Users/lilpacy/.local/bin/hermes-codex-skill create <name> --content-file <path>`. The new skill is agent-owned.
+- Autonomous maintenance: immediately patch an outdated, incomplete, or wrong **agent-owned** skill with `/Users/lilpacy/.local/bin/hermes-codex-skill patch`. Prefer a narrow exact replacement over `edit`.
+- Existing or unregistered global skills are user-owned and protected. Foreground and background agents must not change them autonomously.
+- Full Access advisory boundary: protected-skill operations cannot rely on Codex's approval UI. The helper prints `USER APPROVAL REQUIRED`, but cannot mechanically prove approval. Run `authorize`, `create-user`, `adopt`, or `release` only when the user's current explicit request authorizes that exact target and action.
+- When the user explicitly requests a protected skill change, run `/Users/lilpacy/.local/bin/hermes-codex-skill authorize <name> --actions <action>`, then use its one-time token only for that requested operation via `--authorization <token>`.
+- When the user explicitly asks to create a user-managed global skill, use `/Users/lilpacy/.local/bin/hermes-codex-skill create-user`.
+- Never call `authorize`, `adopt`, `release`, or `create-user` merely to bypass protection. `adopt` and `release` are only for an explicit user decision about future maintenance ownership.
+- Repository `.agents/skills` remain team/user-managed and are outside this global self-improvement manager.
+- Save only verified procedures. Do not save unresolved guesses, secrets, personal data, temporary IDs, or raw conversation transcripts.
+- After a complex successful task, a recovered failure, a user correction, or a non-trivial workflow discovery, evaluate whether a reusable skill should be created or an agent-owned skill patched before ending the turn.
+<!-- END HERMES-CODEX FAITHFUL SELF-IMPROVEMENT -->
