@@ -173,10 +173,6 @@ if.app-id = 'company.thebrowser.dia'
 run = ['move-node-to-workspace 1']
 
 [[on-window-detected]]
-if.app-id = 'md.obsidian'
-run = 'layout floating'
-
-[[on-window-detected]]
 if.app-id = 'com.googlecode.iterm2'
 run = 'layout floating'
 
