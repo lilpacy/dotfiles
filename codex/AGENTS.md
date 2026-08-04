@@ -30,6 +30,7 @@ Reply in just the same language as the user used.
 - 実装計画をユーザーに提示する前、および非自明な commit 後レビューでは `codex-exec-review` skill を使う。See `skills/codex-exec-review/SKILL.md`
 - `claude-fable-review` skill は `codex-exec-review` の代替ではなく、ユーザー明示指定時の opt-in review としてのみ使う。See `skills/claude-fable-review/SKILL.md`
 - commit・push・PR 作成では `git-commit-workflow` skill を使う。See `skills/git-commit-workflow/SKILL.md`
+- GitHub PR のレビュー・理解確認、行コメント、修正提案、Approve / Request changes では `github-review` skill を使う。See `skills/github-review/SKILL.md`
 - Web検索・オンラインドキュメント参照では `web-doc-reading` skill を使う。See `skills/web-doc-reading/SKILL.md`
 - Linear issue を扱う作業では `linear-cli` skill を使う。See `skills/linear-cli/SKILL.md`
 - ユーザーからの訂正、知識ギャップ、再利用可能な改善学習、未対応機能の記録では `self-improvement` skill を使う。See `skills/self-improvement/SKILL.md`

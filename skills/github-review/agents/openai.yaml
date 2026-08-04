@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Review"
+  short_description: "GitHub PRを対話で精査し、理解確認または安全に投稿"
+  default_prompt: "Use $github-review to inspect this pull request, question me one point at a time, and either verify my understanding or post only comments I approve."

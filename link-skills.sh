@@ -20,6 +20,7 @@ CLAUDE_SKILLS=(
   emil-design-eng
   frontend-design
   git-commit-workflow
+  github-review
   gof-functional-patterns
   improve-animations
   japanese-test-conventions
@@ -39,6 +40,7 @@ CODEX_SKILLS=(
   development-workflow
   frontend-design
   git-commit-workflow
+  github-review
   japanese-test-conventions
   linear-cli
   playwright-interactive
