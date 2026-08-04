@@ -14,7 +14,8 @@ After completing this task, evaluate if extractable knowledge emerged:
 - Project-specific pattern learned?
 - Error required debugging to resolve?
 
-If yes: Log to .learnings/ using the self-improvement skill format.
+If yes: Derive a stable Pattern-Key and task key, search for an existing learning,
+then update its recurrence metadata or create a uniquely identified entry.
 If high-value (recurring, broadly applicable): Consider skill extraction.
 </self-improvement-reminder>
 EOF

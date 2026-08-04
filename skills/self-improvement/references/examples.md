@@ -29,6 +29,11 @@ check existing fixtures for scope patterns before defaulting to function scope.
 - Source: user_feedback
 - Related Files: tests/conftest.py
 - Tags: pytest, testing, fixtures
+- Pattern-Key: tests.pytest_fixture_scope
+- Recurrence-Count: 1
+- First-Seen: 2025-01-15
+- Last-Seen: 2025-01-15
+- Task-Keys: conversation:20250115-pytest-fixture-scope
 
 ---
 ```
@@ -58,6 +63,11 @@ Use `pnpm install` for this project.
 - Source: error
 - Related Files: pnpm-lock.yaml, pnpm-workspace.yaml
 - Tags: package-manager, pnpm, setup
+- Pattern-Key: config.package_manager_detection
+- Recurrence-Count: 1
+- First-Seen: 2025-01-15
+- Last-Seen: 2025-01-15
+- Task-Keys: conversation:20250115-package-manager
 
 ### Resolution
 - **Resolved**: 2025-01-15T14:30:00Z
@@ -93,6 +103,11 @@ Always include correlation ID passthrough in API handlers.
 - Source: user_feedback
 - Related Files: src/middleware/correlation.ts
 - Tags: api, observability, tracing
+- Pattern-Key: backend.correlation_id_passthrough
+- Recurrence-Count: 3
+- First-Seen: 2025-01-05
+- Last-Seen: 2025-01-15
+- Task-Keys: github:example/api#120, github:example/api#128
 
 ---
 ```
@@ -123,6 +138,11 @@ Add to agent workflow: after any API changes, run `pnpm run generate:api`.
 - Source: error
 - Related Files: openapi.yaml, src/client/api.ts
 - Tags: api, codegen, typescript
+- Pattern-Key: backend.regenerate_client_after_api_change
+- Recurrence-Count: 3
+- First-Seen: 2025-01-08
+- Last-Seen: 2025-01-16
+- Task-Keys: github:example/api#130, github:example/api#136
 
 ---
 ```
@@ -130,7 +150,7 @@ Add to agent workflow: after any API changes, run `pnpm run generate:api`.
 ## Error Entry
 
 ```markdown
-## [ERR-20250115-A3F] docker_build
+## [ERR-20250115-001] docker_build
 
 **Logged**: 2025-01-15T09:15:00Z
 **Priority**: high
@@ -164,7 +184,7 @@ Or update Dockerfile: `FROM --platform=linux/amd64 python:3.11-slim`
 ## Error Entry: Recurring Issue
 
 ```markdown
-## [ERR-20250120-B2C] api_timeout
+## [ERR-20250120-001] api_timeout
 
 **Logged**: 2025-01-20T11:30:00Z
 **Priority**: critical
@@ -190,7 +210,7 @@ Implement retry with exponential backoff. Consider circuit breaker pattern.
 ### Metadata
 - Reproducible: yes (during peak hours)
 - Related Files: src/services/payment.ts
-- See Also: ERR-20250115-X1Y, ERR-20250118-Z3W
+- See Also: ERR-20250115-002, ERR-20250118-001
 
 ---
 ```
@@ -289,7 +309,12 @@ Add `--platform linux/amd64` to docker build command, or use
 - Source: error
 - Related Files: Dockerfile
 - Tags: docker, arm64, m1, apple-silicon
-- See Also: ERR-20250115-A3F, ERR-20250117-B2D
+- Pattern-Key: infra.docker_apple_silicon_platform
+- Recurrence-Count: 2
+- First-Seen: 2025-01-15
+- Last-Seen: 2025-01-18
+- Task-Keys: conversation:20250115-docker-build, conversation:20250118-docker-build
+- See Also: ERR-20250115-001, ERR-20250117-001
 
 ---
 ```

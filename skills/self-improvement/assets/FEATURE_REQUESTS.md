@@ -15,7 +15,7 @@ Missing capabilities requested by users, captured during development.
 | `resolved` | Capability implemented (add Resolution block) |
 | `wont_fix` | Decided not to build (reason in Resolution) |
 
-Entry format: see the self-improvement skill's "Feature Request Entry" section. IDs use `FEAT-YYYYMMDD-XXX`.
+Entry format: see the self-improvement skill's "Feature Request Entry" section.
+Generate IDs with `scripts/next-entry-id.sh FEAT --dir .learnings`.
 
 ---
-

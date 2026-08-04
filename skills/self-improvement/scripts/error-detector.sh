@@ -93,7 +93,7 @@ if [ "$contains_error" = true ]; then
 {
   "hookSpecificOutput": {
     "hookEventName": "PostToolUse",
-    "additionalContext": "<error-detected>\nA command error was detected. Consider logging this to .learnings/ERRORS.md if:\n- The error was unexpected or non-obvious\n- It required investigation to resolve\n- It might recur in similar contexts\n- The solution could benefit future sessions\n\nUse the self-improvement skill format: [ERR-YYYYMMDD-XXX]\n</error-detected>"
+    "additionalContext": "<error-detected>\nA command error was detected. Consider logging this to .learnings/ERRORS.md if:\n- The error was unexpected or non-obvious\n- It required investigation to resolve\n- It might recur in similar contexts\n- The solution could benefit future sessions\n\nUse the self-improvement skill format and generate a unique ERR ID with its next-entry-id helper.\n</error-detected>"
   }
 }
 EOF

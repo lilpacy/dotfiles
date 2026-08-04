@@ -1,6 +1,6 @@
 ---
 name: self-improvement
-description: "Captures learnings, errors, corrections, and feature requests to enable continuous improvement. Use when: (1) User corrects Claude ('No, that's wrong...', 'Actually...'), (2) User requests a capability that doesn't exist, (3) Claude realizes its knowledge is outdated or incorrect, (4) A better approach is discovered for a recurring task, (5) Receiving a Handoff block from self-healing (a recurring verified heal at Recurrence-Count >= 3) to distill into a memory file or new skill. For ACTIVE runtime failures where the agent needs to apply and verify a fix mid-task, use `self-healing` instead (it files HEAL- entries with proof; self-improvement promotes accumulated patterns). Also review learnings before major tasks. For CI-only/headless learning capture, use self-improvement-ci."
+description: "Captures learnings, errors, corrections, and feature requests to enable continuous improvement. Use when: (1) User corrects Claude ('No, that's wrong...', 'Actually...'), (2) User requests a capability that doesn't exist, (3) Claude realizes its knowledge is outdated or incorrect, (4) A better approach is discovered for a recurring task, (5) Receiving a Handoff block from self-healing (a recurring verified heal with a Recurrence-Count of at least 3) to distill into a memory file or new skill. For ACTIVE runtime failures where the agent needs to apply and verify a fix mid-task, use `self-healing` instead (it files HEAL- entries with proof; self-improvement promotes accumulated patterns). Also review learnings before major tasks. For CI-only/headless learning capture, use self-improvement-ci."
 ---
 
 # Self-Improvement Skill
@@ -41,7 +41,8 @@ Log learnings and errors to markdown files for continuous improvement. Coding ag
 | Knowledge was outdated | Log to `.learnings/LEARNINGS.md` with category `knowledge_gap` |
 | Found better approach | Log to `.learnings/LEARNINGS.md` with category `best_practice` |
 | Simplify/Harden recurring patterns | Log/update `.learnings/LEARNINGS.md` with `Source: simplify-and-harden` and a stable `Pattern-Key` |
-| Similar to existing entry | Link with `**See Also**`, consider priority bump |
+| Same `Pattern-Key` already exists | Update that entry's recurrence metadata instead of appending a duplicate learning |
+| Related but distinct pattern exists | Link it with `See Also`; do not reuse its `Pattern-Key` |
 | Broadly applicable learning | Promote to `CLAUDE.md`, `AGENTS.md`, and/or `.github/copilot-instructions.md` |
 | OpenClaw workspace targets (SOUL.md, TOOLS.md) | See `references/openclaw-integration.md` |
 
@@ -89,11 +90,12 @@ Specific fix or improvement to make
 - Source: conversation | error | user_feedback
 - Related Files: path/to/file.ext
 - Tags: tag1, tag2
-- See Also: LRN-20250110-001 (if related to existing entry)
-- Pattern-Key: simplify.dead_code | harden.input_validation (optional, for recurring-pattern tracking)
-- Recurrence-Count: 1 (optional)
-- First-Seen: 2025-01-15 (optional)
-- Last-Seen: 2025-01-15 (optional)
+- Pattern-Key: stable.semantic_key
+- Recurrence-Count: 1
+- First-Seen: 2025-01-15
+- Last-Seen: 2025-01-15
+- Task-Keys: conversation:20250115-api-timeout
+- See Also: LRN-20250110-001 (optional; only for related but distinct patterns)
 
 ---
 ```
@@ -170,9 +172,20 @@ How this could be built, what it might extend
 Format: `TYPE-YYYYMMDD-XXX`
 - TYPE: `LRN` (learning), `ERR` (error), `FEAT` (feature)
 - YYYYMMDD: Current date
-- XXX: Sequential number or random 3 chars (e.g., `001`, `A7B`)
+- XXX: Three-digit sequence generated from the IDs already present in the current `.learnings` directory
 
-Examples: `LRN-20250115-001`, `ERR-20250115-A3F`, `FEAT-20250115-002`
+Examples: `LRN-20250115-001`, `ERR-20250115-002`, `FEAT-20250115-003`
+
+Generate an ID before appending any entry:
+
+```bash
+<self-improvement-skill>/scripts/next-entry-id.sh LRN --dir .learnings
+```
+
+Use `ERR` or `FEAT` for the other entry types. The helper scans every Markdown
+file in the storage directory, returns the next sequential ID for the date, and
+refuses to issue an ID while any duplicate ID exists. Do not guess a sequence or
+reuse an ID returned in an earlier task.
 
 ## Resolving Entries
 
@@ -248,12 +261,39 @@ OpenClaw workspace targets (`SOUL.md`, `TOOLS.md`) are covered in `references/op
 
 ## Recurring Pattern Detection
 
-If logging something similar to an existing entry:
+Every learning entry must carry recurrence metadata. Errors and feature requests
+may continue to use `See Also` without this learning-specific schema.
 
-1. **Search first**: `grep -r "keyword" .learnings/`
-2. **Link entries**: Add `**See Also**: ERR-20250110-001` in Metadata
-3. **Bump priority** if issue keeps recurring
-4. **Consider systemic fix**: Recurring issues often indicate:
+### Metadata Semantics
+
+| Field | Requirement | Meaning |
+|---|---|---|
+| `Pattern-Key` | Required | Stable semantic identity of the prevention rule, such as `frontend.relative_same_origin_api` |
+| `Recurrence-Count` | Required | Number of distinct occurrences; do not count repeated mentions, commits, or evidence for one occurrence |
+| `First-Seen` | Required | Date of the first known occurrence |
+| `Last-Seen` | Required | Date of the latest known occurrence |
+| `Task-Keys` | Required | Comma-separated set of distinct work units in which the pattern occurred |
+| `See Also` | Optional | IDs for related but semantically different patterns |
+
+Use an existing issue, PR, job, plan log, or conversation identifier as the task
+key when available, prefixed by its source (for example,
+`github:owner/repo#123`). Otherwise use `conversation:YYYYMMDD-short-slug`.
+Multiple occurrences inside one work unit increment `Recurrence-Count` but add
+only one value to `Task-Keys`.
+
+When capturing a learning:
+
+1. Derive its `Pattern-Key` and current task key before writing.
+2. Search for the exact key: `grep -nFx -- "- Pattern-Key: <pattern-key>" .learnings/LEARNINGS.md`.
+3. If found, update that entry: increment `Recurrence-Count` once for the new
+   occurrence, update `Last-Seen`, and add the task key only if it is new. Do not
+   append another entry for the same pattern.
+4. If not found, generate a unique ID and create an entry with count `1`, equal
+   first/last dates, and the current task key.
+5. Add `See Also` only when another entry is related but has a different
+   prevention rule.
+6. **Bump priority** if impact or recurrence warrants it.
+7. **Consider systemic fix**: Recurring issues often indicate:
    - Missing documentation (→ promote to CLAUDE.md or .github/copilot-instructions.md)
    - Missing automation (→ add to AGENTS.md)
    - Architectural problem (→ create tech debt ticket)
@@ -268,22 +308,22 @@ skill and turn them into durable prompt guidance.
 1. Read `simplify_and_harden.learning_loop.candidates` from the task summary.
 2. For each candidate, use `pattern_key` as the stable dedupe key.
 3. Search `.learnings/LEARNINGS.md` for an existing entry with that key:
-   - `grep -n "Pattern-Key: <pattern_key>" .learnings/LEARNINGS.md`
+   - `grep -nFx -- "- Pattern-Key: <pattern_key>" .learnings/LEARNINGS.md`
 4. If found:
    - Increment `Recurrence-Count`
    - Update `Last-Seen`
-   - Add `See Also` links to related entries/tasks
+   - Add the current task key to `Task-Keys` if it is not already present
 5. If not found:
    - Create a new `LRN-...` entry
    - Set `Source: simplify-and-harden`
-   - Set `Pattern-Key`, `Recurrence-Count: 1`, and `First-Seen`/`Last-Seen`
+   - Set `Pattern-Key`, `Recurrence-Count: 1`, `First-Seen`/`Last-Seen`, and `Task-Keys`
 
 ### Promotion Rule (System Prompt Feedback)
 
 Promote recurring patterns into agent context/system prompt files when all are true:
 
 - `Recurrence-Count >= 3`
-- Seen across at least 2 distinct tasks
+- `Task-Keys` contains at least 2 distinct values
 - Occurred within a 30-day window
 
 Promotion targets:
@@ -382,8 +422,9 @@ Use to filter learnings by codebase region:
 4. **Link related files** - makes fixes easier
 5. **Suggest concrete fixes** - not just "investigate"
 6. **Use consistent categories** - enables filtering
-7. **Promote aggressively** - if in doubt, add to CLAUDE.md or .github/copilot-instructions.md
-8. **Review regularly** - stale learnings lose value
+7. **Use stable pattern and task keys** - makes recurrence and promotion auditable
+8. **Promote only with recorded evidence** - verify every promotion condition from metadata
+9. **Review regularly** - stale learnings lose value
 
 ## Gitignore Options
 
@@ -462,7 +503,7 @@ A learning qualifies for skill extraction when ANY of these apply:
 
 | Criterion | Description |
 |-----------|-------------|
-| **Recurring** | Has `See Also` links to 2+ similar issues |
+| **Recurring** | Learning recurrence metadata meets the Promotion Rule |
 | **Verified** | Status is `resolved` with working fix |
 | **Non-obvious** | Required actual debugging/investigation to discover |
 | **Broadly applicable** | Not project-specific; useful across codebases |
@@ -502,7 +543,7 @@ Watch for these signals that a learning should become a skill:
 - "Remember this pattern"
 
 **In learning entries:**
-- Multiple `See Also` links (recurring issue)
+- Recurrence metadata meets the Promotion Rule
 - High priority + resolved status
 - Category: `best_practice` with broad applicability
 - User feedback praising the solution
@@ -543,9 +584,9 @@ This skill works across different AI coding agents with agent-specific activatio
 ## Self-Improvement
 
 After solving non-obvious issues, consider logging to `.learnings/`:
-1. Use format from self-improvement skill
-2. Link related entries with See Also
-3. Promote high-value learnings to skills
+1. Derive stable pattern and task keys
+2. Update an exact Pattern-Key match or create a uniquely identified entry
+3. Promote high-value learnings only when the recorded evidence qualifies
 
 Ask in chat: "Should I log this as a learning?"
 ```

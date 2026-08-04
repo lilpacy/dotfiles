@@ -6,6 +6,23 @@ Corrections, insights, and knowledge gaps captured during development.
 **Areas**: frontend | backend | infra | tests | docs | config
 **Statuses**: pending | in_progress | resolved | wont_fix | promoted | promoted_to_skill
 
+## Required Recurrence Metadata
+
+Every learning entry must include:
+
+```markdown
+- Pattern-Key: stable.semantic_key
+- Recurrence-Count: 1
+- First-Seen: YYYY-MM-DD
+- Last-Seen: YYYY-MM-DD
+- Task-Keys: conversation:YYYYMMDD-short-slug
+```
+
+Search for the exact `Pattern-Key` before appending. If it already exists,
+update the existing entry's count, last-seen date, and distinct task keys instead
+of creating another learning. Use `See Also` only for related but different
+patterns.
+
 ## Status Definitions
 
 | Status | Meaning |
@@ -41,5 +58,6 @@ Docker build fails on Apple Silicon due to platform mismatch
 ...
 ```
 
----
+Generate entry IDs with `scripts/next-entry-id.sh LRN --dir .learnings`.
 
+---
