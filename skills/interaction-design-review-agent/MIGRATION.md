@@ -21,7 +21,10 @@
 | なし | pipeline |
 | なし | facts |
 | なし | business_workflow |
-| なし | decision_table |
+| なし | business_understanding |
+| なし | decision_requirements |
+| なし | target_value_loop |
+| なし | decision_table（必要な場合だけ） |
 | なし | information_architecture |
 | なし | ui_behaviors |
 | なし | questions |
@@ -40,4 +43,4 @@ python3 scripts/validate_design_case.py new-design-case.json
 python3 scripts/review_pipeline.py new-design-case.json
 ```
 
-旧データに存在しなかった項目は空で作成されるため、Business WorkflowとDecision Tableから補完する。
+旧データに存在しなかった項目は空で作成されるため、Business Understandingから順番に補完する。Decision Tableは複数条件の組合せがある判断だけ作成する。

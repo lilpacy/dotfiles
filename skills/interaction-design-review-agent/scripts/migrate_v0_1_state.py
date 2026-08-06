@@ -5,8 +5,9 @@ import argparse, json
 from pathlib import Path
 from typing import Any
 
-STAGES=["business_workflow","decision_flow","decision_table","design_principles",
-        "contradiction_check","state_machine","information_architecture","ui_behavior"]
+STAGES=["business_understanding","decision_requirements","target_value_loop",
+        "decision_specification","design_principles","contradiction_check",
+        "state_machine","information_architecture","ui_behavior"]
 
 def main() -> int:
     ap=argparse.ArgumentParser()
@@ -16,7 +17,7 @@ def main() -> int:
     old=json.loads(Path(args.old).read_text(encoding="utf-8"))
     project=old.get("project",{})
     new: dict[str,Any]={
-      "schema_version":"1.0",
+      "schema_version":"2.0",
       "project":{
         "name":project.get("name",""),
         "scope":project.get("scope",""),
@@ -26,15 +27,20 @@ def main() -> int:
         ] if project.get("success_condition") else []
       },
       "pipeline":{
-        "current_stage":"business_workflow",
+        "current_stage":"business_understanding",
         "stages":[{"id":s,"status":"not_started","review_notes":[]} for s in STAGES]
       },
       "facts":[],
-      "actors":old.get("actors",[]),
+      "actors":[{**actor,"goal":actor.get("goal","")} for actor in old.get("actors",[])],
       "constraints":old.get("constraints",[]),
-      "business_workflow":{"start_event":"","end_event":"","steps":[]},
+      "business_understanding":{
+        "purpose":"","scope_in":[],"scope_out":[],"pain_points":[],"teach_back":""
+      },
+      "business_workflow":{"start_event":"","start_step_id":"","end_event":"","steps":[]},
+      "decision_requirements":{"confirmed_none":not bool(old.get("decisions",[])),"items":[]},
+      "target_value_loop":{"start_event":"","start_step_id":"","value_outcome":"","steps":[]},
       "decisions":[],
-      "decision_table":{"conditions":[],"actions":[],"cases":[]},
+      "decision_table":{"conditions":[],"actions":[],"cases":[],"applies_to_decision_ids":[]},
       "principles":old.get("principles",[]),
       "contradictions":[],
       "state_machine":{
@@ -48,7 +54,13 @@ def main() -> int:
       "assumptions":old.get("assumptions",[]),
       "traceability":[]
     }
-    for d in old.get("decisions",[]):
+    for index,d in enumerate(old.get("decisions",[]),start=1):
+        requirement_id=f"DR{index}"
+        new["decision_requirements"]["items"].append({
+          "id":requirement_id,"question":d.get("question",""),"business_reason":d.get("rationale",""),
+          "trigger":d.get("applies_when",""),"evidence":[],"failure_impact":"",
+          "workflow_step_ids":[],"status":"provisional"
+        })
         opts=d.get("options",[])
         option_objs=[{"id":f"O{i+1}","label":str(v),"effects":{}} for i,v in enumerate(opts)]
         selected=d.get("selected")
@@ -60,7 +72,9 @@ def main() -> int:
           "options":option_objs,"selected_option_id":selected_id,"owner":d.get("owner","user"),
           "applies_when":d.get("applies_when",""),"reversible":d.get("reversible",True),
           "cost_impact":"","latency_impact":"","risk":"","rationale":d.get("rationale",""),
-          "principle_ids":d.get("principle_ids",[]),"workflow_step_ids":[],"tags":[]
+          "principle_ids":d.get("principle_ids",[]),"workflow_step_ids":[],"tags":[],
+          "requirement_id":requirement_id,"disposition":"retain","evidence":[],
+          "logic_type":"simple_rule","target_value_step_ids":[]
         }
         new["decisions"].append(nd)
     for s in old.get("states",[]):

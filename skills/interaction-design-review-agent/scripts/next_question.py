@@ -6,14 +6,16 @@ from pathlib import Path
 from typing import Any
 
 STAGE_ORDER = {
- "business_workflow":1,"decision_flow":2,"decision_table":3,"design_principles":4,
- "contradiction_check":5,"state_machine":6,"information_architecture":7,"ui_behavior":8
+ "business_understanding":1,"decision_requirements":2,"target_value_loop":3,
+ "decision_specification":4,"design_principles":5,"contradiction_check":6,
+ "state_machine":7,"information_architecture":8,"ui_behavior":9
 }
 
 DEFAULTS = {
- "business_workflow":"この設計で成功とみなす具体的な状態は何ですか？",
- "decision_flow":"現在ユーザーが行っている判断のうち、誤ると最も影響が大きいものは何ですか？",
- "decision_table":"結果が変わる条件の境界はどこですか？",
+ "business_understanding":"現行業務は何を契機に始まり、どの状態になれば完了ですか？",
+ "decision_requirements":"現行業務で、誰かが判断しなければ先へ進めない箇所はどこですか？",
+ "target_value_loop":"利用者が価値を得るまでに、必ず残すべき最短の流れは何ですか？",
+ "decision_specification":"この判断は、いつ、誰が、何を根拠に行いますか？",
  "design_principles":"二つの方針が衝突した場合、最優先する価値は何ですか？",
  "contradiction_check":"衝突している二つの決定のうち、どちらを上位原則として優先しますか？",
  "state_machine":"処理が失敗した場合、ユーザーはどの状態へ戻るべきですか？",
@@ -27,7 +29,7 @@ def main() -> int:
     ap.add_argument("--json",action="store_true")
     args=ap.parse_args()
     data=json.loads(Path(args.path).read_text(encoding="utf-8"))
-    current=data.get("pipeline",{}).get("current_stage","business_workflow")
+    current=data.get("pipeline",{}).get("current_stage","business_understanding")
     open_q=[q for q in data.get("questions",[]) if q.get("status")=="open"]
     # Blocking contradiction questions get an automatic boost.
     open_blocking={c.get("id") for c in data.get("contradictions",[]) if c.get("severity")=="blocking" and c.get("status")=="open"}
@@ -44,7 +46,7 @@ def main() -> int:
         result={"source":"queue","score":score,"question":q}
     else:
         result={"source":"default","score":0,"question":{
-            "id":None,"stage":current,"question":DEFAULTS.get(current,DEFAULTS["business_workflow"]),
+            "id":None,"stage":current,"question":DEFAULTS.get(current,DEFAULTS["business_understanding"]),
             "priority":0,"reason":"現在ステージの既定質問","status":"suggested","answer":""
         }}
     if args.json:

@@ -9,16 +9,17 @@
 
 ```mermaid
 flowchart LR
-    A[Business Workflow]
-    B[Decision Flow]
-    C[Decision Table]
-    D[Design Principles]
-    E[Contradiction Checker]
-    F[State Machine]
-    G[Information Architecture]
-    H[UI Behavior]
+    A[Business Understanding]
+    B[Decision Requirements]
+    C[Target Value Loop]
+    D[Decision Specification]
+    E[Design Principles]
+    F[Contradiction Checker]
+    G[State Machine]
+    H[Information Architecture]
+    I[UI Behavior]
 
-    A --> B --> C --> D --> E --> F --> G --> H
+    A --> B --> C --> D --> E --> F --> G --> H --> I
 ```
 
 ## 旧版からの主な強化
@@ -71,7 +72,7 @@ interaction-design-review-agent/
 ## 使い始める指示例
 
 ```text
-interaction-design-review-agentを使って、この設計をBusiness Workflowから対話形式で整理してください。
+interaction-design-review-agentを使って、この設計をBusiness Understandingから対話形式で整理してください。
 既知情報を先に抽出し、一度に1問だけ質問してください。
 Blocking矛盾がある間は、State Machine以降へ進まないでください。
 ```
@@ -89,7 +90,7 @@ Blocking矛盾と、次に答えるべき1問だけを示してください。
 python3 scripts/validate_design_case.py scripts/example_design_case.json
 python3 scripts/review_pipeline.py scripts/example_design_case.json
 python3 scripts/next_question.py evals/fixtures/incomplete-case.json
-python3 -m unittest tests/test_scripts.py
+python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
 外部ライブラリは不要です。

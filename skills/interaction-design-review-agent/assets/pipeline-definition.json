@@ -1,76 +1,67 @@
 {
-  "version": "1.0",
+  "version": "2.0",
   "stages": [
     {
-      "id": "business_workflow",
+      "id": "business_understanding",
       "order": 1,
-      "label": "Business Workflow",
-      "depends_on": []
+      "label": "Business Understanding",
+      "depends_on": [],
+      "requires_status": "approved",
+      "requires_approver": ["user", "delegated_by_user"],
+      "requires_approval_evidence": true
     },
     {
-      "id": "decision_flow",
+      "id": "decision_requirements",
       "order": 2,
-      "label": "Decision Flow",
-      "depends_on": [
-        "business_workflow"
-      ]
+      "label": "Decision Requirements",
+      "depends_on": ["business_understanding"]
     },
     {
-      "id": "decision_table",
+      "id": "target_value_loop",
       "order": 3,
-      "label": "Decision Table",
-      "depends_on": [
-        "decision_flow"
-      ]
+      "label": "Target Value Loop",
+      "depends_on": ["decision_requirements"]
+    },
+    {
+      "id": "decision_specification",
+      "order": 4,
+      "label": "Decision Specification",
+      "depends_on": ["target_value_loop"]
     },
     {
       "id": "design_principles",
-      "order": 4,
+      "order": 5,
       "label": "Design Principles",
-      "depends_on": [
-        "decision_table"
-      ]
+      "depends_on": ["decision_specification"]
     },
     {
       "id": "contradiction_check",
-      "order": 5,
+      "order": 6,
       "label": "Contradiction Check",
-      "depends_on": [
-        "design_principles"
-      ]
+      "depends_on": ["design_principles"]
     },
     {
       "id": "state_machine",
-      "order": 6,
+      "order": 7,
       "label": "State Machine",
-      "depends_on": [
-        "contradiction_check"
-      ]
+      "depends_on": ["contradiction_check"]
     },
     {
       "id": "information_architecture",
-      "order": 7,
+      "order": 8,
       "label": "Information Architecture",
-      "depends_on": [
-        "state_machine"
-      ]
+      "depends_on": ["state_machine"]
     },
     {
       "id": "ui_behavior",
-      "order": 8,
+      "order": 9,
       "label": "UI Behavior",
-      "depends_on": [
-        "information_architecture"
-      ]
+      "depends_on": ["information_architecture"]
     }
   ],
   "blocking_policy": {
     "open_blocking_contradiction_blocks_from": "contradiction_check",
     "allow_provisional_override": true,
-    "override_requires": [
-      "explicit_user_request",
-      "assumption_ids",
-      "provisional_status"
-    ]
+    "override_requires": ["explicit_user_request", "assumption_ids", "provisional_status"]
   }
 }

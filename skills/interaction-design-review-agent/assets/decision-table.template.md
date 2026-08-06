@@ -1,5 +1,7 @@
 # Decision Table
 
+複数条件の組合せで結果が変わるDecision Specificationにだけ使う。
+
 | 条件＼ケース | CASE-1 | CASE-2 | CASE-3 |
 |---|---:|---:|---:|
 | 条件1 | Y | N | - |

@@ -8,7 +8,10 @@
     "project",
     "pipeline",
     "actors",
+    "business_understanding",
     "business_workflow",
+    "decision_requirements",
+    "target_value_loop",
     "decisions",
     "decision_table",
     "principles",
@@ -21,7 +24,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "1.0"
+      "const": "2.0"
     },
     "project": {
       "type": "object",
@@ -39,10 +42,27 @@
       ]
     },
     "actors": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "role", "goal", "authority", "responsibilities"]
+      }
+    },
+    "business_understanding": {
+      "type": "object",
+      "required": ["purpose", "scope_in", "scope_out", "pain_points", "teach_back"]
     },
     "business_workflow": {
-      "type": "object"
+      "type": "object",
+      "required": ["start_event", "start_step_id", "end_event", "steps"]
+    },
+    "decision_requirements": {
+      "type": "object",
+      "required": ["confirmed_none", "items"]
+    },
+    "target_value_loop": {
+      "type": "object",
+      "required": ["start_event", "start_step_id", "value_outcome", "steps"]
     },
     "decisions": {
       "type": "array"

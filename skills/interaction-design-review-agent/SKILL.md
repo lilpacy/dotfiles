@@ -1,10 +1,6 @@
 ---
 name: interaction-design-review-agent
-description: Orchestrates a gated, dialogue-driven interaction-design review process from business workflow through decision flow, decision tables, design principles, contradiction checks, state machines, information architecture, and UI behavior. Use when a design problem contains many interdependent decisions, the user wants one-question-at-a-time support, or downstream UI work must be blocked until upstream contradictions are resolved.
-metadata:
-  version: "1.1.0"
-  language: "ja"
-  methodology: "gated dialogue-driven interaction design review"
+description: Orchestrates a gated, dialogue-driven interaction-design review from verified business understanding through decision requirements, target value loops, decision specifications, design principles, contradiction checks, state machines, information architecture, and UI behavior. Use when a design problem contains interdependent decisions, the user wants one-question-at-a-time support, or downstream UI work must be blocked until upstream understanding and contradictions are resolved.
 ---
 
 # Interaction Design Review Agent
@@ -13,16 +9,17 @@ metadata:
 
 ```mermaid
 flowchart LR
-    BW[Business Workflow]
-    DF[Decision Flow]
-    DT[Decision Table]
+    BU[Business Understanding]
+    DR[Decision Requirements]
+    VL[Target Value Loop]
+    DS[Decision Specification]
     DP[Design Principles]
     CC[Contradiction Check]
     SM[State Machine]
     IA[Information Architecture]
     UI[UI Behavior]
 
-    BW --> DF --> DT --> DP --> CC --> SM --> IA --> UI
+    BU --> DR --> VL --> DS --> DP --> CC --> SM --> IA --> UI
 ```
 
 このスキルは単なるアイデア生成用プロンプトではない。  
@@ -49,7 +46,7 @@ flowchart LR
 2. **一度に質問は原則1つ。**
 3. **UI案を先に描かない。**
 4. **重大な矛盾がある場合、次のステージへ進まない。**
-5. **安全上のBlockingを除き、正常系の価値ループを準正常系・異常系より先に確定する。**
+5. **S1では現行業務の正常系を理解し、S1承認後に目標の正常系価値ループを設計する。** 安全上のBlockingを除き、各工程の正常系を準正常系・異常系より先に扱う。
 6. **ユーザー判断を追加する前に、削除・自動化・延期・既定値化を検討する。**
 7. **仮定を事実として扱わない。** `※推測` と明記する。
 8. **各決定を設計原則と成功条件へ接続する。**
@@ -66,9 +63,10 @@ flowchart LR
 - プロジェクトの目的、対象範囲、成功条件
 - 事実、仮定、制約
 - アクター、権限、責任
-- 業務フロー
-- 意思決定点、選択肢、判断主体
-- デシジョンテーブル
+- 現行業務の理解と業務フロー
+- 業務上必要な判断
+- 目標の正常系価値ループ
+- 意思決定仕様と、必要な場合だけDecision Table
 - 設計原則と優先順位
 - 矛盾と重大度
 - 状態、遷移、例外
@@ -101,14 +99,15 @@ MarkdownはJSONの代替ではなく、レビュー・実装のための派生�
 
 | ID | ステージ | 必須成果物 | 次へ進めない条件 |
 |---|---|---|---|
-| S1 | Business Workflow | 目的、アクター、主要業務ステップ | 対象業務・成功条件が不明 |
-| S2 | Decision Flow | 判断点、発生条件、判断主体 | 主要な分岐が業務記述に埋もれている |
-| S3 | Decision Table | 条件と結果の組合せ | 組合せ漏れ、同条件で複数結果 |
-| S4 | Design Principles | 優先順位つき2〜5原則 | 原則がUI部品名だけ、優先順位なし |
-| S5 | Contradiction Check | 監査結果、解消記録 | OpenのBlocking矛盾が1件以上 |
-| S6 | State Machine | 状態、イベント、ガード、回復経路 | 行き止まり、到達不能、失敗後の復帰なし |
-| S7 | Information Architecture | 情報・操作の分類、優先順位、関係 | 状態に必要な情報が配置先を持たない |
-| S8 | UI Behavior | 表示条件、操作、結果、エラー、復帰 | 上流への参照がない、挙動が未定義 |
+| S1 | Business Understanding | 業務目的、アクター、現行正常系、範囲、成功条件、teach-back | 意味項目が欠ける、ユーザー未承認 |
+| S2 | Decision Requirements | 業務上必要な判断、理由、契機、根拠、誤判断影響 | 判断の有無が未確認、解決策を先取り |
+| S3 | Target Value Loop | 価値獲得までの目標正常系 | S1・S2にない仮定で設計、価値到達不能 |
+| S4 | Decision Specification | 残した判断の文脈・論理・結果・回復 | 必要判断の扱い漏れ、結果が一意でない |
+| S5 | Design Principles | 優先順位つき2〜5原則 | 原則がUI部品名だけ、優先順位なし |
+| S6 | Contradiction Check | 監査結果、解消記録 | OpenのBlocking矛盾が1件以上 |
+| S7 | State Machine | 状態、イベント、ガード、回復経路 | 行き止まり、到達不能、失敗後の復帰なし |
+| S8 | Information Architecture | 情報・操作の分類、優先順位、関係 | 状態に必要な情報が配置先を持たない |
+| S9 | UI Behavior | 表示条件、操作、結果、エラー、復帰 | 上流への参照がない、挙動が未定義 |
 
 詳細は [references/stage-gates.md](references/stage-gates.md) を参照。
 
@@ -125,13 +124,20 @@ flowchart TD
     G{必須情報が不足?}
     H[次の高レバレッジ質問を1つ返す]
     I[成果物を生成]
-    J[次ステージへ進む]
+    J{人間の承認が必要?}
+    K[レビュー可能な要約を提示]
+    L{承認済み?}
+    M[次ステージへ進む]
 
     A --> B --> C --> D
     D -->|あり| E --> F --> A
     D -->|なし| G
     G -->|あり| H --> A
-    G -->|なし| I --> J --> B
+    G -->|なし| I --> J
+    J -->|いいえ| M --> B
+    J -->|はい| K --> L
+    L -->|修正あり| A
+    L -->|承認| M
 ```
 
 ### 質問の優先順位
@@ -141,7 +147,7 @@ flowchart TD
 | 優先度 | 扱う論点 |
 |---:|---|
 | 1 | データ損失・不可逆操作・権限違反などの安全上のBlocking |
-| 2 | 正常系のコア価値ループ |
+| 2 | 現在ステージの正常系：S1は現行業務、S3以降は目標価値ループ |
 | 3 | 正常系の摩擦やフィードバック |
 | 4 | 準正常系・異常系・回復経路 |
 
@@ -149,78 +155,129 @@ flowchart TD
 flowchart TD
     A[未解決論点を収集] --> B{安全上のBlockingがある?}
     B -- はい --> P1[優先度1から1問選ぶ]
-    B -- いいえ --> C{正常系のコア価値ループが未確定?}
+    B -- いいえ --> C{現在ステージの正常系が未確定?}
     C -- はい --> P2[優先度2から1問選ぶ]
     C -- いいえ --> D{正常系の摩擦やフィードバックが未確定?}
     D -- はい --> P3[優先度3から1問選ぶ]
     D -- いいえ --> P4[優先度4のbacklogから1問選ぶ]
 ```
 
-安全上のBlockingは、放置するとデータ損失・不可逆な費用発生・権限違反・機密漏えいが起きる論点に限定する。単なる実装失敗や低頻度の例外は優先度4へ置く。正常系の価値獲得までの流れが未確定なら、準正常系・異常系を `deferred` backlogへ移す。
+安全上のBlockingは、放置するとデータ損失・不可逆な費用発生・権限違反・機密漏えいが起きる論点に限定する。単なる実装失敗や低頻度の例外は優先度4へ置く。S1の業務理解が未承認なら目標価値ループを設計しない。S3以降で正常系の価値獲得までの流れが未確定なら、準正常系・異常系を `deferred` backlogへ移す。
 
 各階層内では、複数の下位判断を同時に決める質問、現在ステージのゲートを開く質問、不確実性が高い質問の順に選ぶ。質問選定の詳細は [references/dialogue-protocol.md](references/dialogue-protocol.md) を使う。
 
 ## 6. 各ステージの実行方法
 
-### S1 Business Workflow
+### S1 Business Understanding
 
-「現場で誰が何をするか」を書く。UI操作を混ぜない。
+目標フローを設計する前に、現行業務を反証可能な形で理解する。UI操作や解決策を混ぜない。
 
 ```mermaid
-flowchart LR
-    A[成果物を受領] --> B[準備] --> C[処理] --> D[確認] --> E[次工程へ引き渡す]
+flowchart TD
+    A[会話・資料から事実を抽出]
+    B[業務目的・アクター・範囲を整理]
+    C[現行正常系を input/action/output で記述]
+    D[事実・推測・未確認を分離]
+    E[agentが業務理解をteach-back]
+    F{ユーザーが正しいと承認?}
+    G[S1 approved]
+
+    A --> B --> C --> D --> E --> F
+    F -- 修正あり --> A
+    F -- 承認 --> G
 ```
 
 成果物：
 
-- アクター表
-- 現行業務フロー
-- 対象範囲
-- 成功条件
-- 制約表
+| 成果物 | 必須内容 |
+|---|---|
+| 業務目的 | 誰が何の価値を得るための業務か |
+| アクター | 目的、役割、責任、権限 |
+| 現行正常系 | 開始契機、各工程のactor/input/action/output/handoff、終了状態 |
+| 対象範囲 | 対象内、対象外、上流、下流 |
+| 成功条件 | 観測可能な成功状態と検証方法 |
+| 根拠 | 事実、推測、未確認事項 |
+| teach-back | agent自身の言葉による簡潔な業務理解 |
 
-### S2 Decision Flow
+`ready_for_review` は「レビュー可能」であり完了ではない。ユーザーがteach-backを承認して `approved` になるまでS2へ進まない。`approved_by` は `user` または `delegated_by_user` とし、`approval_evidence` に承認内容を残す。ユーザーが承認を明示的に委任した場合だけ代理承認を許す。
 
-業務中の「〜するか」「どれを選ぶか」「失敗したら」を抽出する。
+### S2 Decision Requirements
 
-| ID | 判断 | 発生条件 | 選択肢 | 判断主体 | 誤判断の影響 |
+現行業務で「誰かが判断しなければ先へ進めないこと」を発見する。ここでは削除・自動化・UI表現をまだ決めない。
+
+| ID | 必要な判断 | 業務上の理由 | 発生契機 | 根拠 | 誤判断・未判断の影響 |
 |---|---|---|---|---|---|
 
-各判断について必ず確認する。
+判断が存在しない場合も、`confirmed_none: true` として確認結果を残す。現在の慣習にすぎない選択と、業務上不可欠な判断を区別する。
 
-> この判断は、ユーザーが今ここでする必要があるか？
+### S3 Target Value Loop
 
-処理順：
+S1で理解した現行業務と、S2で抽出した必要判断を入力に、価値獲得までの目標正常系を設計する。
+
+```mermaid
+flowchart LR
+    BU[承認済みBusiness Understanding]
+    DR[Decision Requirements]
+    VL[Target Value Loop]
+    R[残す]
+    X[削除する]
+    A[自動化する]
+    D[延期・既定値化する]
+
+    BU --> VL
+    DR --> VL
+    VL --> R
+    VL --> X
+    VL --> A
+    VL --> D
+```
+
+価値ループには、開始契機、価値獲得状態、各ステップのactor/input/action/output、および対応するDecision Requirementを持たせる。UI部品は決めない。
+
+### S4 Decision Specification
+
+Target Value Loopへ残した判断を完全に定義する。判断の文脈と論理を別ステージに分けない。
+
+| 構成要素 | 必須内容 |
+|---|---|
+| trigger | いつ判断するか |
+| owner | 誰が判断し、必要な権限を持つか |
+| evidence | 何を根拠に判断するか |
+| logic | 根拠から結果をどう導くか |
+| outcome | 判断により何が起きるか |
+| failure impact | 誤判断・未判断の影響 |
+| reversibility | 後から戻せるか |
+| workflow effect | Target Value Loopのどこへ進むか |
+
+論理表現は判断ごとに選ぶ。
 
 ```mermaid
 flowchart TD
-    A[判断点] --> B{データで一意に決まる?}
-    B -->|Y| C[システムが自動化]
-    B -->|N| D{後から容易に戻せる?}
-    D -->|Y| E[既定値を置き判断を延期]
-    D -->|N| F{低頻度?}
-    F -->|Y| G[段階的に開示]
-    F -->|N| H{専門権限が必要?}
-    H -->|Y| I[専門家へ残す]
-    H -->|N| J[ユーザー判断＋支援]
+    A[判断ロジック]
+    B{数値の範囲・閾値?}
+    C[境界値表]
+    D{複数条件の組合せ?}
+    E[Decision Table]
+    F{順序のある分岐?}
+    G[Mermaid flowchart]
+    H{専門的評価?}
+    I[判断基準表と必要証拠]
+    J[if-then rule]
+
+    A --> B
+    B -- はい --> C
+    B -- いいえ --> D
+    D -- はい --> E
+    D -- いいえ --> F
+    F -- はい --> G
+    F -- いいえ --> H
+    H -- はい --> I
+    H -- いいえ --> J
 ```
 
-### S3 Decision Table
+Decision Tableは複数条件の組合せで結果が変わる場合だけ使う。単純な判断に空疎な表を作らない。
 
-複数条件の組合せで結果が変わる箇所を表にする。  
-条件を文章で列挙しない。
-
-| 条件＼ケース | C1 | C2 | C3 |
-|---|---:|---:|---:|
-| 初回利用 | Y | N | N |
-| 前回状態あり | - | Y | N |
-| **生成済み見本を表示** | X | - | - |
-| **前回状態を復元** | - | X | - |
-| **空状態を表示** | - | - | X |
-
-凡例：条件 `Y`=真、`N`=偽、`-`=無関係。動作 `X`=実行。
-
-### S4 Design Principles
+### S5 Design Principles
 
 個別判断を2〜5個の原則へ圧縮する。
 
@@ -234,7 +291,7 @@ flowchart TD
 悪い例：分かりやすくする  
 良い例：初回ユーザーは有料生成せず、30秒以内に入力と出力の関係を説明できる
 
-### S5 Contradiction Check
+### S6 Contradiction Check
 
 [references/contradiction-catalog.md](references/contradiction-catalog.md) に従って監査する。
 
@@ -259,7 +316,7 @@ flowchart TD
     F --> G[状態・IA・UIへの影響を更新]
 ```
 
-### S6 State Machine
+### S7 State Machine
 
 最低限、対象に存在する次の状態を検討する。
 
@@ -285,7 +342,7 @@ flowchart TD
 | exit | 終了・離脱方法 |
 | recovery | 失敗・取消後の復帰 |
 
-### S7 Information Architecture
+### S8 Information Architecture
 
 状態ごとに必要な情報と操作を抽出し、まとめる。
 
@@ -297,7 +354,7 @@ flowchart LR
     D --> E[画面・領域・ナビゲーション]
 ```
 
-### S8 UI Behavior
+### S9 UI Behavior
 
 見た目の前に挙動を仕様化する。
 
@@ -319,7 +376,7 @@ flowchart LR
 
 | ステージ | 状態 |
 |---|---|
-| Decision Flow | 進行中 |
+| Decision Specification | 進行中 |
 | Blocking | 1件 |
 | 未回答 | 3件 |
 
@@ -340,7 +397,7 @@ flowchart LR
 
 ```markdown
 ### 今ここ
-Decision Flow：6/8件確定
+Decision Specification：6/8件確定
 
 ### 次の1問
 生成前に「100円・約160秒」を毎回表示しますか？
@@ -350,7 +407,8 @@ Decision Flow：6/8件確定
 
 次を満たしたら完了とする。
 
-- すべてのステージゲートが `ready` または `approved`
+- S1 Business Understandingが `approved` で、承認主体と承認根拠が記録されている
+- S2以降のすべてのステージゲートが `ready_for_review` または `approved`
 - OpenのBlocking矛盾が0件
 - 主要決定に設計原則の参照がある
 - 状態遷移に行き止まりがない
@@ -363,17 +421,18 @@ Decision Flow：6/8件確定
 標準出力：
 
 1. 設計概要・成功条件
-2. Business Workflow
-3. Decision Flow
-4. Decision Table
-5. Design Principles
-6. Contradiction Review
-7. State Machine
-8. Information Architecture
-9. UI Behavior Specification
-10. Decision Log
-11. Assumptions / Open Questions
-12. Traceability Matrix
+2. Business Understanding / Current Business Workflow
+3. Decision Requirements
+4. Target Value Loop
+5. Decision Specifications（必要な場合だけDecision Table）
+6. Design Principles
+7. Contradiction Review
+8. State Machine
+9. Information Architecture
+10. UI Behavior Specification
+11. Decision Log
+12. Assumptions / Open Questions
+13. Traceability Matrix
 
 テンプレートは [references/output-contracts.md](references/output-contracts.md) を使う。
 
@@ -399,6 +458,9 @@ python3 scripts/migrate_v0_1_state.py old-state.json new-design-case.json
 - 不明な情報を無断で補完する
 - すべての質問を一度に投げる
 - 業務フローにUI部品を混ぜる
+- S1が未承認のまま目標価値ループを設計する
+- Decision Requirementの発見中に解決策を決める
+- 単純な判断へDecision Tableを強制する
 - 意思決定フローと状態遷移を同一視する
 - 設計原則なしに個別UIを選ぶ
 - 初回と反復利用を無条件で同じ状態にする

@@ -1,7 +1,7 @@
 Validation summary
 
 - validate_design_case.py example: PASS (0 blocking, 0 issues)
-- review_pipeline.py example: all 8 stages ready
-- next_question.py incomplete fixture: selected one Business Workflow question
-- unittest: 4 tests passed
+- review_pipeline.py example: all 9 stages ready
+- next_question.py incomplete fixture: selected one Business Understanding question
+- unittest: 10 tests passed
 - External Python dependencies: none

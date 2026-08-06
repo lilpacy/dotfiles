@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "project": {
     "name": "",
     "scope": "",
@@ -14,20 +14,27 @@
     ]
   },
   "pipeline": {
-    "current_stage": "business_workflow",
+    "current_stage": "business_understanding",
     "stages": [
       {
-        "id": "business_workflow",
+        "id": "business_understanding",
+        "status": "not_started",
+        "review_notes": [],
+        "approved_by": "",
+        "approval_evidence": ""
+      },
+      {
+        "id": "decision_requirements",
         "status": "not_started",
         "review_notes": []
       },
       {
-        "id": "decision_flow",
+        "id": "target_value_loop",
         "status": "not_started",
         "review_notes": []
       },
       {
-        "id": "decision_table",
+        "id": "decision_specification",
         "status": "not_started",
         "review_notes": []
       },
@@ -72,7 +79,8 @@
       "name": "",
       "role": "",
       "authority": [],
-      "responsibilities": []
+      "responsibilities": [],
+      "goal": ""
     }
   ],
   "constraints": [
@@ -95,7 +103,8 @@
         "output": [],
         "next_step_ids": []
       }
-    ]
+    ],
+    "start_step_id": "W1"
   },
   "decisions": [
     {
@@ -121,34 +130,21 @@
       "workflow_step_ids": [
         "W1"
       ],
-      "tags": []
+      "tags": [],
+      "requirement_id": "DR1",
+      "disposition": "retain",
+      "evidence": [],
+      "logic_type": "simple_rule|flowchart|decision_table|boundary_table|expert_judgment",
+      "target_value_step_ids": [
+        "V1"
+      ]
     }
   ],
   "decision_table": {
-    "conditions": [
-      {
-        "id": "CND1",
-        "statement": ""
-      }
-    ],
-    "actions": [
-      {
-        "id": "ACT1",
-        "statement": ""
-      }
-    ],
-    "cases": [
-      {
-        "id": "CASE1",
-        "conditions": {
-          "CND1": "Y"
-        },
-        "actions": {
-          "ACT1": "X"
-        },
-        "notes": ""
-      }
-    ]
+    "conditions": [],
+    "actions": [],
+    "cases": [],
+    "applies_to_decision_ids": []
   },
   "principles": [
     {
@@ -240,7 +236,7 @@
   "questions": [
     {
       "id": "Q1",
-      "stage": "business_workflow",
+      "stage": "business_understanding",
       "question": "",
       "priority": 50,
       "reason": "",
@@ -256,5 +252,47 @@
       "status": "open"
     }
   ],
-  "traceability": []
+  "traceability": [],
+  "business_understanding": {
+    "purpose": "",
+    "scope_in": [],
+    "scope_out": [],
+    "pain_points": [],
+    "teach_back": ""
+  },
+  "decision_requirements": {
+    "confirmed_none": false,
+    "items": [
+      {
+        "id": "DR1",
+        "question": "",
+        "business_reason": "",
+        "trigger": "",
+        "evidence": [],
+        "failure_impact": "",
+        "workflow_step_ids": [
+          "W1"
+        ],
+        "status": "provisional"
+      }
+    ]
+  },
+  "target_value_loop": {
+    "start_event": "",
+    "value_outcome": "",
+    "steps": [
+      {
+        "id": "V1",
+        "actor_id": "A1",
+        "action": "",
+        "input": [],
+        "output": [],
+        "next_step_ids": [],
+        "decision_requirement_ids": [
+          "DR1"
+        ]
+      }
+    ],
+    "start_step_id": "V1"
+  }
 }

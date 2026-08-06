@@ -18,7 +18,8 @@ from pathlib import Path
 from typing import Any
 
 TOP_LEVEL = [
-    "schema_version","project","pipeline","actors","business_workflow",
+    "schema_version","project","pipeline","actors","business_understanding",
+    "business_workflow","decision_requirements","target_value_loop",
     "decisions","decision_table","principles","contradictions",
     "state_machine","information_architecture","ui_behaviors",
     "questions","assumptions"
@@ -27,6 +28,9 @@ VALID_DECISION_STATUS = {"unresolved","provisional","confirmed","rejected"}
 VALID_OWNER = {"user","system","expert","hybrid"}
 VALID_SEVERITY = {"note","warning","blocking"}
 VALID_CONTRADICTION_STATUS = {"open","resolved","accepted_risk"}
+VALID_LOGIC_TYPE = {
+    "simple_rule","flowchart","decision_table","boundary_table","expert_judgment"
+}
 
 def load(path: Path) -> dict[str, Any]:
     try:
@@ -96,11 +100,71 @@ def reachable_states(initial: str, transitions: list[dict[str,Any]]) -> set[str]
         q.extend(graph.get(n,[]))
     return seen
 
+def validate_workflow_steps(
+    steps: Any,
+    label: str,
+    start_step_id: str,
+    actor_idx: dict[str,dict[str,Any]],
+    issues: list[dict[str,str]],
+) -> dict[str,dict[str,Any]]:
+    step_idx = index_ids(steps,label,issues)
+    if len(step_idx) < 2:
+        add(issues,"blocking","WORKFLOW_STEPS",f"{label} requires at least two steps")
+    if start_step_id not in step_idx:
+        add(issues,"blocking","WORKFLOW_BOUNDARY",f"{label} start step {start_step_id!r} does not exist")
+    for sid,step in step_idx.items():
+        aid=step.get("actor_id")
+        if aid not in actor_idx:
+            add(issues,"blocking","BROKEN_REF",f"{label} {sid} references missing actor {aid!r}")
+        if not str(step.get("action","")).strip():
+            add(issues,"blocking","WORKFLOW_MEANING",f"{label} {sid} has no action")
+        if not step.get("input"):
+            add(issues,"blocking","WORKFLOW_MEANING",f"{label} {sid} has no input")
+        if not step.get("output"):
+            add(issues,"blocking","WORKFLOW_MEANING",f"{label} {sid} has no output")
+        for nxt in step.get("next_step_ids",[]) or []:
+            if nxt not in step_idx:
+                add(issues,"blocking","BROKEN_REF",f"{label} {sid} references missing next step {nxt}")
+                continue
+            current_output=set(step.get("output",[]) or [])
+            next_input=set(step_idx[nxt].get("input",[]) or [])
+            if current_output.isdisjoint(next_input):
+                add(issues,"blocking","WORKFLOW_HANDOFF",f"{label} {sid} output does not feed {nxt} input")
+    if start_step_id in step_idx:
+        reachable=reachable_states(start_step_id,[
+            {"from_state_id":sid,"to_state_id":nxt}
+            for sid,step in step_idx.items()
+            for nxt in (step.get("next_step_ids",[]) or [])
+            if nxt in step_idx
+        ])
+        for sid in step_idx:
+            if sid not in reachable:
+                add(issues,"blocking","WORKFLOW_REACHABILITY",f"{label} {sid} is unreachable from {start_step_id}")
+    if step_idx and not any(not (step.get("next_step_ids",[]) or []) for step in step_idx.values()):
+        add(issues,"blocking","WORKFLOW_BOUNDARY",f"{label} has no terminal step")
+    return step_idx
+
 def validate(data: dict[str,Any]) -> list[dict[str,str]]:
     issues: list[dict[str,str]] = []
+    if data.get("schema_version") != "2.0":
+        add(issues,"blocking","SCHEMA_VERSION","schema_version must be 2.0")
     for key in TOP_LEVEL:
         if key not in data:
             add(issues,"blocking","MISSING_TOP_LEVEL",f"missing top-level key: {key}")
+
+    business_stage=next(
+        (
+            stage for stage in data.get("pipeline",{}).get("stages",[])
+            if stage.get("id")=="business_understanding"
+        ),
+        {},
+    )
+    if business_stage.get("status")!="approved":
+        add(issues,"blocking","S1_APPROVAL","business understanding is not approved")
+    if business_stage.get("approved_by") not in {"user","delegated_by_user"}:
+        add(issues,"blocking","S1_APPROVAL","business understanding has no valid human approver")
+    if not str(business_stage.get("approval_evidence","")).strip():
+        add(issues,"blocking","S1_APPROVAL","business understanding has no approval evidence")
 
     project = data.get("project",{})
     if not str(project.get("name","")).strip():
@@ -111,22 +175,67 @@ def validate(data: dict[str,Any]) -> list[dict[str,str]]:
     sc_idx = index_ids(sc,"success_condition",issues)
     if not sc_idx:
         add(issues,"blocking","SUCCESS_CONDITION","at least one success condition is required")
+    for scid,condition in sc_idx.items():
+        if not str(condition.get("statement","")).strip():
+            add(issues,"blocking","SUCCESS_CONDITION",f"success condition {scid} has no statement")
+        if not str(condition.get("verification","")).strip():
+            add(issues,"blocking","SUCCESS_CONDITION",f"success condition {scid} has no verification")
 
     actor_idx = index_ids(data.get("actors",[]),"actor",issues)
     if not actor_idx:
         add(issues,"blocking","ACTOR","at least one actor is required")
+    for aid,actor in actor_idx.items():
+        for key in ("name","role","goal"):
+            if not str(actor.get(key,"")).strip():
+                add(issues,"blocking","ACTOR_MEANING",f"actor {aid} has no {key}")
+        if not actor.get("responsibilities"):
+            add(issues,"blocking","ACTOR_MEANING",f"actor {aid} has no responsibilities")
+
+    understanding = data.get("business_understanding",{})
+    for key in ("purpose","teach_back"):
+        if not str(understanding.get(key,"")).strip():
+            add(issues,"blocking","BUSINESS_UNDERSTANDING",f"business_understanding.{key} is empty")
+    for key in ("scope_in","scope_out"):
+        if not understanding.get(key):
+            add(issues,"blocking","BUSINESS_UNDERSTANDING",f"business_understanding.{key} is empty")
 
     workflow = data.get("business_workflow",{})
-    step_idx = index_ids(workflow.get("steps",[]),"workflow_step",issues)
-    if len(step_idx) < 2:
-        add(issues,"blocking","WORKFLOW_STEPS","business workflow requires at least two steps")
-    for sid,s in step_idx.items():
-        aid=s.get("actor_id")
-        if aid not in actor_idx:
-            add(issues,"blocking","BROKEN_REF",f"workflow step {sid} references missing actor {aid!r}")
-        for nxt in s.get("next_step_ids",[]) or []:
-            if nxt not in step_idx:
-                add(issues,"blocking","BROKEN_REF",f"workflow step {sid} references missing next step {nxt}")
+    if not str(workflow.get("start_event","")).strip():
+        add(issues,"blocking","WORKFLOW_BOUNDARY","business workflow has no start event")
+    if not str(workflow.get("end_event","")).strip():
+        add(issues,"blocking","WORKFLOW_BOUNDARY","business workflow has no end event")
+    step_idx = validate_workflow_steps(
+        workflow.get("steps",[]),"workflow_step",workflow.get("start_step_id",""),actor_idx,issues
+    )
+
+    requirements = data.get("decision_requirements",{})
+    requirement_idx = index_ids(requirements.get("items",[]),"decision_requirement",issues)
+    if not requirement_idx and not requirements.get("confirmed_none",False):
+        add(issues,"blocking","DECISION_REQUIREMENT","decision requirements are not confirmed")
+    if requirement_idx and requirements.get("confirmed_none",False):
+        add(issues,"blocking","DECISION_REQUIREMENT","confirmed_none conflicts with decision requirement items")
+    for rid,requirement in requirement_idx.items():
+        for key in ("question","business_reason","trigger","failure_impact"):
+            if not str(requirement.get(key,"")).strip():
+                add(issues,"blocking","DECISION_REQUIREMENT",f"decision requirement {rid} has no {key}")
+        if not requirement.get("evidence"):
+            add(issues,"blocking","DECISION_REQUIREMENT",f"decision requirement {rid} has no evidence")
+        for wid in requirement.get("workflow_step_ids",[]) or []:
+            if wid not in step_idx:
+                add(issues,"blocking","BROKEN_REF",f"decision requirement {rid} references missing workflow step {wid}")
+
+    value_loop = data.get("target_value_loop",{})
+    if not str(value_loop.get("start_event","")).strip():
+        add(issues,"blocking","VALUE_LOOP_BOUNDARY","target value loop has no start event")
+    if not str(value_loop.get("value_outcome","")).strip():
+        add(issues,"blocking","VALUE_LOOP_BOUNDARY","target value loop has no value outcome")
+    value_step_idx = validate_workflow_steps(
+        value_loop.get("steps",[]),"value_loop_step",value_loop.get("start_step_id",""),actor_idx,issues
+    )
+    for vsid,value_step in value_step_idx.items():
+        for rid in value_step.get("decision_requirement_ids",[]) or []:
+            if rid not in requirement_idx:
+                add(issues,"blocking","BROKEN_REF",f"value loop step {vsid} references missing decision requirement {rid}")
 
     principle_idx = index_ids(data.get("principles",[]),"principle",issues)
     priorities: dict[int,str] = {}
@@ -148,6 +257,15 @@ def validate(data: dict[str,Any]) -> list[dict[str,str]]:
             add(issues,"warning","DECISION_STATUS",f"decision {did} has invalid status")
         if d.get("owner") not in VALID_OWNER:
             add(issues,"warning","DECISION_OWNER",f"decision {did} has invalid owner")
+        rid=d.get("requirement_id")
+        if rid not in requirement_idx:
+            add(issues,"blocking","BROKEN_REF",f"decision {did} references missing decision requirement {rid!r}")
+        if d.get("logic_type") not in VALID_LOGIC_TYPE:
+            add(issues,"blocking","DECISION_LOGIC",f"decision {did} has invalid logic_type")
+        if not d.get("evidence"):
+            add(issues,"blocking","DECISION_EVIDENCE",f"decision {did} has no evidence")
+        if not str(d.get("risk","")).strip():
+            add(issues,"blocking","DECISION_RISK",f"decision {did} has no failure impact")
         options = {o.get("id"):o for o in d.get("options",[]) if isinstance(o,dict)}
         selected=d.get("selected_option_id")
         if d.get("status") in {"confirmed","provisional"} and not selected:
@@ -162,15 +280,29 @@ def validate(data: dict[str,Any]) -> list[dict[str,str]]:
         for wid in d.get("workflow_step_ids",[]) or []:
             if wid not in step_idx:
                 add(issues,"blocking","BROKEN_REF",f"decision {did} references missing workflow step {wid}")
+        for vsid in d.get("target_value_step_ids",[]) or []:
+            if vsid not in value_step_idx:
+                add(issues,"blocking","BROKEN_REF",f"decision {did} references missing value loop step {vsid}")
     detect_effect_conflicts(decision_idx,issues)
+    covered_requirement_ids={d.get("requirement_id") for d in decision_idx.values()}
+    for rid in requirement_idx:
+        if rid not in covered_requirement_ids:
+            add(issues,"blocking","DECISION_COVERAGE",f"decision requirement {rid} has no disposition")
 
-    # Decision table
+    # Decision Table is an optional representation for multi-condition decisions.
     dt=data.get("decision_table",{})
     cond_idx=index_ids(dt.get("conditions",[]),"condition",issues)
     action_idx=index_ids(dt.get("actions",[]),"action",issues)
     case_idx=index_ids(dt.get("cases",[]),"case",issues)
-    if not cond_idx or not action_idx or not case_idx:
+    table_required={did for did,d in decision_idx.items() if d.get("logic_type")=="decision_table"}
+    if table_required and (not cond_idx or not action_idx or not case_idx):
         add(issues,"blocking","DECISION_TABLE","conditions, actions, and cases are required")
+    table_targets=set(dt.get("applies_to_decision_ids",[]) or [])
+    for did in table_required-table_targets:
+        add(issues,"blocking","DECISION_TABLE",f"decision table does not cover {did}")
+    for did in table_targets:
+        if did not in decision_idx:
+            add(issues,"blocking","BROKEN_REF",f"decision table references missing decision {did}")
     for cid,c in case_idx.items():
         for key,val in (c.get("conditions",{}) or {}).items():
             if key not in cond_idx:

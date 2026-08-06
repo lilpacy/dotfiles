@@ -10,10 +10,27 @@
 | ID | Condition | Verification |
 |---|---|---|
 
-## Decisions
+## Business Understanding
 
-| ID | Decision | Owner | Selected | Principle |
+| Purpose | Current normal flow | Teach-back | Approval |
+|---|---|---|---|
+
+## Decision Requirements
+
+| ID | Required decision | Business reason | Trigger | Failure impact |
 |---|---|---|---|---|
+
+## Target Value Loop
+
+```mermaid
+flowchart LR
+    Start --> ValueStep --> ValueOutcome
+```
+
+## Decision Specifications
+
+| ID | Requirement | Trigger | Owner | Evidence | Logic | Outcome | Principle |
+|---|---|---|---|---|---|---|---|
 
 ## Contradictions
 

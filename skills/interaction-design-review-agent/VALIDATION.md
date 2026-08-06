@@ -15,12 +15,16 @@
 ```bash
 python3 scripts/validate_design_case.py scripts/example_design_case.json
 python3 scripts/review_pipeline.py scripts/example_design_case.json
-python3 -m unittest tests/test_scripts.py
+python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
 ## 検査範囲
 
 - 必須トップレベル構造
+- S1の意味項目とユーザー承認
+- Decision RequirementとTarget Value Loopの参照
+- 判断ごとの論理表現選択
+- 複数条件の場合だけDecision Tableを必須化
 - ID重複
 - 参照切れ
 - 確定決定と選択肢の不整合

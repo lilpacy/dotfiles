@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "2.0",
   "project": {
     "name": "Anime Key-Pose Generation UI",
     "scope": "",
@@ -7,20 +7,27 @@
     "success_conditions": []
   },
   "pipeline": {
-    "current_stage": "business_workflow",
+    "current_stage": "business_understanding",
     "stages": [
       {
-        "id": "business_workflow",
+        "id": "business_understanding",
+        "status": "not_started",
+        "review_notes": [],
+        "approved_by": "",
+        "approval_evidence": ""
+      },
+      {
+        "id": "decision_requirements",
         "status": "not_started",
         "review_notes": []
       },
       {
-        "id": "decision_flow",
+        "id": "target_value_loop",
         "status": "not_started",
         "review_notes": []
       },
       {
-        "id": "decision_table",
+        "id": "decision_specification",
         "status": "not_started",
         "review_notes": []
       },
@@ -76,7 +83,8 @@
       "responsibilities": [
         "素材準備",
         "候補保存"
-      ]
+      ],
+      "goal": "素材準備・生成・一次確認を完了する"
     },
     {
       "id": "A2",
@@ -88,7 +96,8 @@
       "responsibilities": [
         "採用判断",
         "修正方針"
-      ]
+      ],
+      "goal": "専門品質レビューを完了する"
     }
   ],
   "constraints": [
@@ -129,7 +138,8 @@
           "W2"
         ]
       }
-    ]
+    ],
+    "start_step_id": "W1"
   },
   "decisions": [
     {
@@ -171,6 +181,15 @@
       ],
       "tags": [
         "onboarding"
+      ],
+      "requirement_id": "DR1",
+      "disposition": "retain",
+      "evidence": [
+        "対応するDecision Requirement"
+      ],
+      "logic_type": "decision_table",
+      "target_value_step_ids": [
+        "V2"
       ]
     },
     {
@@ -199,7 +218,7 @@
       "reversible": true,
       "cost_impact": "",
       "latency_impact": "",
-      "risk": "",
+      "risk": "判断漏れまたは誤判断により期待結果を得られない",
       "rationale": "費用と待ち時間は毎回の実行判断に影響する",
       "principle_ids": [
         "P1"
@@ -210,6 +229,15 @@
       "tags": [
         "costly_action",
         "long_running_action"
+      ],
+      "requirement_id": "DR2",
+      "disposition": "retain",
+      "evidence": [
+        "対応するDecision Requirement"
+      ],
+      "logic_type": "simple_rule",
+      "target_value_step_ids": [
+        "V3"
       ]
     },
     {
@@ -248,6 +276,15 @@
       ],
       "tags": [
         "expert_judgment"
+      ],
+      "requirement_id": "DR3",
+      "disposition": "retain",
+      "evidence": [
+        "対応するDecision Requirement"
+      ],
+      "logic_type": "simple_rule",
+      "target_value_step_ids": [
+        "V5"
       ]
     }
   ],
@@ -316,6 +353,9 @@
         },
         "notes": ""
       }
+    ],
+    "applies_to_decision_ids": [
+      "D1"
     ]
   },
   "principles": [
@@ -666,7 +706,7 @@
   "questions": [
     {
       "id": "Q1",
-      "stage": "business_workflow",
+      "stage": "business_understanding",
       "question": "この設計で成功とみなす具体的な状態は何ですか？",
       "priority": 90,
       "reason": "成功条件が未定義",
@@ -675,7 +715,7 @@
     },
     {
       "id": "Q2",
-      "stage": "business_workflow",
+      "stage": "business_understanding",
       "question": "対象業務の終了点はどこですか？",
       "priority": 70,
       "reason": "end_eventの確認",
@@ -710,5 +750,81 @@
       "to": "UI1",
       "type": "presented_by"
     }
-  ]
+  ],
+  "business_understanding": {
+    "purpose": "",
+    "scope_in": [],
+    "scope_out": [],
+    "pain_points": [],
+    "teach_back": ""
+  },
+  "decision_requirements": {
+    "confirmed_none": false,
+    "items": [
+      {
+        "id": "DR1",
+        "question": "初回理解のために実生成させるか",
+        "business_reason": "初回理解のための有料・長時間処理を避ける",
+        "trigger": "first_visit",
+        "evidence": [
+          "現行業務とユーザー確認"
+        ],
+        "failure_impact": "実データの感触が弱い",
+        "workflow_step_ids": [
+          "W2"
+        ],
+        "status": "confirmed"
+      },
+      {
+        "id": "DR2",
+        "question": "生成前に費用・待ち時間・出力枚数を表示するか",
+        "business_reason": "費用と待ち時間は毎回の実行判断に影響する",
+        "trigger": "before_generation",
+        "evidence": [
+          "現行業務とユーザー確認"
+        ],
+        "failure_impact": "判断漏れまたは誤判断により期待結果を得られない",
+        "workflow_step_ids": [
+          "W3"
+        ],
+        "status": "confirmed"
+      },
+      {
+        "id": "DR3",
+        "question": "最終採否を誰が行うか",
+        "business_reason": "専門品質判断は作監の権限",
+        "trigger": "after_candidate_review",
+        "evidence": [
+          "現行業務とユーザー確認"
+        ],
+        "failure_impact": "誤採用",
+        "workflow_step_ids": [
+          "W5"
+        ],
+        "status": "confirmed"
+      }
+    ]
+  },
+  "target_value_loop": {
+    "start_event": "",
+    "value_outcome": "",
+    "steps": [
+      {
+        "id": "V1",
+        "actor_id": "A1",
+        "action": "対象カットを確認",
+        "input": [
+          "レイアウト"
+        ],
+        "output": [
+          "対象カット"
+        ],
+        "next_step_ids": [
+          "V2"
+        ],
+        "decision_requirement_ids": []
+      }
+    ],
+    "start_step_id": "V1"
+  }
 }

@@ -7,128 +7,116 @@
 | not_started | 未着手 |
 | in_progress | 作業中 |
 | blocked | Blockingにより停止 |
-| ready_for_review | 必須成果物あり |
+| ready_for_review | 必須成果物があり、人間がレビュー可能 |
 | approved | レビュー済み |
 | provisional | 仮定つき暫定 |
 
-## Gate S1: Business Workflow
+## Gate S1: Business Understanding
 
 | 必須 | 判定 |
 |---|---|
-| project.scope | 空でない |
-| project.success_conditions | 1件以上 |
-| actors | 1件以上 |
-| business_workflow.steps | 2件以上 |
-| 制約 | 費用・時間・品質の該当有無が確認済み |
+| 業務目的 | 誰が何の価値を得る業務か説明できる |
+| project.scope | 対象内・対象外が明示される |
+| project.success_conditions | 成功状態と検証方法が1件以上ある |
+| actors | 各アクターに目的・役割・責任・権限がある |
+| business_workflow | 開始・終了と2件以上の現行正常系ステップがある |
+| workflow step | actor・input・action・output・handoffがある |
+| grounding | 事実・推測・未確認事項が分離される |
+| teach_back | agentが業務理解を簡潔に再説明する |
+| approval | `approved_by` が `user` または `delegated_by_user` で、`approval_evidence` がある |
+
+`ready_for_review` のままS2へ進まない。S1だけは `approved` を必須とする。
 
 Blocking例：
 
-- 誰の業務か不明
-- 開始・終了が不明
-- UI操作だけで業務が書かれている
+- 誰の何のための業務か説明できない
+- 開始契機または終了状態が不明
+- ステップ名だけで入出力や引き渡しがない
+- UI操作を現行業務として記述している
+- 重要な推測を事実として扱っている
+- ユーザーが理解内容を未確認
 
-## Gate S2: Decision Flow
+## Gate S2: Decision Requirements
 
 | 必須 | 判定 |
 |---|---|
-| decisions | 1件以上 |
-| question | 各決定に存在 |
-| owner | user/system/expert/hybrid |
-| applies_when | 発生条件が存在 |
-| options | 未解決でも候補がある |
+| presence | 必要判断が1件以上、または `confirmed_none: true` |
+| question | 何を判断する必要があるか |
+| business_reason | なぜ業務上必要か |
+| trigger | いつ判断が発生するか |
+| evidence | 判断に必要な根拠 |
+| failure_impact | 誤判断・未判断の影響 |
+| traceability | 現行業務ステップを参照する |
 
 Blocking例：
 
-- 判断主体に権限がない
-- 高コスト処理の実行判断が存在しない
-- 「必要なら」だけで条件が未定義
+- 判断の有無を確認していない
+- 現在の慣習と業務上不可欠な判断を区別していない
+- この段階で自動化方法やUIを決めている
 
-## Gate S3: Decision Table
+## Gate S3: Target Value Loop
 
-| 必須 | 判定 |
+必須：
+
+- 開始契機
+- 観測可能な価値獲得状態
+- 2件以上の正常系ステップ
+- 各ステップのactor・input・action・output・handoff
+- 対応するDecision Requirement
+- 削除・自動化・延期・既定値化・人間へ残す判断の記録
+
+Blocking例：
+
+- S1が未承認
+- 業務価値へ到達しない
+- 必要判断を根拠なく消している
+- UI部品を使ってしか流れを説明できない
+
+## Gate S4: Decision Specification
+
+各Decision Requirementの扱いを漏れなく記録する。残す判断には次を必須とする。
+
+- trigger
+- ownerとauthority
+- evidence
+- logic type
+- options / outcomes
+- failure impact
+- reversibility
+- Target Value Loopへの接続
+
+論理表現の選択：
+
+| 条件 | 必須表現 |
 |---|---|
-| conditions | 1件以上 |
-| cases | 1件以上 |
-| actions | 1件以上 |
-| coverage | 既知の主要条件を網羅 |
+| 単純な一条件 | if-then rule |
+| 順序のある分岐 | flowchart |
+| 複数条件の組合せ | Decision Table |
+| 数値の範囲・閾値 | 境界値表 |
+| 専門的評価 | 判断基準表＋必要証拠 |
 
-Blocking例：
+Decision Tableは条件に該当する場合だけ必須。全ケースが一意の結果を持ち、未該当・不明条件の扱いが必要である。
 
-- 同一条件で排他的な動作が両方実行
-- 境界条件が未定義
-- `else` に相当するケースがない
+## Gate S5: Design Principles
 
-## Gate S4: Design Principles
+- 原則は2〜5件を推奨
+- 優先順位が一意
+- 検証可能
+- 主要決定が原則を参照
+- 原則が成功条件へ接続
 
-| 必須 | 判定 |
-|---|---|
-| principles | 2〜5件推奨 |
-| priority | 一意 |
-| verification | 検証可能 |
-| traceability | 主要決定が原則を参照 |
+## Gate S6: Contradiction Check
 
-Blocking例：
+監査済みルールID、重大度、解消状態を持つ。Open Blockingが1件でもあればS7以降は `blocked`。
 
-- 「使いやすくする」だけ
-- 原則同士の優先順位が同じ
-- 原則と成功条件が無関係
+## Gate S7: State Machine
 
-## Gate S5: Contradiction Check
+初期状態、主要成功状態、必要な処理中・失敗状態、遷移イベント、ガード、回復経路を持つ。到達不能、終了不能、二重実行、復帰先不明をBlockingとする。
 
-必須：
+## Gate S8: Information Architecture
 
-- 監査済みルールID
-- 検出事項の重大度
-- Open Blocking = 0
+情報・操作のノード、親子または関連、状態との対応、優先順位を持つ。必須情報の配置先欠落、権限の異なる操作の混同をBlockingとする。
 
-Open Blockingが1件でもあればS6以降は `blocked`。
+## Gate S9: UI Behavior
 
-## Gate S6: State Machine
-
-必須：
-
-- 初期状態
-- 主要成功状態
-- 実行中状態（長時間処理がある場合）
-- 失敗状態と回復経路（失敗可能性がある場合）
-- 遷移イベント
-- ガード条件
-
-Blocking例：
-
-- 到達不能状態
-- 終了できない状態
-- 高コスト処理を二重実行できる
-- 復帰時に前回状態の扱いが不明
-
-## Gate S7: Information Architecture
-
-必須：
-
-- 情報・操作のノード
-- 親子または関連
-- 状態との対応
-- 優先順位
-
-Blocking例：
-
-- 必須情報に配置先がない
-- 低頻度設定が主タスクより優先
-- 異なる権限の操作が同じ扱い
-
-## Gate S8: UI Behavior
-
-必須：
-
-- 表示条件
-- 操作
-- システム結果
-- フィードバック
-- 回復
-- 根拠決定・原則
-
-Blocking例：
-
-- 「ボタンを置く」だけで押下後が未定義
-- エラー・再試行・取消がない
-- 上流決定に追跡できない
+表示条件、操作、システム結果、フィードバック、回復、根拠決定・原則を持つ。「ボタンを置く」だけ、エラー後の復帰なし、上流への参照なしをBlockingとする。

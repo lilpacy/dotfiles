@@ -8,7 +8,9 @@
 | SC2 | 反復利用者が前回の設定を再利用しつつ、別カットへの誤用を防げる |
 | SC3 | 生成前に100円・約160秒・4枚出力を理解できる |
 
-## 2. Business Workflow
+## 2. Business Understanding
+
+業務目的：アシスタントがレイアウトから原画の当たり候補を作り、専門品質判断を行う作監へ引き渡す。
 
 ```mermaid
 flowchart LR
@@ -25,20 +27,43 @@ flowchart LR
     A --> B --> C --> D --> E --> F --> G --> H --> I
 ```
 
-## 3. Decision Flow
+この理解をユーザーへteach-backし、正しいと承認されてから次へ進む。
 
-| ID | 判断 | 主体 | 取扱い |
+## 3. Decision Requirements
+
+| ID | 必要な判断 | 業務上の理由 | 誤判断の影響 |
 |---|---|---|---|
-| D1 | 対象カット・セルは何か | アシスタント | ユーザー入力 |
-| D2 | どのキャラ設定を使うか | ハイブリッド | システム候補＋確認 |
-| D3 | 線画・影サンプルが必要か | ハイブリッド | 推奨＋任意変更 |
-| D4 | クローズアップか | ハイブリッド | 自動推定＋修正 |
-| D5 | 演出指示があるか | ユーザー | 必要時入力 |
-| D6 | 生成してよいか | ユーザー | 費用・時間確認 |
-| D7 | 明白な崩れがないか | アシスタント | 一次確認 |
-| D8 | 原画として採用可能か | 作監 | 専門判断 |
+| DR1 | 対象カット・セルは何か | 正しい素材を紐づける | 別カットへ誤適用 |
+| DR2 | どのキャラ設定を使うか | キャラクター整合性を保つ | 外見不一致 |
+| DR3 | 生成してよいか | 費用・待ち時間が発生する | 意図しない課金・待機 |
+| DR4 | 原画として採用可能か | 専門品質を保証する | 品質不足の採用 |
 
-## 4. Design Principles
+## 4. Target Value Loop
+
+```mermaid
+flowchart LR
+    A[対象カットを特定]
+    B[必要素材を揃える]
+    C[費用・時間を理解して生成判断]
+    D[候補を生成]
+    E[明白な崩れを除外]
+    F[作監が採否判断]
+
+    A --> B --> C --> D --> E --> F
+```
+
+## 5. Decision Specification
+
+| ID | Requirement | Trigger | Owner | Evidence | Logic |
+|---|---|---|---|---|---|
+| D1 | DR1 | 素材準備開始時 | アシスタント | カットID・セル番号 | simple rule |
+| D2 | DR2 | キャラ設定選択時 | hybrid | 対象キャラ・設定資料 | flowchart |
+| D3 | DR3 | 生成直前 | ユーザー | 100円・約160秒・4枚 | simple rule |
+| D4 | DR4 | 候補確認後 | 作監 | 原画品質基準 | expert judgment |
+
+複数条件の組合せで結果が変わる判断がある場合だけ、ここへDecision Tableを追加する。
+
+## 6. Design Principles
 
 | 優先 | ID | 原則 |
 |---:|---|---|
@@ -47,7 +72,7 @@ flowchart LR
 | 3 | P3 | 専門品質判断は作監に残し、アシスタントは明白な破綻確認に限定する |
 | 4 | P4 | 入力例と出力差分を対応づけ、項目名の記憶へ依存させない |
 
-## 5. Contradiction Review
+## 7. Contradiction Review
 
 | ID | 問題 | 重大度 | 解消 |
 |---|---|---|---|
@@ -55,7 +80,7 @@ flowchart LR
 | C2 | 前回入力の自動復元は別カット誤用の危険 | warning | 復元状態を明示し、カットID変更時に確認 |
 | C3 | アシスタントへ最終採否を委ねる | blocking | 最終採否を作監へ固定 |
 
-## 6. State Machine
+## 8. State Machine
 
 ```mermaid
 stateDiagram-v2
@@ -73,7 +98,7 @@ stateDiagram-v2
     Restored --> Editing: confirm_or_replace_cut
 ```
 
-## 7. IA Implication
+## 9. IA Implication
 
 | 領域 | 内容 |
 |---|---|
@@ -84,7 +109,7 @@ stateDiagram-v2
 | Comparison | 元画像と4出力を同条件で比較 |
 | Handoff | カットID付き保存、作監確認用出力 |
 
-## 8. UI Behavior
+## 10. UI Behavior
 
 | ID | 状態 | 挙動 | 根拠 |
 |---|---|---|---|
