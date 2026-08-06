@@ -44,6 +44,7 @@
           "candidate・再利用回数・昇格状態は持たず、作成時の検証後に即時sharedとする",
           "投影先に同名Skillがある場合は双方への投影を中止し、既存Skillを変更せず通知する",
           "正常系の価値体験を先に確定し、準正常系・異常系の詳細はその後に扱う",
+          "後続タスクでは既存のSkill検出機構がdescription一致により自動適用し、明示的なSkill指定も許可する",
           "作成・更新をユーザーへどう見せるかが未確定",
           "master・registry・symlinkの更新途中における回復単位は異常系backlogへ延期"
         ]
@@ -640,6 +641,54 @@
         "feedback",
         "trust"
       ]
+    },
+    {
+      "id": "D8",
+      "question": "後続タスクで、agentは適合するshared Skillをどう使い始めるか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "Skillのdescriptionがタスクに適合すればagentが自動選択・適用する",
+          "effects": {
+            "user_effort": "lowest",
+            "reuse_rate": "high"
+          }
+        },
+        {
+          "id": "O2",
+          "label": "agentが適合Skillを提案し、ユーザー確認後に適用する",
+          "effects": {
+            "user_effort": "medium",
+            "reuse_rate": "medium"
+          }
+        },
+        {
+          "id": "O3",
+          "label": "ユーザーがSkill名を明示した場合だけ適用する",
+          "effects": {
+            "user_effort": "high",
+            "reuse_rate": "low"
+          }
+        }
+      ],
+      "selected_option_id": "O1",
+      "owner": "system",
+      "applies_when": "CodexまたはClaude Codeが新しいタスクを受け、適合するshared Skillが存在するとき",
+      "reversible": true,
+      "cost_impact": "通常タスクごとの確認回数とSkill再利用率に影響する",
+      "latency_impact": "自動適用なら待ち時間なし、確認方式ならユーザー応答待ち",
+      "risk": "自動選択の適合判定が粗いと不要なSkillが発動し、明示呼出し限定では共有価値が利用者の記憶に依存する",
+      "rationale": "既存のCodex・Claude CodeのSkill検出機構へ委ね、管理UXに独自の選択・確認フローを追加しない。通常はdescription一致で自動適用し、ユーザーによる明示指定も利用できる",
+      "principle_ids": [],
+      "workflow_step_ids": [
+        "W5"
+      ],
+      "tags": [
+        "normal-core",
+        "discovery",
+        "reuse"
+      ]
     }
   ],
   "decision_table": {
@@ -718,10 +767,19 @@
       "id": "Q7",
       "stage": "decision_flow",
       "question": "正常系でSkillを自動作成・更新した後、ユーザーへどの程度知らせますか？",
-      "priority": 100,
+      "priority": 80,
       "reason": "自己改善を『透明だが邪魔しない体験』にするか、『完全な裏側の処理』にするかを決めるコアUXだから",
       "status": "open",
       "answer": ""
+    },
+    {
+      "id": "Q8",
+      "stage": "decision_flow",
+      "question": "次のタスクで適合するshared Skillが見つかったとき、agentが自動適用してよいですか？",
+      "priority": 110,
+      "reason": "ユーザーがSkill名を覚えなくても過去の学習が次の作業へ還元される、正常系のコア価値ループを決めるため",
+      "status": "answered",
+      "answer": "既存のSkill検出機構へ委ねる。description一致時は自動適用し、明示的なSkill指定も許可する。管理システム独自の確認フローは作らない"
     }
   ],
   "assumptions": [
@@ -744,7 +802,8 @@
         "W2",
         "D1",
         "D3",
-        "D5"
+        "D5",
+        "D8"
       ]
     },
     {
