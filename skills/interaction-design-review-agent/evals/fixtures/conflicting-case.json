@@ -834,11 +834,15 @@
     {
       "id": "QX1",
       "stage": "contradiction_check",
-      "question": "初回の見本表示は「初回だけ」と「毎回」のどちらを優先しますか？",
+      "question": "初回の見本表示は「初回だけ」を優先しますか？",
       "priority": 100,
       "reason": "Blocking X2を解消",
       "status": "open",
-      "answer": ""
+      "answer": "",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "初回理解を助けつつ、反復利用時の情報量を抑えられるため",
+      "answer_guide": "初回だけを優先するならy、毎回表示を優先するならn"
     }
   ],
   "assumptions": [],

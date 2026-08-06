@@ -86,7 +86,53 @@
       "type": "array"
     },
     "questions": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "stage",
+          "question",
+          "priority",
+          "reason",
+          "status",
+          "answer"
+        ],
+        "properties": {
+          "answer_type": {
+            "enum": ["yes_no", "single_choice", "free_text"]
+          },
+          "recommended_answer": {
+            "type": "string"
+          },
+          "recommendation_reason": {
+            "type": "string"
+          },
+          "answer_guide": {
+            "type": "string"
+          }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "open"
+                }
+              },
+              "required": ["status"]
+            },
+            "then": {
+              "required": [
+                "answer_type",
+                "recommended_answer",
+                "recommendation_reason",
+                "answer_guide"
+              ]
+            }
+          }
+        ]
+      }
     },
     "assumptions": {
       "type": "array"

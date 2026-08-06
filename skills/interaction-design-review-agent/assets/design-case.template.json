@@ -241,7 +241,11 @@
       "priority": 50,
       "reason": "",
       "status": "open",
-      "answer": ""
+      "answer": "",
+      "answer_type": "free_text",
+      "recommended_answer": "",
+      "recommendation_reason": "既知情報だけでは推奨案を一意に置けないため",
+      "answer_guide": "判断に必要な事実を1〜2文で答えてください"
     }
   ],
   "assumptions": [

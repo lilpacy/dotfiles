@@ -55,6 +55,27 @@ class ScriptTests(unittest.TestCase):
         self.assertIn("Question:", result.stdout)
         self.assertNotIn("\nQuestion:", result.stdout.split("Question:", 1)[-1])
 
+    def test_正常系_yes_no質問は推奨理由と回答ガイドを返す(self):
+        result = subprocess.run(
+            [
+                PY,
+                str(ROOT / "scripts" / "next_question.py"),
+                str(ROOT / "evals" / "fixtures" / "conflicting-case.json"),
+                "--json",
+            ],
+            text=True,
+            capture_output=True,
+        )
+        payload = json.loads(result.stdout)
+        question = payload["question"]
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(question["answer_type"], "yes_no")
+        self.assertIn(question["recommended_answer"], {"y", "n"})
+        self.assertTrue(question["recommendation_reason"])
+        self.assertIn("y", question["answer_guide"].lower())
+        self.assertIn("n", question["answer_guide"].lower())
+
     def test_異常系_業務理解の意味項目が空ならS1で停止する(self):
         case = copy.deepcopy(self.valid_case)
         case["project"]["success_conditions"][0]["statement"] = ""
@@ -137,6 +158,30 @@ class ScriptTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("Business Understanding", result.stdout)
         self.assertIn("blocked", result.stdout)
+
+    def test_異常系_未回答の選択質問に判断支援がなければ停止する(self):
+        case = copy.deepcopy(self.valid_case)
+        case["questions"] = [
+            {
+                "id": "Q1",
+                "stage": "decision_specification",
+                "question": "案Aを採用しますか？",
+                "priority": 70,
+                "reason": "判断を確定するため",
+                "status": "open",
+                "answer": "",
+                "answer_type": "yes_no",
+                "recommended_answer": "",
+                "recommendation_reason": "",
+                "answer_guide": "",
+            }
+        ]
+
+        issues = self.validate_design_case.validate(case)
+
+        self.assertTrue(
+            any(issue["code"] == "QUESTION_DECISION_SUPPORT" for issue in issues)
+        )
 
 
 if __name__ == "__main__":

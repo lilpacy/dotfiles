@@ -31,6 +31,7 @@ VALID_CONTRADICTION_STATUS = {"open","resolved","accepted_risk"}
 VALID_LOGIC_TYPE = {
     "simple_rule","flowchart","decision_table","boundary_table","expert_judgment"
 }
+VALID_ANSWER_TYPE = {"yes_no","single_choice","free_text"}
 
 def load(path: Path) -> dict[str, Any]:
     try:
@@ -377,7 +378,29 @@ def validate(data: dict[str,Any]) -> list[dict[str,str]]:
             if iid not in ia_idx:
                 add(issues,"blocking","BROKEN_REF",f"UI behavior {uid} references missing IA node {iid}")
 
-    index_ids(data.get("questions",[]),"question",issues)
+    question_idx=index_ids(data.get("questions",[]),"question",issues)
+    for qid,question in question_idx.items():
+        if question.get("status") != "open":
+            continue
+        answer_type=question.get("answer_type")
+        recommended=str(question.get("recommended_answer","")).strip().lower()
+        recommendation_reason=str(question.get("recommendation_reason","")).strip()
+        answer_guide=str(question.get("answer_guide","")).strip()
+        if answer_type not in VALID_ANSWER_TYPE:
+            add(issues,"blocking","QUESTION_DECISION_SUPPORT",f"open question {qid} has invalid answer_type")
+            continue
+        if not recommendation_reason:
+            add(issues,"blocking","QUESTION_DECISION_SUPPORT",f"open question {qid} has no recommendation reason")
+        if not answer_guide:
+            add(issues,"blocking","QUESTION_DECISION_SUPPORT",f"open question {qid} has no answer guide")
+        if answer_type == "yes_no":
+            if recommended not in {"y","n"}:
+                add(issues,"blocking","QUESTION_DECISION_SUPPORT",f"yes/no question {qid} must recommend y or n")
+            guide=answer_guide.lower()
+            if "y" not in guide or "n" not in guide:
+                add(issues,"blocking","QUESTION_DECISION_SUPPORT",f"yes/no question {qid} answer guide must show y and n")
+        if answer_type == "single_choice" and not recommended:
+            add(issues,"blocking","QUESTION_DECISION_SUPPORT",f"single-choice question {qid} has no recommended answer")
     index_ids(data.get("assumptions",[]),"assumption",issues)
     return issues
 

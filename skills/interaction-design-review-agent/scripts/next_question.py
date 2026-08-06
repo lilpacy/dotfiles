@@ -47,7 +47,10 @@ def main() -> int:
     else:
         result={"source":"default","score":0,"question":{
             "id":None,"stage":current,"question":DEFAULTS.get(current,DEFAULTS["business_understanding"]),
-            "priority":0,"reason":"現在ステージの既定質問","status":"suggested","answer":""
+            "priority":0,"reason":"現在ステージの既定質問","status":"suggested","answer":"",
+            "answer_type":"free_text","recommended_answer":"",
+            "recommendation_reason":"既知情報だけでは推奨案を一意に置けないため",
+            "answer_guide":"判断に必要な事実を1〜2文で答えてください"
         }}
     if args.json:
         print(json.dumps(result,ensure_ascii=False,indent=2))
@@ -56,6 +59,9 @@ def main() -> int:
         print(f"Stage: {q.get('stage')}")
         print(f"Question: {q.get('question')}")
         print(f"Reason: {q.get('reason')}")
+        print(f"Recommended answer: {q.get('recommended_answer') or '保留'}")
+        print(f"Recommendation reason: {q.get('recommendation_reason')}")
+        print(f"Answer guide: {q.get('answer_guide')}")
     return 0
 
 if __name__=="__main__":
