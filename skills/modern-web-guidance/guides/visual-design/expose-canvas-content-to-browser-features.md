@@ -1,6 +1,6 @@
-# Apply WebGL shaders to HTML content
+# Expose canvas content to browser features
 
-WebGL shaders provide powerful GPU-accelerated visual effects, enabling advanced capabilities like dynamic ripple distortions, lighting models, color grading, and custom vertex transformations. The HTML-in-Canvas API allows developers to apply WebGL textures to HTML content. This enables applying high-performance fragment and vertex shaders natively to fully interactive UI components, such as buttons, input fields, and rich text, while retaining native accessibility, text selection, and DOM event handling.
+Regular `<canvas>` content is not exposed to browser features such as screen readers, indexing, translation tools, accessibility assistive tools, find-in-page, print, etc. With `HTML in canvas`, you can render real DOM directly in a canvas element. Adding the `layoutsubtree` attribute to a `<canvas>` HTML element allows rendering descendant HTML elements within the canvas's rendering context. You can use it to style and lay out text in a canvas, expose canvas content to browser features (like accessibility, translation, or find-in-page), and apply 2D and 3D effects to HTML.
 
 ## How to implement
 
@@ -45,47 +45,89 @@ const options = supportsDevicePixelContentBox
 observer.observe(canvas, options);
 ```
 
-5. Render the HTML content to the canvas inside a `canvas.onpaint` event handler using the `texElementImage2D` method:
+5. Render the HTML content to the canvas inside a `canvas.onpaint` event handler:
+
+- In 2D context, use the `drawElementImage` method:
+
+```js
+canvas.onpaint = () => {
+  ctx.reset();
+  // Draw the form element at x:0, y:0
+  let transform = ctx.drawElementImage(form_element, 0, 0);
+};
+```
+
+- In WebGL context, use the `texElementImage2D` method:
 
 ```js
 canvas.onpaint = () => {
   if (gl.texElementImage2D) {
-    gl.texElementImage2D(
-      gl.TEXTURE_2D,
-      0,
-      gl.RGBA,
-      gl.RGBA,
-      gl.UNSIGNED_BYTE,
-      uiElement,
-    );
+    try {
+      gl.texElementImage2D(gl.TEXTURE_2D, gl.RGBA8, uiElement);
+    } catch (err) {
+      console.error('texElementImage2D copy failed:', err);
+    }
   }
 };
 ```
 
-  When using a `requestAnimationFrame` loop to render the scene, call `canvas.requestPaint()` within the loop to ensure that the HTML content is rendered to the canvas. Make sure you only re-render the canvas if there has been an update to the descendant HTML elements:
+- In WebGPU context, use the `copyElementImageToTexture` method:
 
-  ```js
-  function render() {
-    // Request to update the canvas
-    canvas.requestPaint();
-    requestAnimationFrame(render);
-  }
-  requestAnimationFrame(render);
-
-  canvas.onpaint = (event) => {
-    if (event.changedElements && event.changedElements.length > 0) {
-      // Update the texture with texElementImage2D, and update the CSS transform as shown in step 6
+```js
+canvas.onpaint = () => {
+  if (root.device.queue.copyElementImageToTexture) {
+    try {
+      const sourceDict = { source: valueElement };
+      const destDict = {
+        destination: { texture: targetTexture },
+        width: 512,
+        height: 128,
+      };
+      root.device.queue.copyElementImageToTexture(sourceDict, destDict);
+    } catch (err) {
+      console.error('copyElementImageToTexture copy failed:', err);
     }
-  };
-  ```
+  }
+};
+```
+
+When using a `requestAnimationFrame` loop to render the scene, call `canvas.requestPaint()` within the loop to ensure that the HTML content is rendered to the canvas. Make sure you only re-render the canvas if there has been an update to the descendant HTML elements:
+
+```js
+function render() {
+  // Request to update the canvas
+  canvas.requestPaint();
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+
+canvas.onpaint = (event) => {
+  if (event.changedElements && event.changedElements.length > 0) {
+    // Update the texture with drawElementImage, texElementImage2D, or copyElementImageToTexture, and update the CSS transform as shown in step 6
+  }
+};
+```
 
 6. Update the CSS transform.
 
-The browser needs to map from the 3D coordinate space into the CSS coordinate space using a viewport transform. To facilitate this, do the following:
+- For the 2D context case, apply the transform returned by the rendering call to the `style.transform` property:
+
+```js
+canvas.onpaint = () => {
+  ctx.reset();
+  // Draw the form element at x:0, y:0
+  let transform = ctx.drawElementImage(form_element, 0, 0);
+
+  // Sync the DOM location with the drawn location
+  form_element.style.transform = transform.toString();
+};
+```
+
+- For the 3D case with WebGL or WebGPU, the browser needs to map from the 3D coordinate space into the CSS coordinate space using a viewport transform. To facilitate this, do the following:
   - Convert WebGL MVP Matrix to DOM Matrix.
   - Normalize the HTML element. HTML elements are sized in pixels (for example, 200px wide). WebGL, however, usually treats objects as "unit squares", for example, ranging from 0 to 1. If you don't normalize, your 200px button will look 200 times larger.
   - Map to the canvas viewport. This step is the "re-scaling" phase: it stretches that unit-space math back out to match the actual pixel dimensions of your `<canvas>` element on the screen. It also flips the Y-axis, because in WebGL, up is positive, but in CSS, down is positive.
-  - Calculate the final transform. Multiply the matrices in order: Viewport * MVP * Normalization. Combining them into one final transform produces a "map" that tells the browser exactly where that HTML element layer should sit to align with the 3D drawing.
+  - Calculate the final transform. Multiply the matrices in order: Viewport _ MVP _ Normalization. Combining them into one final transform produces a "map" that tells the browser exactly where that HTML element layer should sit to align with the 3D drawing.
   - Apply the transform to the HTML element. This moves the HTML element layer to sit directly on top of its rendered pixels. This ensures that when a user clicks a button or selects text, they are actually hitting the real HTML element.
 
   ```js
@@ -141,6 +183,57 @@ targetHTMLElement.style.transform = computedTransform.toString();
 
 ## Example code
 
+### 2D Canvas
+
+```html
+<canvas id="canvas" layoutsubtree style="width: 400px; height: 200px;">
+  <div id="ui-element">
+    <p>
+      This text is rendered inside the canvas but is present in the DOM tree.
+    </p>
+    <input type="email" name="email" placeholder="enter your email" />
+    <button type="button">Submit</button>
+  </div>
+</canvas>
+
+<script>
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const uiElement = document.getElementById("ui-element");
+
+  canvas.onpaint = () => {
+    ctx.reset();
+    // Draw the HTML element at x:0, y:0
+    const transform = ctx.drawElementImage(uiElement, 0, 0);
+
+    // Sync the DOM location with the drawn location
+    uiElement.style.transform = transform.toString();
+  };
+
+  // Handle resizing to match device pixels
+  const observer = new ResizeObserver(([entry]) => {
+    const dpc = entry.devicePixelContentBoxSize;
+    canvas.width = dpc
+      ? dpc[0].inlineSize
+      : Math.round(entry.contentRect.width * window.devicePixelRatio);
+    canvas.height = dpc
+      ? dpc[0].blockSize
+      : Math.round(entry.contentRect.height * window.devicePixelRatio);
+    canvas.requestPaint();
+  });
+
+  const supportsDevicePixelContentBox =
+    typeof ResizeObserverEntry !== "undefined" &&
+    "devicePixelContentBoxSize" in ResizeObserverEntry.prototype;
+  const options = supportsDevicePixelContentBox
+    ? { box: "device-pixel-content-box" }
+    : {};
+  observer.observe(canvas, options);
+</script>
+```
+
+### WebGL Canvas
+
 ```html
 <canvas id="canvas" layoutsubtree style="width: 400px; height: 400px;">
   <div id="ui-element">
@@ -161,14 +254,11 @@ targetHTMLElement.style.transform = computedTransform.toString();
   canvas.onpaint = () => {
     // 1. Update texture with HTML content
     if (gl.texElementImage2D) {
-      gl.texElementImage2D(
-        gl.TEXTURE_2D,
-        0,
-        gl.RGBA,
-        gl.RGBA,
-        gl.UNSIGNED_BYTE,
-        uiElement,
-      );
+      try {
+        gl.texElementImage2D(gl.TEXTURE_2D, gl.RGBA8, uiElement);
+      } catch (err) {
+        console.error('texElementImage2D copy failed:', err);
+      }
     }
 
     // ... Render your 3D scene here, calculating htmlElementMVP matrix ...
@@ -205,18 +295,84 @@ targetHTMLElement.style.transform = computedTransform.toString();
 </script>
 ```
 
+### WebGPU Canvas
+
+```html
+<canvas id="canvas" layoutsubtree style="width: 400px; height: 400px;">
+  <div id="ui-element">
+    <p>WebGPU UI Element</p>
+  </div>
+</canvas>
+
+<script>
+  const canvas = document.getElementById("canvas");
+  const context = canvas.getContext("webgpu");
+  const uiElement = document.getElementById("ui-element");
+
+  // Setup WebGPU...
+  // const device = ...
+  // const targetTexture = ...
+
+  canvas.onpaint = () => {
+    // 1. Copy HTML content to texture
+    if (device.queue.copyElementImageToTexture) {
+      try {
+        const sourceDict = { source: uiElement };
+        const destDict = {
+          destination: { texture: targetTexture },
+          width: width,
+          height: height,
+        };
+        device.queue.copyElementImageToTexture(sourceDict, destDict);
+      } catch (err) {
+        console.error('copyElementImageToTexture copy failed:', err);
+      }
+    }
+
+    // 2. Sync DOM position (same matrix math as WebGL)
+    if (canvas.getElementTransform) {
+      const mvpDOM = new DOMMatrix(Array.from(htmlElementMVP));
+
+      // Recalculate the DPR compensation mapping
+      const dprX = canvas.width / canvas.clientWidth;
+      const dprY = canvas.height / canvas.clientHeight;
+      const gridWidth = uiElement.offsetWidth * dprX;
+      const gridHeight = uiElement.offsetHeight * dprY;
+
+      const cssToUnitSpace = new DOMMatrix()
+        .scale(1 / gridWidth, -1 / gridHeight, 1 / gridHeight) // Retain Z scale
+        .translate(-gridWidth / 2, -gridHeight / 2);
+
+      const clipToCanvasViewport = new DOMMatrix()
+        .translate(canvas.width / 2, canvas.height / 2)
+        .scale(canvas.width / 2, -canvas.height / 2, canvas.height / 2); // Retain Z scale
+
+      const screenSpaceTransform = clipToCanvasViewport
+        .multiply(mvpDOM)
+        .multiply(cssToUnitSpace);
+
+      const computedTransform = canvas.getElementTransform(
+        uiElement,
+        screenSpaceTransform,
+      );
+      uiElement.style.transform = computedTransform.toString();
+    }
+  };
+</script>
+```
+
 ## Best Practices
 
 - **MANDATORY**: Check browser support for the HTML-in-Canvas API before using it.
 - **MANDATORY**: Always add the `layoutsubtree` attribute to the `<canvas>` element.
 - **MANDATORY**: Use an `onpaint` event handler to render the HTML content to the canvas.
-- **MANDATORY**: Use the `texElementImage2D` method to render the HTML content to the canvas.
+- **MANDATORY**: Use the `drawElementImage`, `texElementImage2D`, or `copyElementImageToTexture` methods to render the HTML content to the canvas.
 - **MANDATORY**: Update the CSS transform of the HTML element to match the transform of the rendered content by setting the `style.transform` property of the HTML element.
 - **MANDATORY**: Use `ResizeObserver` to observe the screen size and update the canvas size to match device pixels.
 - **DO NOT** embed cross-origin content in a canvas, as it is not supported.
 - **DO NOT** initialize `ResizeObserver` within the `onpaint` event handler, as it may lead to memory leaks.
 
-### Fallback strategies
+## Fallback strategies
 
 HTML in canvas is not natively supported by any major browser yet.
 
@@ -226,7 +382,7 @@ However, given the improved performance benefits of this API, HTML-in-Canvas sho
 
 The fallback strategy depends on the use case. For example, for an interactive HTML content in canvas, if HTML-in-Canvas is not supported, place the HTML content on top of the canvas using CSS.
 
-### HTML-in-Canvas polyfill
+### HTML-in-Canvas polyfills
 
 Use the following polyfill script to mimic the HTML-in-Canvas API in browsers that do not support it.
 

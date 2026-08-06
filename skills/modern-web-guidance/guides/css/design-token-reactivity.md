@@ -56,9 +56,8 @@ The following is a basic example of the above implementation steps.
 
 ## Fallback strategies
 
-Container style queries has limited availability.
-Supported by: Chrome 111 (Mar 2023), Edge 111 (Mar 2023), and Safari 18 (Sep 2024).
-Unsupported in: Firefox.
+Baseline status for Container style queries: Newly available. It's been Baseline since 2026-05-19.
+Supported by: Chrome 111 (Mar 2023), Edge 111 (Mar 2023), Firefox 151 (May 2026), and Safari 18 (Sep 2024).
 
 Until there is Baseline support for container style queries it is NOT RECOMMENDED that they be used for core features that must be available across all browsers, since it is not simple to create a fallback for them that does not take away from their benefits or that have their own limitations. For example, if a UI density user preference is not deemed to be a core feature that must be available across all experiences, then container style queries can be use to implement the feature without a fallback.
 
@@ -90,7 +89,7 @@ For core features, an alternate approach using selectors should be used. This ex
 }
 ```
 
-A major limitation of this fallback approach is that it does not support nesting elements with the `data-density` attribute set, since the selector specificity is the same, order of appearance will be used to determine the styles (i.e. `[data-density="spacious"]` will always take precendence over `[data-density="compact"]`).
+A major limitation of this fallback approach is that it does not support nesting elements with the `data-density` attribute set, since the selector specificity is the same, order of appearance will be used to determine the styles (i.e. `[data-density="spacious"]` will always take precedence over `[data-density="compact"]`).
 
 ### Using style queries as a progressive enhancement
 

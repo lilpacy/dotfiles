@@ -170,8 +170,8 @@ By combining structured outputs with robust session management, developers can b
 ## 6. Fallback strategies
 
 LanguageModel has limited availability.
-Supported by: Chrome 148 (May 2026) and Edge 148 (May 2026).
-Unsupported in: Firefox and Safari.
+Supported by: Chrome 148 (May 2026).
+Unsupported in: Edge, Firefox, and Safari.
 
 Before use, check if the LanguageModel object is available in the global scope:
 
