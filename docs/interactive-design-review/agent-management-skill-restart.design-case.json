@@ -1,0 +1,108 @@
+{
+  "schema_version": "2.0",
+  "project": {
+    "name": "Agent management skill UX — restart",
+    "scope": "『agent管理のSkill』が指す対象をS1で再確認してから定義する",
+    "status": "draft",
+    "success_conditions": []
+  },
+  "pipeline": {
+    "current_stage": "business_understanding",
+    "stages": [
+      {
+        "id": "business_understanding",
+        "status": "in_progress",
+        "review_notes": [
+          "旧案の決定は引き継がず、対象の意味から再確認する"
+        ],
+        "approved_by": "",
+        "approval_evidence": ""
+      },
+      {"id": "decision_requirements", "status": "not_started", "review_notes": []},
+      {"id": "target_value_loop", "status": "not_started", "review_notes": []},
+      {"id": "decision_specification", "status": "not_started", "review_notes": []},
+      {"id": "design_principles", "status": "not_started", "review_notes": []},
+      {"id": "contradiction_check", "status": "not_started", "review_notes": []},
+      {"id": "state_machine", "status": "not_started", "review_notes": []},
+      {"id": "information_architecture", "status": "not_started", "review_notes": []},
+      {"id": "ui_behavior", "status": "not_started", "review_notes": []}
+    ]
+  },
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "ユーザーは『agent管理のSkill』を自作する場合のUXを検討したい",
+      "source": "user",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F2",
+      "statement": "旧レビューは論点が増えて理解しづらくなったため、ユーザーが最初からの再開を求めた",
+      "source": "user",
+      "confidence": "confirmed"
+    }
+  ],
+  "actors": [],
+  "constraints": [],
+  "business_workflow": {
+    "start_event": "",
+    "end_event": "",
+    "steps": [],
+    "start_step_id": ""
+  },
+  "decisions": [],
+  "decision_table": {
+    "conditions": [],
+    "actions": [],
+    "cases": [],
+    "applies_to_decision_ids": []
+  },
+  "principles": [],
+  "contradictions": [],
+  "state_machine": {
+    "initial_state_id": "",
+    "states": [],
+    "transitions": []
+  },
+  "information_architecture": {
+    "nodes": [],
+    "relationships": []
+  },
+  "ui_behaviors": [],
+  "questions": [
+    {
+      "id": "Q1",
+      "stage": "business_understanding",
+      "question": "今回つくりたい『agent管理のSkill』は、エージェント自体の起動・仕事の割当・進捗確認・結果回収を扱うものですか？",
+      "priority": 70,
+      "reason": "旧案では、エージェント管理とSkill管理を混同した可能性があり、対象を確定しないと正常系を正しく理解できないため",
+      "status": "open",
+      "answer": "",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "ユーザーが最初に『agent管理のSkill』と表現しており、Skillの共有方法はその配布方式として別に扱う方が自然なため",
+      "answer_guide": "y = エージェントの起動・割当・進捗・結果を管理するSkill、n = エージェントが使うSkill自体の作成・共有・承認・再利用を管理する仕組み"
+    }
+  ],
+  "assumptions": [],
+  "traceability": [],
+  "business_understanding": {
+    "purpose": "",
+    "scope_in": [],
+    "scope_out": [],
+    "pain_points": [
+      "旧レビューでは設計対象そのものが曖昧なまま論点が増えた可能性がある"
+    ],
+    "teach_back": ""
+  },
+  "decision_requirements": {
+    "confirmed_none": false,
+    "items": []
+  },
+  "target_value_loop": {
+    "start_event": "",
+    "value_outcome": "",
+    "steps": [],
+    "start_step_id": ""
+  }
+}

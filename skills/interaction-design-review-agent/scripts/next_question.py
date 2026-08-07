@@ -3,13 +3,20 @@
 from __future__ import annotations
 import argparse, json
 from pathlib import Path
-from typing import Any
 
-STAGE_ORDER = {
- "business_understanding":1,"decision_requirements":2,"target_value_loop":3,
- "decision_specification":4,"design_principles":5,"contradiction_check":6,
- "state_machine":7,"information_architecture":8,"ui_behavior":9
-}
+STAGES = (
+    ("business_understanding", "Business Understanding"),
+    ("decision_requirements", "Decision Requirements"),
+    ("target_value_loop", "Target Value Loop"),
+    ("decision_specification", "Decision Specification"),
+    ("design_principles", "Design Principles"),
+    ("contradiction_check", "Contradiction Check"),
+    ("state_machine", "State Machine"),
+    ("information_architecture", "Information Architecture"),
+    ("ui_behavior", "UI Behavior"),
+)
+STAGE_ORDER = {stage_id: index for index, (stage_id, _) in enumerate(STAGES, start=1)}
+STAGE_LABELS = dict(STAGES)
 
 DEFAULTS = {
  "business_understanding":"現行業務は何を契機に始まり、どの状態になれば完了ですか？",
@@ -23,6 +30,31 @@ DEFAULTS = {
  "ui_behavior":"この操作を実行した直後、画面は何を表示し、失敗時にどう戻しますか？"
 }
 
+
+def stage_summary(stage_id: str) -> dict[str, str | int]:
+    return {
+        "id": stage_id,
+        "label": STAGE_LABELS[stage_id],
+        "position": STAGE_ORDER[stage_id],
+    }
+
+
+def build_navigation(current: str) -> dict[str, object]:
+    if current not in STAGE_ORDER:
+        current = "business_understanding"
+    position = STAGE_ORDER[current]
+    previous_id = STAGES[position - 2][0] if position > 1 else None
+    return {
+        "previous_stage": stage_summary(previous_id) if previous_id else None,
+        "current_stage": stage_summary(current),
+        "progress": {
+            "current": position,
+            "total": len(STAGES),
+            "label": f"{position}/{len(STAGES)}",
+        },
+    }
+
+
 def main() -> int:
     ap=argparse.ArgumentParser()
     ap.add_argument("path")
@@ -30,6 +62,8 @@ def main() -> int:
     args=ap.parse_args()
     data=json.loads(Path(args.path).read_text(encoding="utf-8"))
     current=data.get("pipeline",{}).get("current_stage","business_understanding")
+    if current not in STAGE_ORDER:
+        current="business_understanding"
     open_q=[q for q in data.get("questions",[]) if q.get("status")=="open"]
     # Blocking contradiction questions get an automatic boost.
     open_blocking={c.get("id") for c in data.get("contradictions",[]) if c.get("severity")=="blocking" and c.get("status")=="open"}
@@ -39,13 +73,13 @@ def main() -> int:
         reason=str(q.get("reason",""))
         if any(cid and cid in reason for cid in open_blocking): score += 100
         if q.get("stage")==current: score += 20
-        score -= abs(STAGE_ORDER.get(q.get("stage"),99)-STAGE_ORDER.get(current,1))*3
+        score -= abs(STAGE_ORDER.get(q.get("stage"),99)-STAGE_ORDER[current])*3
         scored.append((score,q))
     if scored:
         score,q=max(scored,key=lambda x:x[0])
-        result={"source":"queue","score":score,"question":q}
+        result={"navigation":build_navigation(current),"source":"queue","score":score,"question":q}
     else:
-        result={"source":"default","score":0,"question":{
+        result={"navigation":build_navigation(current),"source":"default","score":0,"question":{
             "id":None,"stage":current,"question":DEFAULTS.get(current,DEFAULTS["business_understanding"]),
             "priority":0,"reason":"現在ステージの既定質問","status":"suggested","answer":"",
             "answer_type":"free_text","recommended_answer":"",
@@ -55,14 +89,23 @@ def main() -> int:
     if args.json:
         print(json.dumps(result,ensure_ascii=False,indent=2))
     else:
+        navigation=result["navigation"]
+        previous=navigation["previous_stage"]
+        current_stage=navigation["current_stage"]
+        print(
+            "Previous stage: "
+            + (f"{previous['label']} (S{previous['position']})" if previous else "なし")
+        )
+        print(f"Current stage: {current_stage['label']} (S{current_stage['position']})")
+        print(f"Progress: {navigation['progress']['label']}")
         q=result["question"]
-        print(f"Stage: {q.get('stage')}")
         print(f"Question: {q.get('question')}")
         print(f"Reason: {q.get('reason')}")
         print(f"Recommended answer: {q.get('recommended_answer') or '保留'}")
         print(f"Recommendation reason: {q.get('recommendation_reason')}")
         print(f"Answer guide: {q.get('answer_guide')}")
     return 0
+
 
 if __name__=="__main__":
     raise SystemExit(main())
