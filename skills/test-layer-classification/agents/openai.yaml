@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Layer Classification"
+  short_description: "Classify behavior checks into the lowest reliable test layers"
+  default_prompt: "Use $test-layer-classification to classify this change’s verification points before implementation."
