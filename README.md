@@ -3,33 +3,20 @@
 ## setup
 
 ```sh
-brew install asdf
-
-asdf plugin add nodejs
-asdf install nodejs 20.12.2
-asdf global nodejs 20.12.2
-
 # aquaなどbrewのパッケージでarm64で動かないものがあるのでrosettaを入れる
 softwareupdate --install-rosetta
-brew install aquaproj/aqua/aqua
 
-aqua i
-
-chmod 700 link.sh
-./link.sh
+make install   # brew bundle -> asdf/aqua runtimes -> link.sh
 ```
+
+個別に実行する場合は `make brew` / `make runtimes` / `make link`。
 
 ## homebrew
 
-backup
+`Brewfile` は dotfiles 自身が前提にする基盤ツールのみを宣言する。
+アプリ・言語ツールは新環境で必要になった時に都度 `brew install` する
+(使わなくなったものを再インストールする無駄を避ける方針)。
 
 ```sh
-brew list --formula > homebrew/formula
-brew list --cask > homebrew/cask
-```
-
-install
-
-```sh
-cat homebrew/*|xargs brew install
+brew bundle --file=Brewfile
 ```

@@ -1,62 +1,41 @@
 #!/usr/bin/env bash
+# links.conf の宣言表を適用して symlink を張る。
 set -euo pipefail
 
-mkdir -p ~/.config
-mkdir -p ~/.config/sheldon/
-mkdir -p ~/.config/karabiner/
-mkdir -p ~/.config/git/
-mkdir -p ~/.config/ghostty/
-mkdir -p ~/.config/herdr/
-mkdir -p ~/.config/agents/
-mkdir -p ~/.config/alacritty/
-mkdir -p ~/.hammerspoon
-mkdir -p ~/.claude
-mkdir -p ~/.codex
-mkdir -p ~/.agents
-mkdir -p "$HOME/Library/Application Support/lazygit"
-sudo mkdir -p /usr/local/bin/
+DOTFILES="${DOTFILES:-$HOME/dotfiles}"
+LINKS_CONF="$DOTFILES/links.conf"
 
-ln -sf ~/dotfiles/.vimrc ~/.vimrc
-ln -sf ~/dotfiles/.zshrc ~/.zshrc
-ln -sf ~/dotfiles/.bashrc ~/.bashrc
-ln -sf ~/dotfiles/.tmux.conf ~/.tmux.conf
-ln -sf ~/dotfiles/starship.toml ~/.config/starship.toml
-ln -sf ~/dotfiles/sheldon/plugins.toml ~/.config/sheldon/plugins.toml
-ln -sf ~/dotfiles/.config/karabiner/karabiner.json ~/.config/karabiner/karabiner.json
-ln -sf ~/dotfiles/.gitconfig ~/.gitconfig
-ln -sf ~/dotfiles/.alacritty.toml ~/.alacritty.toml
-ln -sfn ~/dotfiles/nvim ~/.config/nvim
-ln -sf ~/dotfiles/skills ~/.agents/skills
-ln -sf ~/dotfiles/claude/settings.json ~/.claude/settings.json
-ln -sfn ~/dotfiles/claude/skills ~/.claude/skills
-ln -sfn ~/dotfiles/claude/agents ~/.claude/agents
-ln -sfn ~/dotfiles/claude/commands ~/.claude/commands
-ln -sf ~/dotfiles/claude/CLAUDE.md ~/.claude/CLAUDE.md
-ln -sf ~/dotfiles/codex/AGENTS.md ~/.codex/AGENTS.md
-ln -sf ~/dotfiles/codex/skills ~/.codex/skills
-~/dotfiles/link-skills.sh
-ln -sf ~/dotfiles/.gitignore_global ~/.config/git/ignore
-ln -sf ~/dotfiles/.config/lazygit/config.yml "$HOME/Library/Application Support/lazygit/config.yml"
-ln -sf ~/dotfiles/.aerospace.toml ~/.aerospace.toml
-ln -sf ~/dotfiles/.hammerspoon/init.lua ~/.hammerspoon/init.lua
-ln -sfn ~/dotfiles/.hammerspoon/modules ~/.hammerspoon/modules
-ln -sf ~/dotfiles/ghostty ~/.config/ghostty/config
-ln -sf ~/dotfiles/.config/herdr/config.toml ~/.config/herdr/config.toml
-ln -sf ~/dotfiles/alacritty/catppuccin-frappe.toml ~/.config/alacritty/catppuccin-frappe.toml
-
-sudo ln -sf ~/dotfiles/bin/task_cal /usr/local/bin/task_cal
-sudo ln -sf ~/dotfiles/bin/sssh /usr/local/bin/sssh
-sudo ln -sf ~/dotfiles/bin/ecs-sh /usr/local/bin/ecs-sh
-sudo ln -sf ~/dotfiles/bin/tmux-dev /usr/local/bin/tmux-dev
-sudo ln -sf ~/dotfiles/bin/herdrw /usr/local/bin/herdrw
-sudo ln -sf ~/dotfiles/bin/herdrp /usr/local/bin/herdrp
-# git hooks (husky の代替。npm 依存なしで pre-commit を有効化する)
-git -C ~/dotfiles config core.hooksPath githooks
-
-for obsolete in herdr-layout-dev herdr-layout-dev-wide; do
-  target="/usr/local/bin/$obsolete"
-  if [[ -L "$target" && "$(readlink "$target")" == "$HOME/dotfiles/bin/$obsolete" ]]; then
-    sudo rm -f "$target"
+while IFS=$'\t' read -r src dst; do
+  [[ -z "$src" || "$src" == \#* || -z "$dst" ]] && continue
+  dst="${dst/#\~/$HOME}"
+  dst="${dst//\$HOME/$HOME}"
+  if [[ ! -e "$DOTFILES/$src" ]]; then
+    echo "skip (src が存在しない): $src" >&2
+    continue
   fi
-done
-find bin -type f -print0 | xargs -0 chmod 755
+  mkdir -p "$(dirname "$dst")"
+  ln -sfn "$DOTFILES/$src" "$dst"
+done <"$LINKS_CONF"
+
+"$DOTFILES/link-skills.sh"
+
+# git hooks (husky の代替。npm 依存なしで pre-commit を有効化する)
+git -C "$DOTFILES" config core.hooksPath githooks
+
+# /usr/local/bin へ置く CLI (sudo 環境や PATH 未設定シェルからも使うもの)
+SYSTEM_BIN=(task_cal sssh ecs-sh tmux-dev herdrw herdrp)
+if [[ "${SKIP_SUDO_LINKS:-0}" != "1" ]]; then
+  sudo mkdir -p /usr/local/bin
+  for name in "${SYSTEM_BIN[@]}"; do
+    sudo ln -sf "$DOTFILES/bin/$name" "/usr/local/bin/$name"
+  done
+  for obsolete in herdr-layout-dev herdr-layout-dev-wide; do
+    target="/usr/local/bin/$obsolete"
+    if [[ -L "$target" && "$(readlink "$target")" == "$HOME/dotfiles/bin/$obsolete" ]]; then
+      sudo rm -f "$target"
+    fi
+  done
+fi
+
+# bin 直下のスクリプトのみ実行可能にする (bin/src のソースは対象外)
+find "$DOTFILES/bin" -maxdepth 1 -type f -print0 | xargs -0 chmod 755
