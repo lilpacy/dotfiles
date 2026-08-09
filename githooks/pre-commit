@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# 防止線: commit 前に staged 差分から secret を検出する。
+# core.hooksPath は link.sh で設定される (npm/husky 非依存)。
+set -euo pipefail
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks が見つかりません。'aqua i' を実行してください。" >&2
+  exit 1
+fi
+
+gitleaks protect --staged
