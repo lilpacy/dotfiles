@@ -2,23 +2,31 @@
   "schema_version": "2.0",
   "project": {
     "name": "Agent management skill UX — restart",
-    "scope": "『agent管理のSkill』が指す対象をS1で再確認してから定義する",
+    "scope": "親エージェントが子エージェントの起動・仕事の割当・進捗確認・結果回収を担う業務のUXを設計する。Skill自体の配布管理は対象外とする",
     "status": "draft",
-    "success_conditions": []
+    "success_conditions": [
+      {
+        "id": "SC1",
+        "statement": "ユーザーが個々の子エージェントを操作せず、親エージェントへ渡した目的に対する統合結果を受け取れる",
+        "verification": "分割可能な作業を使ったシナリオレビューで、依頼から統合結果の返却までを子エージェントへのユーザー介入なしで追跡できる",
+        "status": "confirmed"
+      }
+    ]
   },
   "pipeline": {
-    "current_stage": "business_understanding",
+    "current_stage": "decision_requirements",
     "stages": [
       {
         "id": "business_understanding",
-        "status": "in_progress",
+        "status": "approved",
         "review_notes": [
-          "旧案の決定は引き継がず、対象の意味から再確認する"
+          "旧案の決定は引き継がず、対象の意味から再確認する",
+          "ユーザーが現行正常系のteach-backを承認した"
         ],
-        "approved_by": "",
-        "approval_evidence": ""
+        "approved_by": "user",
+        "approval_evidence": "2026-08-08、対象確認Q1と現行正常系Q2の双方にユーザーが y と回答"
       },
-      {"id": "decision_requirements", "status": "not_started", "review_notes": []},
+      {"id": "decision_requirements", "status": "in_progress", "review_notes": []},
       {"id": "target_value_loop", "status": "not_started", "review_notes": []},
       {"id": "decision_specification", "status": "not_started", "review_notes": []},
       {"id": "design_principles", "status": "not_started", "review_notes": []},
@@ -40,15 +48,89 @@
       "statement": "旧レビューは論点が増えて理解しづらくなったため、ユーザーが最初からの再開を求めた",
       "source": "user",
       "confidence": "confirmed"
+    },
+    {
+      "id": "F3",
+      "statement": "設計対象はSkillの配布管理ではなく、エージェント自体の起動・仕事の割当・進捗確認・結果回収である",
+      "source": "user:Q1",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F4",
+      "statement": "現行正常系では、ユーザーが親エージェントへ目的を伝え、親が必要なときだけ子へ仕事を分割・割当し、進捗と失敗を管理して結果を統合する。通常、ユーザーは個々の子を操作しない",
+      "source": "user:Q2",
+      "confidence": "confirmed"
     }
   ],
-  "actors": [],
+  "actors": [
+    {
+      "id": "A1",
+      "name": "ユーザー",
+      "role": "目的の依頼者",
+      "authority": ["目的と制約を指定する", "統合結果を受け取る"],
+      "responsibilities": ["達成したい目的と必要な制約を親エージェントへ伝える"],
+      "goal": "子エージェントを個別管理せず、目的に対する統合結果を得る"
+    },
+    {
+      "id": "A2",
+      "name": "親エージェント",
+      "role": "作業の統括者",
+      "authority": ["必要に応じて作業を分割する", "子エージェントへ仕事を割り当てる", "結果を統合する"],
+      "responsibilities": ["子エージェントの進捗と失敗を管理する", "個別結果を一つの成果へ統合する"],
+      "goal": "ユーザーの目的を、必要な委譲を使って完了させる"
+    },
+    {
+      "id": "A3",
+      "name": "子エージェント",
+      "role": "限定された作業の実行者",
+      "authority": ["割り当てられた範囲内で作業する"],
+      "responsibilities": ["割り当てられた作業を実行し、結果を親エージェントへ返す"],
+      "goal": "担当作業の検証可能な結果を返す"
+    }
+  ],
   "constraints": [],
   "business_workflow": {
-    "start_event": "",
-    "end_event": "",
-    "steps": [],
-    "start_step_id": ""
+    "start_event": "ユーザーが親エージェントへ目的と制約を伝える",
+    "end_event": "親エージェントが子の結果を統合し、ユーザーへ一つの結果として返す",
+    "steps": [
+      {
+        "id": "W1",
+        "actor_id": "A1",
+        "action": "達成したい目的と制約を親エージェントへ伝える",
+        "input": ["達成したい目的", "必要な制約"],
+        "output": ["依頼内容"],
+        "handoff": "親エージェントへ依頼内容を渡す",
+        "next_step_ids": ["W2"]
+      },
+      {
+        "id": "W2",
+        "actor_id": "A2",
+        "action": "必要な場合に仕事を分割し、子エージェントへ割り当てる",
+        "input": ["依頼内容"],
+        "output": ["割当済み作業"],
+        "handoff": "各子エージェントへ限定された作業を渡す",
+        "next_step_ids": ["W3"]
+      },
+      {
+        "id": "W3",
+        "actor_id": "A3",
+        "action": "割り当てられた作業を実行し、結果を返す",
+        "input": ["割当済み作業"],
+        "output": ["個別結果"],
+        "handoff": "親エージェントへ個別結果を返す",
+        "next_step_ids": ["W4"]
+      },
+      {
+        "id": "W4",
+        "actor_id": "A2",
+        "action": "進捗と失敗を管理し、個別結果を統合してユーザーへ返す",
+        "input": ["個別結果"],
+        "output": ["統合結果"],
+        "handoff": "ユーザーへ統合結果を返す",
+        "next_step_ids": []
+      }
+    ],
+    "start_step_id": "W1"
   },
   "decisions": [],
   "decision_table": {
@@ -76,28 +158,93 @@
       "question": "今回つくりたい『agent管理のSkill』は、エージェント自体の起動・仕事の割当・進捗確認・結果回収を扱うものですか？",
       "priority": 70,
       "reason": "旧案では、エージェント管理とSkill管理を混同した可能性があり、対象を確定しないと正常系を正しく理解できないため",
-      "status": "open",
-      "answer": "",
+      "status": "answered",
+      "answer": "y",
       "answer_type": "yes_no",
       "recommended_answer": "y",
       "recommendation_reason": "ユーザーが最初に『agent管理のSkill』と表現しており、Skillの共有方法はその配布方式として別に扱う方が自然なため",
       "answer_guide": "y = エージェントの起動・割当・進捗・結果を管理するSkill、n = エージェントが使うSkill自体の作成・共有・承認・再利用を管理する仕組み"
+    },
+    {
+      "id": "Q2",
+      "stage": "business_understanding",
+      "question": "現行正常系は、ユーザーが親エージェントへ目的を伝え、親が必要なときだけ子へ仕事を分割・割当し、進捗と失敗を管理して結果を統合する流れですか？",
+      "priority": 90,
+      "reason": "S1の現行正常系とアクター間の引き渡しを確定するため",
+      "status": "answered",
+      "answer": "y",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "ユーザーを目的と統合結果に集中させ、個々の子エージェント管理を親へ委ねる流れだから",
+      "answer_guide": "y = この現行正常系で合っている、n = 現在の流れと違う点を補足する"
+    },
+    {
+      "id": "Q3",
+      "stage": "decision_requirements",
+      "question": "現行業務で必須の判断は、委譲するか、どう分割・割当するか、結果を採用・再試行・補完するかの3つで、通常系にユーザー判断はないと整理してよいですか？",
+      "priority": 70,
+      "reason": "S2で業務上不可欠な判断の範囲を、解決策やUIを決めずに確定するため",
+      "status": "open",
+      "answer": "",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "承認済みの現行正常系では親エージェントが委譲から統合までを担い、ユーザーは目的の提示と統合結果の受領に集中しているため",
+      "answer_guide": "y = この3判断を必須判断として扱い、通常系のユーザー判断は置かない、n = 足りない判断またはユーザーが担う判断を補足する"
     }
   ],
   "assumptions": [],
   "traceability": [],
   "business_understanding": {
-    "purpose": "",
-    "scope_in": [],
-    "scope_out": [],
+    "purpose": "ユーザーが個々の子エージェントを管理せず、親エージェントへ目的を渡すだけで統合結果を得る",
+    "scope_in": [
+      "親エージェントによる子エージェントの起動",
+      "仕事の分割と割当",
+      "進捗と失敗の管理",
+      "個別結果の回収と統合"
+    ],
+    "scope_out": [
+      "Skill自体の作成・配布・承認・再利用管理",
+      "ユーザーによる個々の子エージェントの直接操作を通常系にすること"
+    ],
     "pain_points": [
       "旧レビューでは設計対象そのものが曖昧なまま論点が増えた可能性がある"
     ],
-    "teach_back": ""
+    "teach_back": "ユーザーが親エージェントへ目的を伝えると、親が必要な場合だけ仕事を分割して子へ割り当て、進捗と失敗を管理し、個別結果を一つに統合して返す。ユーザーは通常、子エージェントを個別操作しない。"
   },
   "decision_requirements": {
     "confirmed_none": false,
-    "items": []
+    "items": [
+      {
+        "id": "DR1",
+        "question": "子エージェントへ委譲する必要があるか",
+        "business_reason": "不要な委譲を避けつつ、分割による価値がある作業を親だけで抱えないため",
+        "trigger": "親エージェントが依頼内容を受け取ったとき",
+        "evidence": ["依頼内容", "作業の分離可能性", "委譲による便益"],
+        "failure_impact": "不要な管理負荷が増えるか、委譲すべき作業を親が抱えて完了が遅れる",
+        "workflow_step_ids": ["W2"],
+        "status": "provisional"
+      },
+      {
+        "id": "DR2",
+        "question": "仕事をどう分割し、どの子エージェントへ割り当てるか",
+        "business_reason": "重複や抜けを避け、個別結果を統合可能にするため",
+        "trigger": "子エージェントへの委譲が必要だと判断したとき",
+        "evidence": ["依頼の成果条件", "作業間の依存関係", "各作業の境界"],
+        "failure_impact": "作業の重複・欠落・競合が起き、統合結果が目的を満たさない",
+        "workflow_step_ids": ["W2"],
+        "status": "provisional"
+      },
+      {
+        "id": "DR3",
+        "question": "返された個別結果を採用するか、再試行・補完するか",
+        "business_reason": "不完全または矛盾した個別結果をそのまま統合しないため",
+        "trigger": "親エージェントが子エージェントから個別結果を受け取ったとき",
+        "evidence": ["依頼の成果条件", "個別結果", "他の個別結果との整合性"],
+        "failure_impact": "不完全または矛盾した結果がユーザーへ返るか、完了可能な作業が不要に繰り返される",
+        "workflow_step_ids": ["W4"],
+        "status": "provisional"
+      }
+    ]
   },
   "target_value_loop": {
     "start_event": "",
