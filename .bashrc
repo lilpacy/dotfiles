@@ -1,4 +1,5 @@
-source ${BASH_SOURCE[0]%/*}/dotfiles/common.sh
+# shellcheck shell=bash
+source "${BASH_SOURCE[0]%/*}/dotfiles/common.sh"
 
 # starship
 eval "$(starship init bash)"

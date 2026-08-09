@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # emacs keybind
 set -o emacs
 
