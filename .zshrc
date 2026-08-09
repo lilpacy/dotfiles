@@ -57,9 +57,13 @@ eval "$(direnv hook zsh)"
 	setopt auto_pushd
 	# 自動的にcd
 	setopt auto_cd
-	# 補完システムの初期化
+	# 補完システムの初期化 (セキュリティ検査は1日1回だけ行い、それ以外はキャッシュを使う)
 	autoload -Uz compinit
-	compinit
+	if [[ -n ${HOME}/.zcompdump(#qN.mh-24) ]]; then
+		compinit -C
+	else
+		compinit
+	fi
 	# reverse-i-search
 	bindkey '^R' history-incremental-search-backward
 
@@ -94,16 +98,16 @@ gwt() {
 # bun completions
 [ -s "/Users/lilpacy/.bun/_bun" ] && source "/Users/lilpacy/.bun/_bun"
 
+# neofetchが存在する場合は実行
+if (( $+commands[neofetch] )); then
+    neofetch
+fi
+
 # starship
 eval "$(starship init zsh)"
 
 # sheldon
 eval "$(sheldon source)"
-
-# neofetchが存在する場合は実行
-if (( $+commands[neofetch] )); then
-    neofetch
-fi
 
 export ANDROID_HOME=$HOME/Library/Android/sdk
 export PATH=$PATH:$ANDROID_HOME/tools

@@ -31,8 +31,9 @@ export GO111MODULE=on
 # 『改訂2版 みんなのGO言語』
 # go1.16からはgomodulesがデフォルトonになりGOPATHからは解放されているが
 # 他のバージョンの開発のために一応設定しておく
+# (go env GOPATH の呼び出しは ~26ms かかるため既定値を直接設定)
 mkdir -p ~/go/bin ~/go/src ~/go/pkg
-export GOPATH=$(go env GOPATH)
+export GOPATH="$HOME/go"
 
 # go installで入れた実行ファイルにパスを通す
 # ~/binの方はgo env -w GOBIN=~/binで設定している
@@ -80,9 +81,6 @@ fi
 alias backup-bs="/bin/bash -l -c 'cd /Users/lilpacy/Library/CloudStorage/GoogleDrive-revivedtomorrow@gmail.com/My\ Drive/Boostnote && sh -x backup.sh'"
 alias backup-ob="/bin/bash -l -c 'cd /Users/lilpacy/go/src/github.com/lilpacy/obsidian && sh -x backup.sh'"
 alias backup-al="/bin/bash -l -c 'cd /Users/lilpacy/go/src/github.com/lilpacy/alfred-preferences/ && sh -x backup.sh'"
-
-# elixir
-. /opt/homebrew/opt/asdf/libexec/asdf.sh
 
 # Language
 export LANG='ja_JP.UTF-8'
@@ -151,26 +149,20 @@ pbedit() {
     rm -f "$_t"
 }
 
-# https://zenn.dev/s_ha_3000/articles/71d10761889ac7
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-__conda_setup="$('/opt/anaconda3/bin/conda' 'shell.zsh' 'hook' 2>/dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/opt/anaconda3/etc/profile.d/conda.sh" ]; then
+# conda は初回使用時に初期化する (毎起動の hook 実行は ~126ms かかるため遅延化)
+conda() {
+    unset -f conda
+    __conda_setup="$('/opt/anaconda3/bin/conda' 'shell.zsh' 'hook' 2>/dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__conda_setup"
+    elif [ -f "/opt/anaconda3/etc/profile.d/conda.sh" ]; then
         . "/opt/anaconda3/etc/profile.d/conda.sh"
     else
         export PATH="/opt/anaconda3/bin:$PATH"
     fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
-
-# yabai
-alias yabai-start='yabai --start-service'
-alias yabai-stop='yabai --stop-service'
-alias yabai-restart='yabai --restart-service'
+    unset __conda_setup
+    conda "$@"
+}
 
 # postgresql
 export PATH="/opt/homebrew/opt/postgresql@15/bin:$PATH"
