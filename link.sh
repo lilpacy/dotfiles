@@ -10,6 +10,9 @@ mkdir -p ~/.config/herdr/
 mkdir -p ~/.config/agents/
 mkdir -p ~/.config/alacritty/
 mkdir -p ~/.hammerspoon
+mkdir -p ~/.claude
+mkdir -p ~/.codex
+mkdir -p ~/.agents
 mkdir -p "$HOME/Library/Application Support/lazygit"
 sudo mkdir -p /usr/local/bin/
 
@@ -47,6 +50,9 @@ sudo ln -sf ~/dotfiles/bin/ecs-sh /usr/local/bin/ecs-sh
 sudo ln -sf ~/dotfiles/bin/tmux-dev /usr/local/bin/tmux-dev
 sudo ln -sf ~/dotfiles/bin/herdrw /usr/local/bin/herdrw
 sudo ln -sf ~/dotfiles/bin/herdrp /usr/local/bin/herdrp
+# git hooks (husky の代替。npm 依存なしで pre-commit を有効化する)
+git -C ~/dotfiles config core.hooksPath githooks
+
 for obsolete in herdr-layout-dev herdr-layout-dev-wide; do
   target="/usr/local/bin/$obsolete"
   if [[ -L "$target" && "$(readlink "$target")" == "$HOME/dotfiles/bin/$obsolete" ]]; then

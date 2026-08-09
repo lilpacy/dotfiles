@@ -1,0 +1,63 @@
+name: CI
+
+# 検知線は「remote に到達したか」で張る。PR の有無に関わらず全ブランチの
+# push でスキャンしないと、PR を作らない直 push が検知をすり抜ける。
+on:
+  push:
+  pull_request:
+
+# 同一ブランチの連続 push で古い run を打ち切る。push と pull_request の
+# 二重実行も PR 側 run が同 group に入ることで抑制される。
+concurrency:
+  group: ci-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck (repo scripts)
+        run: |
+          shellcheck --severity=error \
+            link.sh link-skills.sh common.sh .bashrc \
+            githooks/pre-commit claude/hooks/auto-commit.sh
+      - name: shellcheck (bin scripts)
+        run: |
+          git grep -lE '^#!/(usr/)?bin/(env )?(bash|sh)\b' -- bin \
+            | xargs shellcheck --severity=error
+
+  link-idempotency:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: link checkout as ~/dotfiles
+        run: ln -s "$GITHUB_WORKSPACE" "$HOME/dotfiles"
+      - name: run link.sh (1st)
+        run: ./link.sh
+      - name: run link.sh (2nd, must be idempotent)
+        run: ./link.sh
+      - name: verify links resolve
+        run: |
+          for f in ~/.zshrc ~/.tmux.conf ~/.config/nvim/init.lua \
+                   ~/.claude/settings.json ~/.claude/CLAUDE.md; do
+            [ -e "$f" ] || { echo "broken link: $f" >&2; exit 1; }
+          done
+      - name: verify hooksPath is configured
+        run: |
+          [ "$(git -C "$HOME/dotfiles" config core.hooksPath)" = "githooks" ]
+
+  # 検知線: pre-commit すり抜け時に漏洩へ早期に気づきローテーションを起動する。
+  # 防止線は githooks/pre-commit (gitleaks protect --staged)。
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: install gitleaks
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_linux_x64.tar.gz \
+            | tar -xz -C /usr/local/bin gitleaks
+      - name: gitleaks (full history)
+        run: gitleaks detect --redact -v

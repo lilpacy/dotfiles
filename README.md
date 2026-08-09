@@ -13,7 +13,6 @@ asdf global nodejs 20.12.2
 softwareupdate --install-rosetta
 brew install aquaproj/aqua/aqua
 
-npm i
 aqua i
 
 chmod 700 link.sh

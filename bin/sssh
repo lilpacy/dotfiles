@@ -53,15 +53,15 @@ colorEcho(){
   yellow='\033[0;33m'
   reset='\033[0m'
 
-  if echo $@ | egrep -q "prd|prod|production"; then
+  if echo "$@" | egrep -q "prd|prod|production"; then
     color=$red
-  elif echo $@ | egrep -q "stg|stage|staging|beta|devo"; then
+  elif echo "$@" | egrep -q "stg|stage|staging|beta|devo"; then
     color=$yellow
   else
     color=$green
   fi
 
-  echo -e "${color}$@${reset}"
+  echo -e "${color}$*${reset}"
 }
 
 echo_stderr() {
@@ -209,4 +209,4 @@ main(){
 }
 
 # Execute main function and pass all params over
-main $@
+main "$@"
