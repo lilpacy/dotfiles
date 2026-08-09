@@ -13,13 +13,9 @@ make install   # brew bundle -> asdf/aqua runtimes -> link.sh
 
 ## homebrew
 
-backup
-
-```sh
-brew bundle dump --file=Brewfile --force --no-vscode
-```
-
-install
+`Brewfile` は dotfiles 自身が前提にする基盤ツールのみを宣言する。
+アプリ・言語ツールは新環境で必要になった時に都度 `brew install` する
+(使わなくなったものを再インストールする無駄を避ける方針)。
 
 ```sh
 brew bundle --file=Brewfile
