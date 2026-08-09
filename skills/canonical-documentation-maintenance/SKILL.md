@@ -1,6 +1,6 @@
 ---
 name: canonical-documentation-maintenance
-description: Maintain product, architecture, design, API, data, and operational documentation in an established repository. Use when deciding whether to edit an existing source of truth or add a document, separating current-state contracts from implementation plans, moving content out of change-named documents, or reviewing documentation scope and placement.
+description: Maintain product, architecture, design, API, data, and operational documentation in an established repository. Use when deciding whether to edit an existing source of truth or add a document, separating current-state contracts from implementation plans, keeping volatile repository facts and technical debt out of reusable agent skills, moving content out of change-named documents, or reviewing documentation scope and placement.
 ---
 
 # Canonical Documentation Maintenance
@@ -122,6 +122,10 @@ Do not add a corpus-wide rule to a documentation README until the current tree s
 ### Deleting decision history
 
 Changing direction does not make the former accepted decision disappear. Preserve the original ADR and record the new decision with an explicit supersession boundary.
+
+### Storing current repository facts in skills
+
+Do not snapshot current inventories, known debt, migration progress, observed gaps, or one-time audit results in a reusable skill. Put those facts in the repository's canonical documentation, debt tracker, or planning artifact. Keep the skill focused on repeatable procedures, decision rules, verification commands, and pointers that load the current facts from their authoritative owner at runtime.
 
 ### Moving text without checking all writers
 
