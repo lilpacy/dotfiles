@@ -23,15 +23,15 @@ done <"$LINKS_CONF"
 git -C "$DOTFILES" config core.hooksPath githooks
 
 # /usr/local/bin へ置く CLI (sudo 環境や PATH 未設定シェルからも使うもの)
-SYSTEM_BIN=(task_cal sssh ecs-sh tmux-dev herdrw herdrp)
+SYSTEM_BIN=(sssh ecs-sh tmux-dev herdrw herdrp)
 if [[ "${SKIP_SUDO_LINKS:-0}" != "1" ]]; then
   sudo mkdir -p /usr/local/bin
   for name in "${SYSTEM_BIN[@]}"; do
     sudo ln -sf "$DOTFILES/bin/$name" "/usr/local/bin/$name"
   done
-  for obsolete in herdr-layout-dev herdr-layout-dev-wide; do
+  for obsolete in herdr-layout-dev herdr-layout-dev-wide task_cal; do
     target="/usr/local/bin/$obsolete"
-    if [[ -L "$target" && "$(readlink "$target")" == "$HOME/dotfiles/bin/$obsolete" ]]; then
+    if [[ -L "$target" && "$(readlink "$target")" == "$HOME/dotfiles/"* ]]; then
       sudo rm -f "$target"
     fi
   done
