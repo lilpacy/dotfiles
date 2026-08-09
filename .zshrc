@@ -98,6 +98,11 @@ gwt() {
 # bun completions
 [ -s "/Users/lilpacy/.bun/_bun" ] && source "/Users/lilpacy/.bun/_bun"
 
+# neofetchが存在する場合は実行
+if (( $+commands[neofetch] )); then
+    neofetch
+fi
+
 # starship
 eval "$(starship init zsh)"
 
