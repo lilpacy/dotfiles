@@ -1,9 +1,16 @@
 name: CI
 
+# 検知線は「remote に到達したか」で張る。PR の有無に関わらず全ブランチの
+# push でスキャンしないと、PR を作らない直 push が検知をすり抜ける。
 on:
-  pull_request:
   push:
-    branches: [master]
+  pull_request:
+
+# 同一ブランチの連続 push で古い run を打ち切る。push と pull_request の
+# 二重実行も PR 側 run が同 group に入ることで抑制される。
+concurrency:
+  group: ci-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   shellcheck:
