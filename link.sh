@@ -13,6 +13,12 @@ while IFS=$'\t' read -r src dst; do
     echo "skip (src が存在しない): $src" >&2
     continue
   fi
+  # dst の親ディレクトリが repo 内へ解決される場合、ln は repo の実体を
+  # 自己参照 symlink で破壊する (例: ~/.config/karabiner が repo への symlink)。
+  if [[ "$(cd "$(dirname "$dst")" 2>/dev/null && pwd -P)/$(basename "$dst")" == "$(cd "$DOTFILES" && pwd -P)/$src" ]]; then
+    echo "skip (dst が repo 内の src 自身に解決される): $dst" >&2
+    continue
+  fi
   mkdir -p "$(dirname "$dst")"
   ln -sfn "$DOTFILES/$src" "$dst"
 done <"$LINKS_CONF"
