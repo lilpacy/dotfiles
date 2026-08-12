@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Suite Pruning"
+  short_description: "Safely remove redundant tests and verify CI gains"
+  default_prompt: "Use $test-suite-pruning to remove redundant tests without losing distinct verification and confirm the CI runtime improvement."
