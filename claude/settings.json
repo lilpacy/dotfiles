@@ -1,21 +1,15 @@
 {
   "env": {
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "us.anthropic.claude-opus-4-8",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "us.anthropic.claude-opus-5",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "global.anthropic.claude-sonnet-5",
     "ANTHROPIC_MODEL": "global.anthropic.claude-sonnet-5",
     "AWS_REGION": "us-east-1",
-    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
     "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
     "CLAUDE_CODE_MAX_OUTPUT_TOKENS": "16384",
     "CLAUDE_CODE_USE_BEDROCK": "1",
     "ENABLE_TOOL_SEARCH": "true",
     "MAX_THINKING_TOKENS": "1024",
-    "MCP_TOOL_TIMEOUT": "900000",
-    "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
-    "OTEL_EXPORTER_OTLP_PROTOCOL": "grpc",
-    "OTEL_LOGS_EXPORTER": "otlp",
-    "OTEL_LOG_TOOL_DETAILS": "1",
-    "OTEL_SERVICE_NAME": "claude-code"
+    "MCP_TOOL_TIMEOUT": "900000"
   },
   "attribution": {
     "commit": "",
@@ -84,18 +78,6 @@
   },
   "model": "sonnet",
   "hooks": {
-    "InstructionsLoaded": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/lilpacy/go/src/github.com/lilpacy/claude-otel/hooks/log-instructions-loaded.sh",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
     "UserPromptSubmit": [
       {
         "matcher": "*",
@@ -116,32 +98,6 @@
             "type": "command",
             "command": "bash '/Users/lilpacy/.claude/hooks/herdr-agent-state.sh' session",
             "timeout": 10
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/lilpacy/go/src/github.com/lilpacy/claude-otel/hooks/subagent-otel.sh",
-            "timeout": 5,
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/Users/lilpacy/go/src/github.com/lilpacy/claude-otel/hooks/subagent-otel.sh",
-            "timeout": 5,
-            "async": true
           }
         ]
       }
