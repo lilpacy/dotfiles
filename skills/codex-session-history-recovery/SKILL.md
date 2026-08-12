@@ -46,6 +46,7 @@ Separate confirmed facts from reconstruction. If only a candidate match exists, 
 - Never include secrets in the response, even when they are expired.
 
 See [JSONL search recipes](references/jsonl-search-recipes.md) for compact extraction commands and false-positive checks.
+When implementing or debugging transcript readers, see [JSONL record boundaries](references/jsonl-record-boundaries.md) before choosing a line-splitting API.
 
 ## Output
 
