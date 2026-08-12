@@ -30,7 +30,7 @@ description: Ingest a completed agent conversation into an LLM Wiki repository t
 
 Use the repository's deterministic ID algorithms when available. In the current pipeline:
 
-- Delta ID: SHA-256 of `source_link`, classification, claim, and evidence joined by NUL; use the first 12 hex characters.
+- Delta ID: SHA-256 of the repository `source_link` path without `.md` or wikilink brackets, classification, claim, and evidence joined by NUL; use the first 12 hex characters. For query ingest, this is `queries/YYYY-MM-DD Title`, matching `target_filename.delete_suffix(".md")` in `scripts/pi_ingest_apply.rb`, not the frontmatter value `[[queries/...]]`.
 - Fact ID: SHA-256 of entity path, attribute, value, and Delta ID joined by NUL; use the first 12 hex characters.
 
 ## Verify before committing
