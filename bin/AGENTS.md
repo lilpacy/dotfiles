@@ -51,6 +51,17 @@ Browse Claude Code thinking blocks from conversation history with fzf.
 - `claude-thinking` — select project → session → view thinking blocks in less
 - `claude-thinking -c` — copy to clipboard
 
+## codex-rewind
+
+Branches a Codex CLI conversation immediately before a selected completed
+prompt, copies that prompt to the clipboard, and resumes the new branch. This
+is a temporary workaround for the broken built-in Esc-Esc flow.
+
+- Exit the active Codex TUI, then run `codex-rewind`
+- `codex-rewind` — use the latest CLI conversation for the current directory
+- `codex-rewind <session-id>` — use a specific conversation
+- Requires the existing `codex`, `fzf`, and macOS `pbcopy` commands
+
 ## sssh
 
 Interactive ECS Exec helper (by [yuki777](https://github.com/yuki777)). Walks through cluster → service → task → container selection via peco, then drops into a shell.

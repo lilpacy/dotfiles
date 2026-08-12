@@ -1,0 +1,229 @@
+#!/usr/bin/env python3
+
+import json
+import os
+import select
+import sqlite3
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import NamedTuple, Optional
+
+
+class Prompt(NamedTuple):
+    turn_id: str
+    previous_turn_id: Optional[str]
+    created_at_ms: int
+    text: str
+
+
+class Thread(NamedTuple):
+    id: str
+    cwd: str
+
+
+# ponytail: Codexの内部SQLiteへ暫定依存。Esc×2の不具合修正後はこのCLIごと削除する。
+def load_prompts(db_path: Path, thread_id: str) -> list[Prompt]:
+    with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True) as db:
+        rows = db.execute(
+            """
+            SELECT t.turn_id, t.status, i.created_at_ms, i.item_json
+            FROM thread_turns AS t
+            JOIN thread_items AS i
+              ON i.thread_id = t.thread_id
+             AND i.turn_id = t.turn_id
+             AND i.item_id = t.first_user_item_id
+             AND i.item_type = 'userMessage'
+            WHERE t.thread_id = ?
+            ORDER BY t.rollout_ordinal
+            """,
+            (thread_id,),
+        )
+
+        prompts = []
+        previous_turn_id = None
+        for turn_id, status, created_at_ms, item_json in rows:
+            if status != "completed":
+                continue
+            item = json.loads(item_json)
+            text = "\n".join(
+                part["text"]
+                for part in item.get("content", [])
+                if part.get("type") == "text" and part.get("text")
+            )
+            if not text:
+                continue
+            prompts.append(Prompt(turn_id, previous_turn_id, created_at_ms, text))
+            previous_turn_id = turn_id
+        return prompts
+
+
+def find_thread(state_db: Path, session_id: Optional[str], cwd: str) -> Thread:
+    with sqlite3.connect(f"file:{state_db}?mode=ro", uri=True) as db:
+        if session_id:
+            row = db.execute(
+                "SELECT id, cwd FROM threads WHERE id = ? AND archived = 0",
+                (session_id,),
+            ).fetchone()
+        else:
+            row = db.execute(
+                """
+                SELECT id, cwd
+                FROM threads
+                WHERE cwd = ?
+                  AND (
+                    (source = 'cli' AND thread_source = 'user')
+                    OR thread_source = 'codex-rewind'
+                  )
+                  AND archived = 0
+                ORDER BY recency_at_ms DESC, id DESC
+                LIMIT 1
+                """,
+                (cwd,),
+            ).fetchone()
+    if not row:
+        target = session_id or cwd
+        raise RuntimeError(f"対象のCodexセッションが見つかりません: {target}")
+    return Thread(*row)
+
+
+def select_prompt(prompts: list[Prompt]) -> Optional[Prompt]:
+    lines = []
+    for index, prompt in enumerate(prompts):
+        timestamp = datetime.fromtimestamp(prompt.created_at_ms / 1000).strftime(
+            "%Y-%m-%d %H:%M"
+        )
+        summary = " ".join(prompt.text.split())[:160]
+        lines.append(f"{index}\t{timestamp}  {summary}")
+
+    result = subprocess.run(
+        [
+            "fzf",
+            "--height=100%",
+            "--reverse",
+            "--delimiter=\t",
+            "--with-nth=2",
+            "--prompt=Rewind before> ",
+            "--header=戻りたいプロンプトを選択（元の会話は変更されません）",
+        ],
+        input="\n".join(lines),
+        text=True,
+        capture_output=True,
+    )
+    if result.returncode in (1, 130):
+        return None
+    if result.returncode != 0:
+        raise RuntimeError(result.stderr.strip() or "fzfの起動に失敗しました")
+    return prompts[int(result.stdout.split("\t", 1)[0])]
+
+
+def rpc(process: subprocess.Popen, request: dict, timeout: int = 30) -> dict:
+    assert process.stdin is not None
+    assert process.stdout is not None
+    process.stdin.write(json.dumps(request) + "\n")
+    process.stdin.flush()
+
+    while True:
+        ready, _, _ = select.select([process.stdout], [], [], timeout)
+        if not ready:
+            raise RuntimeError("Codex app-serverの応答がタイムアウトしました")
+        line = process.stdout.readline()
+        if not line:
+            raise RuntimeError("Codex app-serverが応答せず終了しました")
+        message = json.loads(line)
+        if message.get("id") != request["id"]:
+            continue
+        if "error" in message:
+            raise RuntimeError(message["error"].get("message", "thread/forkに失敗しました"))
+        return message["result"]
+
+
+def fork_thread(thread_id: str, last_turn_id: str) -> str:
+    process = subprocess.Popen(
+        ["codex", "app-server"],
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        bufsize=1,
+    )
+    try:
+        rpc(
+            process,
+            {
+                "method": "initialize",
+                "id": 0,
+                "params": {
+                    "clientInfo": {
+                        "name": "codex-tui",
+                        "title": "codex-rewind",
+                        "version": "1",
+                    }
+                },
+            },
+        )
+        assert process.stdin is not None
+        process.stdin.write(json.dumps({"method": "initialized", "params": {}}) + "\n")
+        process.stdin.flush()
+        result = rpc(
+            process,
+            {
+                "method": "thread/fork",
+                "id": 1,
+                "params": {
+                    "threadId": thread_id,
+                    "lastTurnId": last_turn_id,
+                    "threadSource": "codex-rewind",
+                },
+            },
+        )
+        return result["thread"]["id"]
+    finally:
+        process.terminate()
+        try:
+            process.wait(timeout=2)
+        except subprocess.TimeoutExpired:
+            process.kill()
+
+
+def copy_prompt(text: str) -> None:
+    subprocess.run(["pbcopy"], input=text, text=True, check=True)
+
+
+def main() -> int:
+    if len(sys.argv) > 2:
+        print("Usage: codex-rewind [SESSION_ID]", file=sys.stderr)
+        return 2
+
+    codex_home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    thread = find_thread(
+        codex_home / "state_5.sqlite",
+        sys.argv[1] if len(sys.argv) == 2 else None,
+        str(Path.cwd()),
+    )
+    prompts = load_prompts(codex_home / "thread_history_1.sqlite", thread.id)
+    if not prompts:
+        raise RuntimeError("巻き戻せる完了済みプロンプトがありません")
+
+    prompt = select_prompt(prompts)
+    if prompt is None:
+        return 0
+    copy_prompt(prompt.text)
+
+    if prompt.previous_turn_id is None:
+        print("最初のプロンプトをクリップボードへコピーしました。", file=sys.stderr)
+        os.execvp("codex", ["codex", "-C", thread.cwd])
+
+    new_thread_id = fork_thread(thread.id, prompt.previous_turn_id)
+    print("選択したプロンプトをクリップボードへコピーしました。", file=sys.stderr)
+    os.execvp("codex", ["codex", "resume", new_thread_id])
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except (OSError, RuntimeError, sqlite3.Error, subprocess.SubprocessError) as error:
+        print(f"codex-rewind: {error}", file=sys.stderr)
+        raise SystemExit(1)
