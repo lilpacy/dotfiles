@@ -1,11 +1,41 @@
 ---
 name: ci-test-result-reporting
-description: Design, implement, and review CI test-result parsers, PR comments, job summaries, artifacts, and required checks. Use when cancelled or timed-out runs are misreported as test failures, setup/global errors disappear because zero tests ran, diagnostics may expose stacks or payloads, or workflow provenance limits what a run actually validates.
+description: Design, implement, and review CI test-result parsers, flaky-issue fingerprints, PR comments, job summaries, artifacts, and required checks, and decide whether test-result automation belongs in CI or a human-directed agent workflow. Use when fingerprint fields mix test identity, reproduction variants, orchestration metadata, and occurrence locators; cancelled or timed-out runs are misreported as test failures; setup/global errors disappear because zero tests ran; diagnostics may expose stacks or payloads; workflow provenance limits what a run validates; or requests mix "AI detects" with CI automation.
 ---
 
 # CI Test Result Reporting
 
 Keep three facts separate: what the runner did, what tests observed, and whether policy allows the change to proceed. A trustworthy report preserves each fact instead of collapsing all non-success states into `failed`.
+
+## Choose the automation owner first
+
+Before editing a workflow, compare the operating models when a request mixes terms such as “AI detects,” “automatically file,” retries, or required checks.
+
+| Model | Trigger and authority | Typical changes |
+|---|---|---|
+| CI-native | Every qualifying run; workflow owns retries and gating | Workflow, report parser, artifacts, required check |
+| Human-directed agent | A human requests investigation or rerun; the agent interprets existing evidence | Agent skill and issue tooling; usually no CI change |
+| Manual | A person reviews and files results | Documentation or checklist only |
+
+Treat a conflict between these models as a design decision. Before creating a PR when their cost or enforcement differs materially, state the selected model and ask the user to choose explicitly. Record the trigger, actor, authority to rerun, gate effect, and persistence boundary.
+
+If the human-directed model satisfies the need, reuse existing reports and issue tooling; do not add retries, workflow jobs, parser APIs, or required checks. If CI enforcement is explicit and confirmed, continue with the workflow below.
+
+## Flaky issue identity and occurrence context
+
+Before defining a flaky-test fingerprint or issue template, classify every candidate field by role.
+
+| Role | Purpose | Persistence rule |
+|---|---|---|
+| Test identity | Names the logical test | Keep stable source-relative fields such as spec path and full title path |
+| Failure identity | Groups the same failure mode | Keep a normalized failure signature whose normalization is explicit and tested |
+| Reproduction variant | Distinguishes environments that can change behavior | Include only dimensions that actually vary, such as browser or device when a matrix exists |
+| Occurrence locator | Finds one run's evidence | Store per occurrence; do not use in the deduplication key |
+| Orchestration metadata | Schedules or selects tests | Exclude unless inspection proves it represents a stable reproduction variant |
+
+Inspect runner configuration rather than inferring meaning from field names. A Playwright project may represent a browser variant, but it may instead encode spec selection, dependency order, or a generated stage counter. Omit constant dimensions from the issue contract; add them when the execution matrix starts varying and they become necessary for reproduction or deduplication. Keep run or job locators on each occurrence so artifacts remain discoverable.
+
+Read [references/flaky-deduplication-contract.md](references/flaky-deduplication-contract.md) for a concrete Playwright classification and upgrade triggers.
 
 ## Result model
 
@@ -57,6 +87,19 @@ Before claiming an end-to-end validation, determine:
 If the run used an older reporter, describe the new reporter as contract-tested, not workflow-validated. Re-run after the new implementation is reachable only when that evidence is required; do not repeat an expensive full suite for a wording-only documentation change.
 
 Read [references/e2e-run-outcomes-and-provenance.md](references/e2e-run-outcomes-and-provenance.md) for the session-derived failure patterns behind these rules.
+
+## Pull-request diff-range integrity
+
+Keep the diff base and head in the same semantic domain. On a `pull_request` `synchronize` event, comparing the previous PR branch head (`github.event.before`) with GitHub's synthetic merge commit (`github.sha`) mixes new base-branch changes into the PR's incremental diff. This can falsely activate policy checks or demand documentation for files the PR did not change.
+
+When a changed-file policy fails unexpectedly:
+
+1. Read the job log's resolved base SHA, head SHA, and changed-file list.
+2. Compare `github.event.before`, `github.event.pull_request.head.sha`, and `github.sha` rather than inferring their roles.
+3. Confirm the real PR file list independently through the pull-request API.
+4. Fix the workflow so an incremental PR range ends at `github.event.pull_request.head.sha`; reserve `github.sha` for validating the synthetic merge result.
+
+If one stale `synchronize` run blocks an otherwise unchanged PR and changing the workflow is outside that PR's scope, a close-and-reopen cycle can trigger a non-`synchronize` pull-request run whose fallback base is the synthetic merge commit's first parent. Use this only after the user approves the exact external action and the workflow is known to run on `reopened`. After reopening, verify the head SHA, approval state, review threads, required checks, and merge state before merging. Never use an admin merge to hide the failed policy check.
 
 ## Diff-based ratchets
 
