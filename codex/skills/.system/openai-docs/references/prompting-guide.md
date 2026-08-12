@@ -68,32 +68,26 @@ Add stopping conditions:
 
 ## Personality, collaboration, and response length
 
-GPT-5.6 tends to be more concise by default than GPT-5.5. When migrating, check whether broad brevity instructions such as “Be concise” or “Keep it short” are still useful. They may be unnecessary for some tasks and can sometimes make responses too brief. Keep them when they reliably produce the output your application needs.
-
-For more consistent control across requests, use `text.verbosity` to set the default level of detail, then use the prompt for task-specific requirements. Choose `low`, `medium`, or `high` as the default level of detail for a request. In the prompt, specify any task-specific length, structure, or required content. See [Set up `text.verbosity`](https://developers.openai.com/api/docs/guides/deployment-checklist#set-up-textverbosity) for an API example.
-
-For customer-facing assistants and collaborative products, define both personality and collaboration style.
+GPT-5.6 is efficient, direct, and more compressed than recent models. For customer-facing assistants and collaborative products, define both personality and collaboration style.
 
 - Personality controls tone, warmth, directness, formality, humor, empathy, and polish.
 - Collaboration style controls when the model asks questions, makes assumptions, takes initiative, explains tradeoffs, checks work, and handles uncertainty.
 
 Keep both short. Personality should shape the user experience; collaboration instructions should shape task behavior. Neither should replace clear goals, success criteria, tool rules, or stopping conditions.
 
-When a task calls for a shorter answer, identify the information the model must preserve and the detail it can omit. For example:
+Use concrete writing controls:
 
-    Lead with the conclusion. Include the evidence needed to support it, any material
-    caveat, and the next action. Omit secondary detail and repetition.
+    Lead with the conclusion. Include the evidence needed to support it, any
+    material caveat, and the next action. Keep all required facts, decisions,
+    caveats, and next steps. Trim introductions, repetition, generic reassurance,
+    and optional background first.
 
-    Keep all required facts, decisions, caveats, and next steps. Trim introductions,
-    repetition, generic reassurance, and optional background first.
+Avoid generic “be brief,” “keep it short,” or “use minimal text” instructions. GPT-5.6 is already biased toward compression, and generic brevity can make it omit required evidence or parts of an artifact.
 
-This gives the model a clear priority order: preserve the content needed to complete the task, then remove lower-value detail.
+For customer-facing tone, prefer concrete guidance:
 
-Broad labels such as “friendly” or “empathetic” can be ambiguous. Describe the writing choices that define your product's tone, such as how directly to state the answer, when to acknowledge a problem, and whether reassurance or a sign-off is appropriate.
-
-    State the answer directly. If the user reports a problem, acknowledge the
-    specific issue before giving the next step. Use reassurance only when it is
-    relevant. Omit generic praise and unnecessary sign-offs.
+    Be direct and tactful. Acknowledge friction specifically when relevant.
+    Avoid canned reassurance and unnecessary sign-offs.
 
 Avoid blanket language rules such as “always respond in the user's language” unless that is truly the product requirement. Specify the intended output language and when it should change.
 
