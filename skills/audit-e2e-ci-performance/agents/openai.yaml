@@ -1,0 +1,4 @@
+interface:
+  display_name: "Audit E2E CI Performance"
+  short_description: "E2Eを含むCI高速化を実測と根拠に基づいて監査する"
+  default_prompt: "Use $audit-e2e-ci-performance to audit this repository’s E2E and CI performance without making changes."
