@@ -34,3 +34,4 @@ git log --oneline -5
 
 - If the work is on a separate branch or worktree, push the branch and open a GitHub PR.
 - Do not push unrelated local work.
+- PR bodies containing markdown backticks must be passed via `--body-file` or stdin, never inline. **REQUIRED SUB-SKILL:** `shell-quoting-pitfalls`.

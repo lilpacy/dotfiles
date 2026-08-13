@@ -1,0 +1,4 @@
+interface:
+  display_name: "Linear Bulk Issue Triage"
+  short_description: "Q&A-driven Linear issue creation workflow"
+  default_prompt: "Use $linear-bulk-issue-triage to turn a task list into confirmed Linear issues one question at a time."

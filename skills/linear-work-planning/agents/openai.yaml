@@ -1,0 +1,4 @@
+interface:
+  display_name: "Linear Work Planning"
+  short_description: "Plan Linear work and recommend the next issue"
+  default_prompt: "Use $linear-work-planning to organize existing Linear work, plan the cycle, and recommend the next actionable issue."

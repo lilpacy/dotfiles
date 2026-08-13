@@ -38,6 +38,8 @@ Reply in just the same language as the user used.
 - GitHub PR のレビュー・理解確認、行コメント、修正提案、Approve / Request changes では `github-review` skill を使う。See `skills/github-review/SKILL.md`
 - Web検索・オンラインドキュメント参照では `web-doc-reading` skill を使う。See `skills/web-doc-reading/SKILL.md`
 - Linear issue を扱う作業では `linear-cli` skill を使う。See `skills/linear-cli/SKILL.md`
+- Linear の計画・整理（project/milestone/cycle/次タスク選定）では `linear-work-planning` skill を使う。See `skills/linear-work-planning/SKILL.md`
+- 生タスクリストからの Linear issue 一括作成では `linear-bulk-issue-triage` skill を使う。See `skills/linear-bulk-issue-triage/SKILL.md`
 - ユーザーからの訂正、知識ギャップ、再利用可能な改善学習、未対応機能の記録では `self-improvement` skill を使う。See `skills/self-improvement/SKILL.md`
 - コーディング作業を Cursor Composer に委譲する場合は `cursor-composer-delegation` skill を使う。See `skills/cursor-composer-delegation/SKILL.md`
 - コーディング作業を Codex (gpt-5.3-codex-spark) に委譲する場合は `codex-spark-delegation` skill を使う。See `skills/codex-spark-delegation/SKILL.md`
