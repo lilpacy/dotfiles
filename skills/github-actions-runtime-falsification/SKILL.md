@@ -28,6 +28,8 @@ An expensive test in a non-critical shard can have zero wall-time benefit. Compa
 
 For serial steps in one job, model the observed chain explicitly. Splitting steps into parallel jobs is promising only when the combined serial chain is the critical path; include new job startup overhead in any final estimate.
 
+When evaluating a larger runner, change only the current critical-path job first and compare matched runs; read [references/runner-capacity-experiments.md](references/runner-capacity-experiments.md) for the capacity ceiling, A/B design, and stopping rule.
+
 ## Falsification table
 
 Report at least:
