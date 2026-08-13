@@ -73,6 +73,22 @@ Leave one focused automated check for each changed branch:
 
 Do not add retries, longer timeouts, or environment changes merely because reporting exposed an external or transient failure. First establish recurrence and measure the failing boundary.
 
+## Full-to-partial E2E triage
+
+When a full E2E run fails and the user authorizes investigation:
+
+1. Preserve the application/test SHA, project, full test title, seed, dependencies, execution mode, and original artifacts.
+2. Locate the last completed boundary in the original trace, video, screenshot, or server log. A top-level timeout alone does not identify the failed operation.
+3. Reproduce the smallest equivalent partial at the same SHA, project, and test title. Record any unavoidable provenance difference such as omitted dependencies or a remote runner.
+4. Classify `full fail -> equivalent partial pass` as only a flaky candidate until execution differences are excluded. Classify `full fail -> partial fail` as reproducible, even when the partial crosses the original timeout boundary and fails at the next assertion in the same flow.
+5. Do not raise a timeout until measured evidence shows that the operation completes correctly and only the test budget is insufficient.
+
+Treat optional local artifacts as resource costs. If video generation or a local production build makes the host unstable, disable optional video for every remaining local attempt in that investigation. If the build is still infeasible, switch to the repository's remote-partial procedure instead of repeatedly stressing the host. Preserve the requested artifact policy across reruns unless the user changes it.
+
+When monitoring a long remote run, use the user's requested polling interval for both tool checks and status reports. Do not insert extra no-change updates between those intervals.
+
+Read [references/full-to-partial-e2e-triage.md](references/full-to-partial-e2e-triage.md) for the validated shifted-boundary pattern and reporting checklist.
+
 ## Provenance and validation claims
 
 A successful run validates only the code that the workflow executed. Some manual or dispatch workflows intentionally load workflow or reporter code from a default branch while checking out application tests from a pull-request head.
