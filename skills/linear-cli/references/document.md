@@ -6,7 +6,7 @@
 
 ```
 Usage:   linear document
-Version: 1.10.0         
+Version: 2.5.0          
 
 Description:
 
@@ -14,8 +14,8 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
 
 Commands:
 
@@ -34,7 +34,7 @@ Commands:
 
 ```
 Usage:   linear document list
-Version: 1.10.0              
+Version: 2.5.0               
 
 Description:
 
@@ -42,12 +42,17 @@ Description:
 
 Options:
 
-  -h, --help                  - Show this help.                                        
-  -w, --workspace  <slug>     - Target workspace (uses credentials)                    
-  --project        <project>  - Filter by project (slug or name)                       
-  --issue          <issue>    - Filter by issue (identifier like TC-123)               
-  --json                      - Output as JSON                                         
-  --limit          <limit>    - Limit results                             (Default: 50)
+  -h, --help                  - Show this help.                                                                                
+  --workspace   <slug>        - Target workspace (uses credentials)                                                            
+  --project     <project>     - Filter by project (UUID, slug ID, or name)                                                     
+  --issue       <issue>       - Filter by issue (identifier like TC-123)                                                       
+  --initiative  <initiative>  - Filter by initiative (UUID, slug ID, or name)                                                  
+  --team        <team>        - Filter by team (key); with --cycle, scopes the cycle lookup instead                            
+  --cycle       <cycle>       - Filter by cycle: name, number, 'active'/'now', 'next', 'previous', or a relative               
+                                offset like +1 (team from --team or config)                                                    
+  --release     <release>     - Filter by release (UUID, name, or version)                                                     
+  --json                      - Output as JSON                                                                                 
+  --limit       <limit>       - Limit results                                                                     (Default: 50)
 ```
 
 ### view
@@ -56,7 +61,7 @@ Options:
 
 ```
 Usage:   linear document view <id>
-Version: 1.10.0                   
+Version: 2.5.0                    
 
 Description:
 
@@ -64,11 +69,12 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                        
-  -w, --workspace  <slug>  - Target workspace (uses credentials)    
-  --raw                    - Output raw markdown without rendering  
-  -w, --web                - Open document in browser               
-  --json                   - Output full document as JSON
+  -h, --help             - Show this help.                                
+  --workspace    <slug>  - Target workspace (uses credentials)            
+  --raw                  - Output raw markdown without rendering          
+  -w, --web              - Open document in browser                       
+  --json                 - Output full document as JSON                   
+  --no-download          - Keep remote URLs instead of downloading files
 ```
 
 ### create
@@ -77,7 +83,7 @@ Options:
 
 ```
 Usage:   linear document create
-Version: 1.10.0                
+Version: 2.5.0                 
 
 Description:
 
@@ -85,15 +91,20 @@ Description:
 
 Options:
 
-  -h, --help                     - Show this help.                           
-  -w, --workspace     <slug>     - Target workspace (uses credentials)       
-  -t, --title         <title>    - Document title (required)                 
-  -c, --content       <content>  - Markdown content (inline)                 
-  -f, --content-file  <path>     - Read content from file                    
-  --project           <project>  - Attach to project (slug or ID)            
-  --issue             <issue>    - Attach to issue (identifier like TC-123)  
-  --icon              <icon>     - Document icon (emoji)                     
-  -i, --interactive              - Interactive mode with prompts
+  -h, --help                        - Show this help.                                                                   
+  --workspace         <slug>        - Target workspace (uses credentials)                                               
+  -t, --title         <title>       - Document title (required)                                                         
+  -c, --content       <content>     - Markdown content (inline)                                                         
+  -f, --content-file  <path>        - Read content from file                                                            
+  --project           <project>     - Attach to project (UUID, slug ID, or name)                                        
+  --issue             <issue>       - Attach to issue (identifier like TC-123)                                          
+  --initiative        <initiative>  - Attach to initiative (UUID, slug ID, or name)                                     
+  --team              <team>        - Attach to team (key); with --cycle, scopes the cycle lookup instead               
+  --cycle             <cycle>       - Attach to cycle: name, number, 'active'/'now', 'next', 'previous', or a relative  
+                                      offset like +1 (team from --team or config)                                       
+  --release           <release>     - Attach to release (UUID, name, or version)                                        
+  --icon              <icon>        - Document icon (emoji)                                                             
+  -i, --interactive                 - Interactive mode with prompts
 ```
 
 ### update
@@ -102,7 +113,7 @@ Options:
 
 ```
 Usage:   linear document update <documentId>
-Version: 1.10.0                             
+Version: 2.5.0                              
 
 Description:
 
@@ -110,13 +121,21 @@ Description:
 
 Options:
 
-  -h, --help                     - Show this help.                              
-  -w, --workspace     <slug>     - Target workspace (uses credentials)          
-  -t, --title         <title>    - New title for the document                   
-  -c, --content       <content>  - New markdown content (inline)                
-  -f, --content-file  <path>     - Read new content from file                   
-  --icon              <icon>     - New icon (emoji)                             
-  -e, --edit                     - Open current content in $EDITOR for editing
+  -h, --help                        - Show this help.                                                                   
+  --workspace         <slug>        - Target workspace (uses credentials)                                               
+  -t, --title         <title>       - New title for the document                                                        
+  -c, --content       <content>     - New markdown content (inline)                                                     
+  -f, --content-file  <path>        - Read new content from file                                                        
+  --icon              <icon>        - New icon (emoji)                                                                  
+  --project           <project>     - Re-point to project (UUID, slug ID, or name); replaces the current attachment     
+  --issue             <issue>       - Re-point to issue (identifier like TC-123); replaces the current attachment       
+  --initiative        <initiative>  - Re-point to initiative (UUID, slug ID, or name); replaces the current attachment  
+  --team              <team>        - Re-point to team (key); with --cycle, scopes the cycle lookup instead             
+  --cycle             <cycle>       - Re-point to cycle: name, number, 'active'/'now', 'next', 'previous', or a         
+                                      relative offset like +1 (team from --team or config)                              
+  --release           <release>     - Re-point to release (UUID, name, or version); replaces the current attachment     
+  -e, --edit                        - Open current content in $EDITOR for editing                                       
+  --force                           - Update content even when document comments may lose inline anchors
 ```
 
 ### delete
@@ -125,7 +144,7 @@ Options:
 
 ```
 Usage:   linear document delete [documentId]
-Version: 1.10.0                             
+Version: 2.5.0                              
 
 Description:
 
@@ -133,10 +152,10 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                                     
-  -w, --workspace  <slug>    - Target workspace (uses credentials)                 
-  -y, --yes                  - Skip confirmation prompt                            
-  --bulk           <ids...>  - Delete multiple documents by slug or ID             
-  --bulk-file      <file>    - Read document slugs/IDs from a file (one per line)  
-  --bulk-stdin               - Read document slugs/IDs from stdin
+  -h, --help              - Show this help.                                     
+  --workspace   <slug>    - Target workspace (uses credentials)                 
+  -y, --yes               - Skip confirmation prompt                            
+  --bulk        <ids...>  - Delete multiple documents by slug or ID             
+  --bulk-file   <file>    - Read document slugs/IDs from a file (one per line)  
+  --bulk-stdin            - Read document slugs/IDs from stdin
 ```

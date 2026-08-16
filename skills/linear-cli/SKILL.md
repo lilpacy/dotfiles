@@ -6,9 +6,10 @@ allowed-tools: Bash(linear:*), Bash(curl:*)
 
 # Linear CLI
 
-A CLI to manage Linear issues from the command line, with git and jj integration.
+A CLI to manage Linear issues from the command line, with git and jj
+integration.
 
-Generated from linear CLI v1.10.0
+Generated from linear CLI v2.5.0
 
 ## User Defaults
 
@@ -20,7 +21,8 @@ issue_sort = "priority"
 
 ## Issue List Defaults
 
-`linear issue list` defaults to `state=unstarted` and `assignee=self`. When listing issues, always include all assignees and all states:
+`linear issue list` defaults to `state=unstarted` and `assignee=self`. When
+listing issues, always include all assignees and all states:
 
 ```bash
 linear issue list -A --all-states --sort priority
@@ -32,12 +34,64 @@ When working on a Linear issue, move through states without skipping:
 
 1. After choosing the target issue: `linear issue update <ID> -s "Todo"`
 2. When starting work: `linear issue update <ID> -s "In Progress"`
-3. During work: put stable information in the issue description and progress logs in comments.
+3. During work: put stable information in the issue description and progress
+   logs in comments.
 4. After implementation and tests: `linear issue update <ID> -s "In Review"`
 5. After user approval: `linear issue update <ID> -s "Done"`
 6. Final report: `linear issue comment add <ID> -b "コメント本文"`
 
 Do not move an issue directly to `Done`.
+
+## Operational Pitfalls
+
+### `projectDelete` archives the project's issues with it
+
+Deleting a project via the `projectDelete` mutation also archives every issue
+attached to it. Issues are archived (not hard-deleted), so they can be restored
+with `issueUnarchive` — but avoid the problem entirely by detaching issues from
+the project first:
+
+```bash
+# 1. Detach each issue from the project before deleting it
+linear api --variable issueId=<UUID> <<'GRAPHQL'
+mutation($issueId: String!) { issueUpdate(id: $issueId, input: { projectId: null }) { success } }
+GRAPHQL
+
+# 2. Then delete the project
+linear api --variable id=<PROJECT_SLUG> <<'GRAPHQL'
+mutation($id: String!) { projectDelete(id: $id) { success } }
+GRAPHQL
+```
+
+### Restoring archived issues
+
+```bash
+# 1. List issues including archived ones
+linear api '{ issues(includeArchived: true, first: 100, filter: { archivedAt: { gt: "YYYY-MM-DDT00:00:00Z" } }) { nodes { id identifier } } }'
+
+# 2. Unarchive by UUID
+linear api --variable id=<UUID> <<'GRAPHQL'
+mutation($id: String!) { issueUnarchive(id: $id) { success } }
+GRAPHQL
+```
+
+### Never overwrite issue descriptions casually
+
+`linear issue update -d` / `--description-file` **replaces the entire
+description** — it is not a diff update.
+
+- To add or update information, append a comment (`linear issue comment add -b`)
+  instead of editing the description.
+- If the description itself must change, fetch the current description first
+  (see Image-Safe Issue Editing below), preserve its content, and edit from
+  that.
+
+### Use API results for filtering and aggregation, never CLI glyphs
+
+Do not eyeball CLI symbol output (`⚠⚠⚠`, `▄▆█`, `▄▆`, `▄`, `---`) to classify or
+count issues. When filtering or aggregating, query the GraphQL API and use its
+results directly. Once you have accurate data from the API, answer from that
+data only — do not reinterpret the CLI display.
 
 ## Prerequisites
 
@@ -52,7 +106,9 @@ https://github.com/schpet/linear-cli?tab=readme-ov-file#install
 
 ## Best Practices for Markdown Content
 
-When working with issue descriptions or comment bodies that contain markdown, **always prefer using file-based flags** instead of passing content as command-line arguments:
+When working with issue descriptions or comment bodies that contain markdown,
+**always prefer using file-based flags** instead of passing content as
+command-line arguments:
 
 - Use `--description-file` for `issue create` and `issue update` commands
 - Use `--body-file` for `comment add` and `comment update` commands
@@ -86,20 +142,29 @@ linear issue create --title "My Issue" --description-file /tmp/description.md
 linear issue comment add ENG-123 --body-file /tmp/comment.md
 ```
 
-**Only use inline flags** (`--description`, `--body`) for simple, single-line content.
+**Only use inline flags** (`--description`, `--body`) for simple, single-line
+content.
 
 ## Image-Safe Issue Editing
 
-When reading and updating issue descriptions that contain inline images or uploaded files, **do not round-trip the output of plain `linear issue view` back into `linear issue update`**.
+When reading and updating issue descriptions that contain inline images or
+uploaded files, **do not round-trip the output of plain `linear issue view` back
+into `linear issue update`**.
 
-- `linear issue view` downloads `uploads.linear.app` assets to local temp files by default
-- Those downloaded markdown image links point at `/tmp` or `/var/folders/...` paths on the current machine
-- If you save that rewritten markdown back with `linear issue update --description-file`, the issue description will contain broken local-file image links
+- `linear issue view` downloads `uploads.linear.app` assets to local temp files
+  by default
+- Those downloaded markdown image links point at `/tmp` or `/var/folders/...`
+  paths on the current machine
+- If you save that rewritten markdown back with
+  `linear issue update --description-file`, the issue description will contain
+  broken local-file image links
 
 **Safe read paths for issue descriptions with images:**
 
-- Prefer `linear issue view ISSUE-ID --no-download` when you want the rendered markdown with remote asset URLs preserved
-- Prefer `linear api` when you need the raw `issue.description` field exactly as stored
+- Prefer `linear issue view ISSUE-ID --no-download` when you want the rendered
+  markdown with remote asset URLs preserved
+- Prefer `linear api` when you need the raw `issue.description` field exactly as
+  stored
 
 **Safe update workflow for image-containing descriptions:**
 
@@ -124,7 +189,8 @@ linear issue update PM-122 --description-file /tmp/description.md
 
 1. Find the original local file if it was downloaded by `linear issue view`
 2. Re-upload it with `linear issue attach ISSUE-ID /path/to/file.png`
-3. Rebuild the description markdown so the inline image points at the new uploaded asset URL, then save with `--description-file`
+3. Rebuild the description markdown so the inline image points at the new
+   uploaded asset URL, then save with `--description-file`
 
 ## Available Commands
 
@@ -132,8 +198,10 @@ linear issue update PM-122 --description-file /tmp/description.md
 linear auth               # Manage Linear authentication
 linear issue              # Manage Linear issues
 linear team               # Manage Linear teams
+linear user               # Manage Linear users
 linear project            # Manage Linear projects
 linear project-update     # Manage project status updates
+linear cycle              # Manage Linear team cycles
 linear milestone          # Manage Linear project milestones
 linear initiative         # Manage Linear initiatives
 linear initiative-update  # Manage initiative status updates (timeline posts)
@@ -149,18 +217,24 @@ linear api                # Make a raw GraphQL API request
 - [auth](references/auth.md) - Manage Linear authentication
 - [issue](references/issue.md) - Manage Linear issues
 - [team](references/team.md) - Manage Linear teams
+- [user](references/user.md) - Manage Linear users
 - [project](references/project.md) - Manage Linear projects
 - [project-update](references/project-update.md) - Manage project status updates
+- [cycle](references/cycle.md) - Manage Linear team cycles
 - [milestone](references/milestone.md) - Manage Linear project milestones
 - [initiative](references/initiative.md) - Manage Linear initiatives
-- [initiative-update](references/initiative-update.md) - Manage initiative status updates (timeline posts)
+- [initiative-update](references/initiative-update.md) - Manage initiative
+  status updates (timeline posts)
 - [label](references/label.md) - Manage Linear issue labels
 - [document](references/document.md) - Manage Linear documents
-- [config](references/config.md) - Interactively generate .linear.toml configuration
+- [config](references/config.md) - Interactively generate .linear.toml
+  configuration
 - [schema](references/schema.md) - Print the GraphQL schema to stdout
 - [api](references/api.md) - Make a raw GraphQL API request
 
-For curated examples of organization features (initiatives, labels, projects, bulk operations), see [organization-features](references/organization-features.md).
+For curated examples of organization features (initiatives, labels, projects,
+bulk operations), see
+[organization-features](references/organization-features.md).
 
 ## Discovering Options
 
@@ -173,11 +247,13 @@ linear issue list --help
 linear issue create --help
 ```
 
-Each command has detailed help output describing all available flags and options.
+Each command has detailed help output describing all available flags and
+options.
 
 ## Using the Linear GraphQL API Directly
 
-**Prefer the CLI for all supported operations.** The `api` command should only be used as a fallback for queries not covered by the CLI.
+**Prefer the CLI for all supported operations.** The `api` command should only
+be used as a fallback for queries not covered by the CLI.
 
 ### Check the schema for available types and fields
 
@@ -191,7 +267,9 @@ grep -A 30 "^type Issue " "${TMPDIR:-/tmp}/linear-schema.graphql"
 
 ### Make a GraphQL request
 
-**Important:** GraphQL queries containing non-null type markers (e.g. `String` followed by an exclamation mark) must be passed via heredoc stdin to avoid escaping issues. Simple queries without those markers can be passed inline.
+**Important:** GraphQL queries containing non-null type markers (e.g. `String`
+followed by an exclamation mark) must be passed via heredoc stdin to avoid
+escaping issues. Simple queries without those markers can be passed inline.
 
 ```bash
 # Simple query (no type markers, so inline is fine)

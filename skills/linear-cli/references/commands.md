@@ -1,17 +1,20 @@
 # Linear CLI Command Reference
 
-Generated from linear CLI v1.10.0
+Generated from linear CLI v2.5.0
 
 ## Commands
 
 - [auth](./auth.md) - Manage Linear authentication
 - [issue](./issue.md) - Manage Linear issues
 - [team](./team.md) - Manage Linear teams
+- [user](./user.md) - Manage Linear users
 - [project](./project.md) - Manage Linear projects
 - [project-update](./project-update.md) - Manage project status updates
+- [cycle](./cycle.md) - Manage Linear team cycles
 - [milestone](./milestone.md) - Manage Linear project milestones
 - [initiative](./initiative.md) - Manage Linear initiatives
-- [initiative-update](./initiative-update.md) - Manage initiative status updates (timeline posts)
+- [initiative-update](./initiative-update.md) - Manage initiative status updates
+  (timeline posts)
 - [label](./label.md) - Manage Linear issue labels
 - [document](./document.md) - Manage Linear documents
 - [config](./config.md) - Interactively generate .linear.toml configuration

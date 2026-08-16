@@ -6,7 +6,7 @@
 
 ```
 Usage:   linear project-update
-Version: 1.10.0               
+Version: 2.5.0                
 
 Description:
 
@@ -14,8 +14,8 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
 
 Commands:
 
@@ -31,7 +31,7 @@ Commands:
 
 ```
 Usage:   linear project-update create <projectId>
-Version: 1.10.0                                  
+Version: 2.5.0                                   
 
 Description:
 
@@ -40,7 +40,7 @@ Description:
 Options:
 
   -h, --help                   - Show this help.                                    
-  -w, --workspace    <slug>    - Target workspace (uses credentials)                
+  --workspace        <slug>    - Target workspace (uses credentials)                
   --body             <body>    - Update content (inline)                            
   --body-file        <path>    - Read content from file                             
   --health           <health>  - Project health status (onTrack, atRisk, offTrack)  
@@ -53,7 +53,7 @@ Options:
 
 ```
 Usage:   linear project-update list <projectId>
-Version: 1.10.0                                
+Version: 2.5.0                                 
 
 Description:
 
@@ -61,8 +61,8 @@ Description:
 
 Options:
 
-  -h, --help                - Show this help.                                   
-  -w, --workspace  <slug>   - Target workspace (uses credentials)               
-  --json                    - Output as JSON                                    
-  --limit          <limit>  - Limit results                        (Default: 10)
+  -h, --help            - Show this help.                                   
+  --workspace  <slug>   - Target workspace (uses credentials)               
+  --json                - Output as JSON                                    
+  --limit      <limit>  - Limit results                        (Default: 10)
 ```

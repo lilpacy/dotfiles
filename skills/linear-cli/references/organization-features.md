@@ -1,6 +1,7 @@
 # Organization Features
 
-Detailed command reference for Linear CLI organization features: initiatives, labels, projects, and bulk operations.
+Detailed command reference for Linear CLI organization features: initiatives,
+labels, projects, and bulk operations.
 
 ## Initiative Management
 

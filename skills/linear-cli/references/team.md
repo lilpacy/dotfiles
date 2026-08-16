@@ -6,7 +6,7 @@
 
 ```
 Usage:   linear team
-Version: 1.10.0     
+Version: 2.5.0      
 
 Description:
 
@@ -14,8 +14,8 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
 
 Commands:
 
@@ -24,7 +24,8 @@ Commands:
   list                  - List teams                                                                   
   id                    - Print the configured team id                                                 
   autolinks             - Configure GitHub repository autolinks for Linear issues with this team prefix
-  members    [teamKey]  - List team members
+  members    [teamKey]  - List team members                                                            
+  states     [teamKey]  - List workflow states for a team
 ```
 
 ## Subcommands
@@ -35,7 +36,7 @@ Commands:
 
 ```
 Usage:   linear team create
-Version: 1.10.0            
+Version: 2.5.0             
 
 Description:
 
@@ -44,7 +45,7 @@ Description:
 Options:
 
   -h, --help                        - Show this help.                                          
-  -w, --workspace    <slug>         - Target workspace (uses credentials)                      
+  --workspace        <slug>         - Target workspace (uses credentials)                      
   -n, --name         <name>         - Name of the team                                         
   -d, --description  <description>  - Description of the team                                  
   -k, --key          <key>          - Team key (if not provided, will be generated from name)  
@@ -58,7 +59,7 @@ Options:
 
 ```
 Usage:   linear team delete <teamKey>
-Version: 1.10.0                      
+Version: 2.5.0                       
 
 Description:
 
@@ -66,10 +67,10 @@ Description:
 
 Options:
 
-  -h, --help                     - Show this help.                                  
-  -w, --workspace  <slug>        - Target workspace (uses credentials)              
-  --move-issues    <targetTeam>  - Move all issues to another team before deletion  
-  -y, --force                    - Skip confirmation prompt
+  -h, --help                   - Show this help.                                  
+  --workspace    <slug>        - Target workspace (uses credentials)              
+  --move-issues  <targetTeam>  - Move all issues to another team before deletion  
+  -y, --force                  - Skip confirmation prompt
 ```
 
 ### list
@@ -78,7 +79,7 @@ Options:
 
 ```
 Usage:   linear team list
-Version: 1.10.0          
+Version: 2.5.0           
 
 Description:
 
@@ -86,10 +87,10 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -w, --web                - Open in web browser                  
-  -a, --app                - Open in Linear.app
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
+  -w, --web            - Open in web browser                  
+  -a, --app            - Open in Linear.app
 ```
 
 ### id
@@ -98,7 +99,7 @@ Options:
 
 ```
 Usage:   linear team id
-Version: 1.10.0        
+Version: 2.5.0         
 
 Description:
 
@@ -106,8 +107,8 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)
 ```
 
 ### autolinks
@@ -116,7 +117,7 @@ Options:
 
 ```
 Usage:   linear team autolinks
-Version: 1.10.0               
+Version: 2.5.0                
 
 Description:
 
@@ -124,8 +125,8 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)
 ```
 
 ### members
@@ -134,7 +135,7 @@ Options:
 
 ```
 Usage:   linear team members [teamKey]
-Version: 1.10.0                       
+Version: 2.5.0                        
 
 Description:
 
@@ -142,7 +143,27 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -a, --all                - Include inactive members
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
+  -a, --all            - Include inactive members             
+  -j, --json           - Output as JSON
+```
+
+### states
+
+> List workflow states for a team
+
+```
+Usage:   linear team states [teamKey]
+Version: 2.5.0                       
+
+Description:
+
+  List workflow states for a team
+
+Options:
+
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
+  -j, --json           - Output as JSON
 ```

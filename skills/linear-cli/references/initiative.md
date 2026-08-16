@@ -6,7 +6,7 @@
 
 ```
 Usage:   linear initiative
-Version: 1.10.0           
+Version: 2.5.0            
 
 Description:
 
@@ -14,8 +14,8 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
 
 Commands:
 
@@ -38,7 +38,7 @@ Commands:
 
 ```
 Usage:   linear initiative list
-Version: 1.10.0                
+Version: 2.5.0                 
 
 Description:
 
@@ -46,15 +46,15 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                                
-  -w, --workspace  <slug>    - Target workspace (uses credentials)            
-  -s, --status     <status>  - Filter by status (active, planned, completed)  
-  --all-statuses             - Show all statuses (default: active only)       
-  -o, --owner      <owner>   - Filter by owner (username or email)            
-  -w, --web                  - Open initiatives page in web browser           
-  -a, --app                  - Open initiatives page in Linear.app            
-  -j, --json                 - Output as JSON                                 
-  --archived                 - Include archived initiatives
+  -h, --help                - Show this help.                                
+  --workspace     <slug>    - Target workspace (uses credentials)            
+  -s, --status    <status>  - Filter by status (active, planned, completed)  
+  --all-statuses            - Show all statuses (default: active only)       
+  -o, --owner     <owner>   - Filter by owner (username or email)            
+  -w, --web                 - Open initiatives page in web browser           
+  -a, --app                 - Open initiatives page in Linear.app            
+  -j, --json                - Output as JSON                                 
+  --archived                - Include archived initiatives
 ```
 
 ### view
@@ -63,7 +63,7 @@ Options:
 
 ```
 Usage:   linear initiative view <initiativeId>
-Version: 1.10.0                               
+Version: 2.5.0                                
 
 Description:
 
@@ -71,11 +71,11 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -w, --web                - Open in web browser                  
-  -a, --app                - Open in Linear.app                   
-  -j, --json               - Output as JSON
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
+  -w, --web            - Open in web browser                  
+  -a, --app            - Open in Linear.app                   
+  -j, --json           - Output as JSON
 ```
 
 ### create
@@ -84,7 +84,7 @@ Options:
 
 ```
 Usage:   linear initiative create
-Version: 1.10.0                  
+Version: 2.5.0                   
 
 Description:
 
@@ -93,7 +93,7 @@ Description:
 Options:
 
   -h, --help                        - Show this help.                                        
-  -w, --workspace    <slug>         - Target workspace (uses credentials)                    
+  --workspace        <slug>         - Target workspace (uses credentials)                    
   -n, --name         <name>         - Initiative name (required)                             
   -d, --description  <description>  - Initiative description                                 
   -s, --status       <status>       - Status: planned, active, completed (default: planned)  
@@ -110,7 +110,7 @@ Options:
 
 ```
 Usage:   linear initiative archive [initiativeId]
-Version: 1.10.0                                  
+Version: 2.5.0                                   
 
 Description:
 
@@ -118,12 +118,12 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                                    
-  -w, --workspace  <slug>    - Target workspace (uses credentials)                
-  -y, --force                - Skip confirmation prompt                           
-  --bulk           <ids...>  - Archive multiple initiatives by ID, slug, or name  
-  --bulk-file      <file>    - Read initiative IDs from a file (one per line)     
-  --bulk-stdin               - Read initiative IDs from stdin
+  -h, --help              - Show this help.                                    
+  --workspace   <slug>    - Target workspace (uses credentials)                
+  -y, --force             - Skip confirmation prompt                           
+  --bulk        <ids...>  - Archive multiple initiatives by ID, slug, or name  
+  --bulk-file   <file>    - Read initiative IDs from a file (one per line)     
+  --bulk-stdin            - Read initiative IDs from stdin
 ```
 
 ### update
@@ -132,7 +132,7 @@ Options:
 
 ```
 Usage:   linear initiative update <initiativeId>
-Version: 1.10.0                                 
+Version: 2.5.0                                  
 
 Description:
 
@@ -141,7 +141,7 @@ Description:
 Options:
 
   -h, --help                        - Show this help.                                  
-  -w, --workspace    <slug>         - Target workspace (uses credentials)              
+  --workspace        <slug>         - Target workspace (uses credentials)              
   -n, --name         <name>         - New name for the initiative                      
   -d, --description  <description>  - New description                                  
   --status           <status>       - New status (planned, active, completed, paused)  
@@ -158,7 +158,7 @@ Options:
 
 ```
 Usage:   linear initiative unarchive <initiativeId>
-Version: 1.10.0                                    
+Version: 2.5.0                                     
 
 Description:
 
@@ -166,9 +166,9 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -y, --force              - Skip confirmation prompt
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
+  -y, --force          - Skip confirmation prompt
 ```
 
 ### delete
@@ -177,7 +177,7 @@ Options:
 
 ```
 Usage:   linear initiative delete [initiativeId]
-Version: 1.10.0                                 
+Version: 2.5.0                                  
 
 Description:
 
@@ -185,12 +185,12 @@ Description:
 
 Options:
 
-  -h, --help                 - Show this help.                                   
-  -w, --workspace  <slug>    - Target workspace (uses credentials)               
-  -y, --force                - Skip confirmation prompt                          
-  --bulk           <ids...>  - Delete multiple initiatives by ID, slug, or name  
-  --bulk-file      <file>    - Read initiative IDs from a file (one per line)    
-  --bulk-stdin               - Read initiative IDs from stdin
+  -h, --help              - Show this help.                                   
+  --workspace   <slug>    - Target workspace (uses credentials)               
+  -y, --force             - Skip confirmation prompt                          
+  --bulk        <ids...>  - Delete multiple initiatives by ID, slug, or name  
+  --bulk-file   <file>    - Read initiative IDs from a file (one per line)    
+  --bulk-stdin            - Read initiative IDs from stdin
 ```
 
 ### add-project
@@ -199,7 +199,7 @@ Options:
 
 ```
 Usage:   linear initiative add-project <initiative> <project>
-Version: 1.10.0                                              
+Version: 2.5.0                                               
 
 Description:
 
@@ -207,9 +207,9 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                      
-  -w, --workspace  <slug>       - Target workspace (uses credentials)  
-  --sort-order     <sortOrder>  - Sort order within initiative
+  -h, --help                 - Show this help.                      
+  --workspace   <slug>       - Target workspace (uses credentials)  
+  --sort-order  <sortOrder>  - Sort order within initiative
 ```
 
 ### remove-project
@@ -218,7 +218,7 @@ Options:
 
 ```
 Usage:   linear initiative remove-project <initiative> <project>
-Version: 1.10.0                                                 
+Version: 2.5.0                                                  
 
 Description:
 
@@ -226,7 +226,7 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -y, --force              - Skip confirmation prompt
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
+  -y, --force          - Skip confirmation prompt
 ```

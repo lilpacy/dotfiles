@@ -6,7 +6,7 @@
 
 ```
 Usage:   linear milestone
-Version: 1.10.0          
+Version: 2.5.0           
 
 Description:
 
@@ -14,16 +14,17 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
 
 Commands:
 
-  list                    - List milestones for a project       
-  view, v  <milestoneId>  - View milestone details              
-  create                  - Create a new project milestone      
-  update   <id>           - Update an existing project milestone
-  delete   <id>           - Delete a project milestone
+  list                  - List milestones for a project                                                 
+  view, v  <milestone>  - View milestone details. By default lists the first 10 attached issues from the
+                          first page of 50; use --all to paginate the full set.                         
+  create                - Create a new project milestone                                                
+  update   <id>         - Update an existing project milestone                                          
+  delete   <id>         - Delete a project milestone
 ```
 
 ## Subcommands
@@ -33,8 +34,8 @@ Commands:
 > List milestones for a project
 
 ```
-Usage:   linear milestone list --project <projectId>
-Version: 1.10.0                                     
+Usage:   linear milestone list --project <project>
+Version: 2.5.0                                    
 
 Description:
 
@@ -42,27 +43,30 @@ Description:
 
 Options:
 
-  -h, --help                    - Show this help.                                
-  -w, --workspace  <slug>       - Target workspace (uses credentials)            
-  --project        <projectId>  - Project ID                           (required)
+  -h, --help              - Show this help.                                
+  --workspace  <slug>     - Target workspace (uses credentials)            
+  --project    <project>  - Project (UUID, slug ID, or name)     (required)
 ```
 
 ### view
 
-> View milestone details
+> View milestone details. By default lists the first 10 attached issues from the
+> first page of 50; use --all to paginate the full set.
 
 ```
-Usage:   linear milestone view <milestoneId>
-Version: 1.10.0                             
+Usage:   linear milestone view <milestone>
+Version: 2.5.0                            
 
 Description:
 
-  View milestone details
+  View milestone details. By default lists the first 10 attached issues from the first page of 50; use --all to paginate the full set.
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)
+  -h, --help              - Show this help.                                                                   
+  --workspace  <slug>     - Target workspace (uses credentials)                                               
+  --all                   - Fetch and list every issue attached to the milestone (paginates the Linear API).  
+  --project    <project>  - Project for resolving a milestone name (UUID, slug ID, or name)
 ```
 
 ### create
@@ -70,8 +74,8 @@ Options:
 > Create a new project milestone
 
 ```
-Usage:   linear milestone create --project <projectId> --name <name>
-Version: 1.10.0                                                     
+Usage:   linear milestone create --project <project> --name <name>
+Version: 2.5.0                                                    
 
 Description:
 
@@ -79,12 +83,12 @@ Description:
 
 Options:
 
-  -h, --help                      - Show this help.                                
-  -w, --workspace  <slug>         - Target workspace (uses credentials)            
-  --project        <projectId>    - Project ID                           (required)
-  --name           <name>         - Milestone name                       (required)
-  --description    <description>  - Milestone description                          
-  --target-date    <date>         - Target date (YYYY-MM-DD)
+  -h, --help                    - Show this help.                                
+  --workspace    <slug>         - Target workspace (uses credentials)            
+  --project      <project>      - Project (UUID, slug ID, or name)     (required)
+  --name         <name>         - Milestone name                       (required)
+  --description  <description>  - Milestone description                          
+  --target-date  <date>         - Target date (YYYY-MM-DD)
 ```
 
 ### update
@@ -93,7 +97,7 @@ Options:
 
 ```
 Usage:   linear milestone update <id>
-Version: 1.10.0                      
+Version: 2.5.0                       
 
 Description:
 
@@ -101,13 +105,13 @@ Description:
 
 Options:
 
-  -h, --help                      - Show this help.                          
-  -w, --workspace  <slug>         - Target workspace (uses credentials)      
-  --name           <name>         - Milestone name                           
-  --description    <description>  - Milestone description                    
-  --target-date    <date>         - Target date (YYYY-MM-DD)                 
-  --sort-order     <value>        - Sort order relative to other milestones  
-  --project        <projectId>    - Move to a different project
+  -h, --help                    - Show this help.                                       
+  --workspace    <slug>         - Target workspace (uses credentials)                   
+  --name         <name>         - Milestone name                                        
+  --description  <description>  - Milestone description                                 
+  --target-date  <date>         - Target date (YYYY-MM-DD)                              
+  --sort-order   <value>        - Sort order relative to other milestones               
+  --project      <project>      - Move to a different project (UUID, slug ID, or name)
 ```
 
 ### delete
@@ -116,7 +120,7 @@ Options:
 
 ```
 Usage:   linear milestone delete <id>
-Version: 1.10.0                      
+Version: 2.5.0                       
 
 Description:
 
@@ -124,7 +128,7 @@ Description:
 
 Options:
 
-  -h, --help               - Show this help.                      
-  -w, --workspace  <slug>  - Target workspace (uses credentials)  
-  -f, --force              - Skip confirmation prompt
+  -h, --help           - Show this help.                      
+  --workspace  <slug>  - Target workspace (uses credentials)  
+  -f, --force          - Skip confirmation prompt
 ```
