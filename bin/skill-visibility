@@ -1024,7 +1024,7 @@ def _draw_tui(
     _tui_text(screen, description_row, 0, "説明:", 5, color(1) | curses.A_BOLD)
     for offset, line in enumerate(description_lines(description, width - 7, 2)):
         _tui_text(screen, description_row + offset, 6, line, width - 7)
-    state_pair = 3 if agent_running else 4 if "失敗" in state or "開けません" in state else 2 if state.startswith(("完了", "Finderで開きました")) else 0
+    state_pair = 3 if agent_running else 4 if "失敗" in state or "開けません" in state else 2 if state.startswith(("完了", "VS Codeで開きました")) else 0
     _tui_text(screen, height - 3, 0, state, width - 1, color(state_pair))
     if pending:
         operations = ", ".join(
@@ -1144,13 +1144,13 @@ def _run_tui(root: Path, backend: str) -> None:
                     folder = skill_folder(root, visible[selected], selected_agent)
                     try:
                         subprocess.run(
-                            ["open", str(folder)],
+                            ["code", str(folder)],
                             check=True,
                             stdout=subprocess.DEVNULL,
                             stderr=subprocess.PIPE,
                             text=True,
                         )
-                        message = f"Finderで開きました: {folder}"
+                        message = f"VS Codeで開きました: {folder}"
                     except (OSError, subprocess.CalledProcessError) as error:
                         message = f"フォルダを開けませんでした: {error}"
                     continue

@@ -36,7 +36,7 @@ the approved operations then use the same validation, rollback, audit, and
 result contract as direct TUI operations.
 
 The lower pane shows the selected Skill's frontmatter `description`. Press `o`
-only when the full Skill folder needs inspection. Press `x` to delete the
+to open the full Skill folder in VS Code. Press `x` to delete the
 selected agent's real agent-specific directory, or `X` to delete the canonical
 Skill and every symlink that points to it. Both actions require confirmation.
 
