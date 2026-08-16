@@ -884,7 +884,7 @@ def _draw_tui(
             screen,
             height - 2,
             0,
-            "j/k=行 Ctrl-d/u=半頁 gg/G=先頭/末尾 Tab=対象 /=検索 o=開く",
+            "j/k=行 Ctrl-d/u=半頁 gg/G=先頭/末尾 Tab=対象 /=検索 o=開く b=Agent切替",
             width - 1,
             curses.A_DIM,
         )
@@ -892,7 +892,7 @@ def _draw_tui(
         screen,
         height - 1,
         0,
-        "e/d=追加/オフ p/P=昇格/差分 x=削除 a=監査 :=相談 b=切替 r=更新 c=解除 q=終了",
+        "e/d=追加/オフ p/P=昇格/差分 x=削除 a=監査 :=自然文で操作 r=更新 c=解除 q=終了",
         width - 1,
         curses.A_DIM,
     )
@@ -1022,7 +1022,7 @@ def _run_tui(root: Path, backend: str) -> None:
                     if future:
                         message = "Agentに相談中です"
                         continue
-                    entered = _tui_prompt(screen, "Agentに相談: ")
+                    entered = _tui_prompt(screen, "自然文で操作: ")
                     if entered is None:
                         message = "Agent相談を取り消しました"
                         continue
