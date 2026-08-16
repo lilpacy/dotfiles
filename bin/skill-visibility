@@ -173,6 +173,18 @@ def _agent_status(root: Path, agent: str, name: str, canonical: Path) -> str:
     return "agent-specific"
 
 
+def _skill_owner_map(rows: object) -> dict[str, str] | None:
+    if not isinstance(rows, list):
+        return None
+    return {
+        str(row["name"]): str(row["owner"])
+        if row.get("owner") in {"agent", "user", "external"}
+        else "unknown"
+        for row in rows
+        if isinstance(row, dict) and isinstance(row.get("name"), str)
+    }
+
+
 def skill_owners(root: Path) -> dict[str, str] | None:
     configured_root = Path(os.environ.get("DOTFILES", Path.home() / "dotfiles")).expanduser().resolve()
     if root.resolve() != configured_root:
@@ -187,13 +199,11 @@ def skill_owners(root: Path) -> dict[str, str] | None:
         rows = json.loads(result.stdout) if result.returncode == 0 else None
     except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
         return None
-    if not isinstance(rows, list):
-        return None
-    return {
-        str(row["name"]): "agent" if row.get("owner") == "agent" else "user"
-        for row in rows
-        if isinstance(row, dict) and isinstance(row.get("name"), str)
-    }
+    return _skill_owner_map(rows)
+
+
+def _creation_timestamp(stat: object) -> float | None:
+    return getattr(stat, "st_birthtime", None)
 
 
 def _skill_dates(paths: list[Path]) -> tuple[str, str]:
@@ -206,8 +216,8 @@ def _skill_dates(paths: list[Path]) -> tuple[str, str]:
                 stat = item.stat()
             except OSError:
                 continue
-            if index == 0:
-                created.append(getattr(stat, "st_birthtime", stat.st_ctime))
+            if index == 0 and (timestamp := _creation_timestamp(stat)) is not None:
+                created.append(timestamp)
             modified.append(stat.st_mtime)
     if not created or not modified:
         return "-", "-"
@@ -960,18 +970,18 @@ def _draw_tui(
     screen.erase()
     height, width = screen.getmaxyx()
     color = curses.color_pair if curses.has_colors() else lambda _pair: 0
-    if height < 9 or width < 89:
-        _tui_text(screen, 0, 0, "画面が小さすぎます (89x9以上にしてください)", width - 1)
+    if height < 9 or width < 90:
+        _tui_text(screen, 0, 0, "画面が小さすぎます (90x9以上にしてください)", width - 1)
         screen.refresh()
         return
     state = "Agentに相談中（一覧操作は継続可能）" if agent_running else message
     state_rows = bool(state)
     title = f"Skill Visibility  操作対象={selected_agent}  相談先={backend}  絞込={query or '-'}"
     _tui_text(screen, 0, 0, title, width - 1, color(1) | curses.A_BOLD)
-    skill_width = max(12, width - 77)
+    skill_width = max(12, width - 78)
     header = (
         f"{'SKILL':<{skill_width}}  {'CANONICAL':<9}  {'CLAUDE':<14}  {'CODEX':<14}  "
-        f"{'OWNER':<7}  {'CREATED':<10}  {'MODIFIED':<10}"
+        f"{'OWNER':<8}  {'CREATED':<10}  {'MODIFIED':<10}"
     )
     _tui_text(screen, 1, 0, header, width - 1, color(1) | curses.A_UNDERLINE)
     body_height = height - 6 - state_rows
@@ -980,7 +990,7 @@ def _draw_tui(
         line = (
             f"{row.name:<{skill_width}.{skill_width}}  "
             f"{('yes' if row.canonical else 'no'):<9}  {row.claude:<14.14}  {row.codex:<14.14}  "
-            f"{row.owner:<7.7}  {row.created:<10.10}  {row.modified:<10.10}"
+            f"{row.owner:<8.8}  {row.created:<10.10}  {row.modified:<10.10}"
         )
         attribute = curses.A_REVERSE if index == selected else 0
         _tui_text(screen, screen_row, 0, line, width - 1, attribute)
@@ -1006,8 +1016,8 @@ def _draw_tui(
             screen,
             screen_row,
             owner_column,
-            f"{row.owner:<7.7}",
-            7,
+            f"{row.owner:<8.8}",
+            8,
             (color(owner_pair) if owner_pair else curses.A_DIM) | attribute,
         )
     description_row = height - 4 - state_rows

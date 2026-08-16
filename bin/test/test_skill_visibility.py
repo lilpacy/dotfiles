@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 
@@ -629,6 +630,18 @@ CODEX_SKILLS=(
             row = next(row for row in self.module.build_matrix(self.root) if row.name == "shared")
 
         self.assertEqual(row.owner, "unknown")
+
+    def test_50_準正常系_外部管理Skillはユーザー管理と区別して表示する(self):
+        owners = self.module._skill_owner_map(
+            [{"name": "shared", "owner": "external"}]
+        )
+
+        self.assertEqual(owners["shared"], "external")
+
+    def test_51_準正常系_作成日時を取得できない環境では作成日を不明として扱う(self):
+        stat = SimpleNamespace(st_ctime=1, st_mtime=2)
+
+        self.assertIsNone(self.module._creation_timestamp(stat))
 
 
 if __name__ == "__main__":
