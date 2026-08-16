@@ -12,6 +12,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import unicodedata
 from pathlib import Path
 from typing import NamedTuple
 
@@ -223,6 +224,69 @@ def skill_folder(root: Path, row: MatrixRow, agent: str) -> Path:
         if candidate.is_dir():
             return candidate
     raise SkillVisibilityError(f"Skillフォルダが見つかりません: {row.name}")
+
+
+def read_skill_description(folder: Path) -> str:
+    lines = (folder / "SKILL.md").read_text(encoding="utf-8").splitlines()
+    if not lines or lines[0].strip() != "---":
+        return "説明なし"
+    for index, line in enumerate(lines[1:], 1):
+        if line.strip() == "---":
+            break
+        match = re.match(r"^description:\s*(.*)$", line)
+        if not match:
+            continue
+        value = match.group(1).strip()
+        if value in ("|", ">"):
+            block = []
+            for continuation in lines[index + 1 :]:
+                if continuation and not continuation[0].isspace():
+                    break
+                block.append(continuation.strip())
+            value = " ".join(block)
+        elif len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+            value = value[1:-1]
+        return " ".join(value.split()) or "説明なし"
+    return "説明なし"
+
+
+def _display_width(text: str) -> int:
+    return sum(
+        0 if unicodedata.combining(character) else 2 if unicodedata.east_asian_width(character) in "WF" else 1
+        for character in text
+    )
+
+
+def _take_display_line(text: str, width: int) -> tuple[str, str]:
+    used = 0
+    end = 0
+    last_space = -1
+    for end, character in enumerate(text):
+        character_width = _display_width(character)
+        if used + character_width > width:
+            break
+        used += character_width
+        if character.isspace():
+            last_space = end
+    else:
+        return text, ""
+    split = end if text[end].isspace() else last_space if last_space > 0 else end
+    return text[:split].rstrip(), text[split:].lstrip()
+
+
+def description_lines(description: str, width: int, limit: int = 2) -> list[str]:
+    remaining = " ".join(description.split())
+    result = []
+    for _ in range(limit):
+        line, remaining = _take_display_line(remaining, width)
+        result.append(line)
+        if not remaining:
+            return result
+    if result and remaining:
+        while result[-1] and _display_width(result[-1] + "…") > width:
+            result[-1] = result[-1][:-1].rstrip()
+        result[-1] += "…"
+    return result
 
 
 def actions_for(row: MatrixRow, agent: str) -> list[str]:
@@ -717,14 +781,15 @@ def _draw_tui(
     message: str,
     pending: dict[str, object] | None,
     agent_running: bool,
+    description: str,
 ) -> None:
     import curses
 
     screen.erase()
     height, width = screen.getmaxyx()
     color = curses.color_pair if curses.has_colors() else lambda _pair: 0
-    if height < 7 or width < 54:
-        _tui_text(screen, 0, 0, "画面が小さすぎます (54x7以上にしてください)", width - 1)
+    if height < 9 or width < 54:
+        _tui_text(screen, 0, 0, "画面が小さすぎます (54x9以上にしてください)", width - 1)
         screen.refresh()
         return
     title = f"Skill Visibility  操作対象={selected_agent}  相談先={backend}  絞込={query or '-'}"
@@ -732,7 +797,7 @@ def _draw_tui(
     skill_width = max(12, width - 44)
     header = f"{'SKILL':<{skill_width}}  {'CANONICAL':<9}  {'CLAUDE':<14}  {'CODEX':<14}"
     _tui_text(screen, 1, 0, header, width - 1, color(1) | curses.A_UNDERLINE)
-    body_height = height - 5
+    body_height = height - 7
     start = max(0, selected - body_height + 1)
     for screen_row, (index, row) in enumerate(enumerate(rows[start : start + body_height], start), 2):
         line = (
@@ -757,6 +822,9 @@ def _draw_tui(
             pair = status_color_pair(status)
             status_attribute = (color(pair) if pair else curses.A_DIM) | attribute
             _tui_text(screen, screen_row, column, f"{status:<14.14}", 14, status_attribute)
+    _tui_text(screen, height - 5, 0, "説明:", 5, color(1) | curses.A_BOLD)
+    for offset, line in enumerate(description_lines(description, width - 7, 2)):
+        _tui_text(screen, height - 5 + offset, 6, line, width - 7)
     state = "Agentに相談中（一覧操作は継続可能）" if agent_running else message
     state_pair = 3 if agent_running else 4 if "失敗" in state or "開けません" in state else 2 if state.startswith(("完了", "Finderで開きました")) else 0
     _tui_text(screen, height - 3, 0, state, width - 1, color(state_pair))
@@ -811,10 +879,18 @@ def _run_tui(root: Path, backend: str) -> None:
         pending = None
         future = None
         waiting_for_g = False
+        descriptions: dict[Path, str] = {}
         with ThreadPoolExecutor(max_workers=1) as executor:
             while True:
                 visible = filter_rows(rows, query)
                 selected = min(selected, max(0, len(visible) - 1))
+                if visible:
+                    folder = skill_folder(root, visible[selected], selected_agent)
+                    if folder not in descriptions:
+                        descriptions[folder] = read_skill_description(folder)
+                    description = descriptions[folder]
+                else:
+                    description = "該当するSkillがありません"
                 if future and future.done():
                     try:
                         plan = future.result()
@@ -838,6 +914,7 @@ def _run_tui(root: Path, backend: str) -> None:
                     message,
                     pending,
                     future is not None,
+                    description,
                 )
                 key = screen.getch()
                 if key == -1:
@@ -893,6 +970,7 @@ def _run_tui(root: Path, backend: str) -> None:
                     continue
                 if key == ord("r"):
                     rows = build_matrix(root)
+                    descriptions.clear()
                     message = "一覧を更新しました"
                     continue
                 if key == ord("b"):

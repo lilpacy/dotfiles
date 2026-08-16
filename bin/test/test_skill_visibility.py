@@ -399,6 +399,39 @@ CODEX_SKILLS=(
         ):
             self.assertEqual(self.module.main(), 130)
 
+    def test_30_準正常系_descriptionがないSkillでは説明なしと表示できる(self):
+        skill = self.write_skill("skills/shared", "---\nname: shared\n---\n")
+
+        self.assertEqual(self.module.read_skill_description(skill), "説明なし")
+
+    def test_31_正常系_選択したSkillのdescriptionを表示用に取得できる(self):
+        skill = self.write_skill(
+            "skills/shared",
+            "---\nname: shared\ndescription: Use this shared Skill.\n---\n",
+        )
+
+        self.assertEqual(
+            self.module.read_skill_description(skill),
+            "Use this shared Skill.",
+        )
+
+    def test_32_正常系_複数行descriptionも一続きの説明として取得できる(self):
+        skill = self.write_skill(
+            "skills/shared",
+            "---\nname: shared\ndescription: >\n  Use this Skill when\n  sharing configuration.\n---\n",
+        )
+
+        self.assertEqual(
+            self.module.read_skill_description(skill),
+            "Use this Skill when sharing configuration.",
+        )
+
+    def test_33_準正常系_長いdescriptionは指定行数に収めて末尾を省略できる(self):
+        self.assertEqual(
+            self.module.description_lines("alpha beta gamma delta", 10, 2),
+            ["alpha beta", "gamma…"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -35,6 +35,9 @@ returns a plan; it cannot apply changes. The user must approve the plan, and
 the approved operations then use the same validation, rollback, audit, and
 result contract as direct TUI operations.
 
+The lower pane shows the selected Skill's frontmatter `description`. Press `o`
+only when the full Skill folder needs inspection.
+
 ## CLI Operations
 
 ```bash
