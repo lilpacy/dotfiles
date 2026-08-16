@@ -1,0 +1,45 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": true,
+      "evidence": "`## Background`(l.14) → `## Intuition`(l.36) → `## Code`(l.69) → `## Quiz`(l.236) → `## 次の一手`(l.323) が順序どおり揃っている。"
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+      "passed": false,
+      "evidence": "出力全文に workflow / GitHub Actions / pi-concept-synthesis.yml / extract_pi_final_json.rb への言及が一切ない（grep で 0 hit）。実際の呼び出し元は `.github/workflows/pi-concept-synthesis.yml`(l.101 catalog, l.134 merge) で、selection JSON は前段の Pi エージェント呼び出しと scripts/extract_pi_final_json.rb が生成する。出力はこれを「人間がカタログを読む→本当に更新すべき Delta を選ぶ→JSON で記述」と説明しており、位置づけを欠くだけでなく主体を誤っている。"
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": true,
+      "evidence": "Intuition に `## Concept impact hints` の具体例（機械学習 / 推論 / パラメータ最適化）、Code 末尾に catalog→selection.json（新論文.md, 既存Delta1.md）→merge の3ステップを架空パスで走らせる bash 例(l.216-231)がある。ただし catalog の出力サンプルは示されておらず、追跡は入力側に偏る。"
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": true,
+      "evidence": "Q1〜Q5の4択が `<details>` の解答付きで並び、source/summary 必須化の理由、null 区切りの理由、`reject { |hint| hint == \"none\" }` の意図、`to_set` の狙い、`\"..\"` 検査の目的を問う。いずれも実コード（scripts/pi_synthesis_candidates.rb l.55, l.71, l.77-86, l.16）に対応し、読まずには答えられない。"
+    }
+  ],
+  "summary": {"passed": 3, "failed": 1, "total": 4, "pass_rate": 0.75},
+  "claims": [
+    {
+      "claim": "MAX_TOTAL_BYTES は 160_000（160KB 予算）",
+      "type": "factual",
+      "verified": true,
+      "evidence": "scripts/pi_synthesis_candidates.rb:11 `MAX_TOTAL_BYTES = 160_000`。"
+    },
+    {
+      "claim": "カタログから Delta を選ぶのは人間のレビュー工程である",
+      "type": "factual",
+      "verified": false,
+      "evidence": "pi-concept-synthesis.yml では catalog を LLM（pi-coding-agent, --tools read）に読ませ、JSON 1個を出力させて selection にしている。人間のレビューが入るのは後段の Concept PR merge であり、候補選定そのものは自動。出力の中心的な物語が誤っている。"
+    },
+    {
+      "claim": "2クラス構成（PiSynthesisCandidateCatalog / PiSynthesisCandidateSelection）で catalog / merge の2モードを持つ",
+      "type": "factual",
+      "verified": true,
+      "evidence": "script l.10, l.90 のクラス定義と l.128-136 の CLI 分岐（catalog|merge）に一致。"
+    }
+  ]
+}

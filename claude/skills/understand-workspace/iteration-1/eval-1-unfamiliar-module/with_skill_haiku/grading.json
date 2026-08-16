@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": true,
+      "evidence": "`## Background` → `## Intuition` → `## Code` → `## Quiz` の4sectionが宣言順どおりに全て存在し、Quizには実際にQ1〜Q4が出題されている。"
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+      "passed": false,
+      "evidence": "Background はAGENTS.mdの3層構造とDeltaの説明にとどまり、実際の呼び出し元 `.github/workflows/pi-concept-synthesis.yml` にも前後のscript（`synthesis_ledger.rb`、`build_pi_synthesis_context.rb`、`pi_synthesis_apply.rb`）にも一切触れていない。「(1)catalog →(2)エージェントか人間が選ぶ →(3)merge」という記述はスクリプト自身のCLIから読み取れる範囲の一般化で、CI pipeline上の位置づけになっていない。"
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": false,
+      "evidence": "Intuition にあるのは Catalog/Merge の2段を囲みで示した抽象的なASCII図だけで、入力Deltaの中身や生成されるcatalogの実際の行を示したトイデータ例が無い。Code section も実装コードの逐次引用にとどまり、入力→出力を辿る例は提示されていない。"
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": true,
+      "evidence": "Q1〜Q4の4択が正解を明示せずに出題されており、hints無しDeltaをskipする理由、`[new]` マーカーの用途、NUL区切り出力が `xargs -0` 向けである理由、`required_link` の正規表現の役割を問う。いずれも本文の説明を理解していないと選べない内容で、末尾に回答を促す一文もある。"
+    }
+  ]
+}

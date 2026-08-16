@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": true,
+      "evidence": "Sections appear in order: `## Background` (L3), `## Intuition` (L29), `## Code` (L66), `## Quiz` (L147), followed by a まとめ."
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+      "passed": true,
+      "evidence": "Background explains the 経時/共時 two-view Domain Map rule, the role of the deleted `map-source-dry-run.yml` canary and `scripts/map_source_dry_run.rb`, and the canary run #31355724703 results table. One factual slip: it attributes web search to 'Anthropic API の web_search tool' when the repo uses `PI_API_KEY` via Pi."
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": true,
+      "evidence": "Intuition contains an ASCII flow diagram (L33-56) contrasting 従来の計画（自動化）with 新方針（明示依頼), showing the cost-without-result path vs the explicit-request path."
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": false,
+      "evidence": "5 questions instead of ~3, Q2 is not multiple choice (it is a results table asking which rows succeeded), and every question's 正答 plus explanation is printed immediately below it, so nothing is actually quizzed."
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": false,
+      "evidence": "After the quiz the file goes straight to a まとめ section. No mention of branching on the user's answers and no micro-world proposal anywhere in the output."
+    }
+  ]
+}

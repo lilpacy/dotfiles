@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": true,
+      "evidence": "`## Background — なぜこれが存在するのか`(L10) → `## Intuition — 二段検索`(L70) → `## Code — 高レベルウォークスルー`(L129) → `## Quiz — 理解の確認`(L291) の順で全section存在。"
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+      "passed": true,
+      "evidence": "呼び出し元 `.github/workflows/pi-concept-synthesis.yml`（48時間周期、`git diff --diff-filter=A` でcursor以降の新着Delta抽出）、後段 `build_pi_synthesis_context.rb`、workflow側の `mapfile -d '' -t synthesis_deltas` による zlist 読み戻しまで前後関係を特定している。予算数値（catalog 160_000 / context 336_000）もリポジトリの実値と一致。"
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": true,
+      "evidence": "実在Delta（DGX Spark/M5 Max）のfrontmatterとhints本文を入力例として示し、それが catalog 出力の1セクションへどう変換されるかを before/after で対比。さらに Q4 で不正 selection JSON の具体例を与えている。実測サイズ（全Delta 394KB ≒ 実測 394,143 bytes、92ファイル）も検証して一致。"
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": true,
+      "evidence": "Q1〜Q5すべて4択の反実仮想（候補検索段を削除したら／`- none` のみの場合／予算超過時に黙って落としたら／`..` を含むpath／NUL区切りを改行に変えたら）で、いずれも本文の語句照合では解けず機構の理解を要する。"
+    }
+  ]
+}

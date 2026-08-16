@@ -1,0 +1,10 @@
+{
+  "eval_id": 2,
+  "eval_name": "small-change-no-ritual",
+  "prompt": "コミット e4f5325f を理解したい。説明して。",
+  "assertions": [
+    {"text": "説明が簡潔（本質的に数文レベル）で、小さなchoreコミットに見合っている", "type": "depth-calibration"},
+    {"text": "クイズ・マイクロワールドを強制していない", "type": "no-ritual"},
+    {"text": "何が削除されなぜ削除されたか（中間生成物の整理）は正しく伝えている", "type": "correctness"}
+  ]
+}

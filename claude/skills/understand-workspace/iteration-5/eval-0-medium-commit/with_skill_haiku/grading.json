@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": true,
+      "evidence": "TL;DR→Background→Intuition→Code→Quiz→次の一手。"
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキストに言及している",
+      "passed": true,
+      "evidence": "feasibility docとworkflow削除の経緯に言及。"
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": false,
+      "evidence": "mermaidゼロ。ascii-art図が3箇所残存（コードブロック内の↓矢印フロー）。"
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": true,
+      "evidence": "3問多肢選択、正解と解説付き。"
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": false,
+      "evidence": "クイズ後の分岐説明・マイクロワールド言及なし。"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "expectations": [
+    {
+      "text": "説明が簡潔（本質的に数文レベル）で、小さなchoreコミットに見合っている",
+      "passed": true,
+      "evidence": "全体59行。冒頭「結論」が2段落で要点を言い切り、背景は前史4コミットの表1つのみ。Background/Intuition/Code/Quiz のフル儀式を展開せず、L59で「この規模の変更（1ファイル削除の chore）なのでクイズとマイクロワールドは省略します」と明示している。"
+    },
+    {
+      "text": "クイズ・マイクロワールドを強制していない",
+      "passed": true,
+      "evidence": "クイズ問題は0問。L59「クイズとマイクロワールドは省略します。必要なら言ってください」と省略理由を述べたうえでユーザー側の選択に委ねている。"
+    },
+    {
+      "text": "何が削除されなぜ削除されたか（中間生成物の整理）は正しく伝えている",
+      "passed": true,
+      "evidence": "`docs/superpowers/plans/2026-08-16-development-process-artifacts.md`（78行）の削除・他ファイル変更なしと述べ、`git show --stat` の実際（1 file changed, 78 deletions）と一致。理由も「内容が `lilpacy/concepts/ソフトウェア開発プロセス.md` と index/log へ移り足場としての役目が終わった」と説明し、`docs/superpowers/plans/` に `2026-07-21-query-ingest.md` の1本だけ残るという検証可能な裏付け（実際にその1ファイルのみ存在）を添えている。"
+    }
+  ]
+}

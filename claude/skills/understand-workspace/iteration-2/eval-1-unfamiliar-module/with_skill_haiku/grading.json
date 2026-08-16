@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": true,
+      "evidence": "`## Background` (L3), `## Intuition` (L11), `## Code Walkthrough` (L28), `## Quiz` (L121) — present and correctly ordered, though the entire document is written in English."
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+      "passed": false,
+      "evidence": "No calling workflow is named (`pi-concept-synthesis.yml` never appears) and no adjacent script is named (`build_pi_synthesis_context.rb` never appears). It also mis-frames the pipeline as human-in-the-loop — '[Human review] Decide which Deltas to synthesize' — when the selection step is an LLM call, so the placement is not just missing but wrong."
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": false,
+      "evidence": "The Code section only paraphrases the source code inline. There is no toy Delta, no sample catalog output, no example selection JSON, and no executed command — nothing concrete is shown flowing through the script."
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": false,
+      "evidence": "3 questions exist but they are surface recall of lines already quoted verbatim just above (hints `none` filtering, Set for O(1) lookup, NUL delimiter). Q3's correct option even asserts a false premise — 'File paths can contain newlines' — where the real reason given in the codebase is spaces in Delta filenames; answerable without understanding the pipeline."
+    }
+  ]
+}

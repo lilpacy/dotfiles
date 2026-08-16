@@ -1,0 +1,50 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": true,
+      "evidence": "explanation.md は TL;DR の後に `## Background`(l.12) → `## Intuition`(l.24) → `## Code`(l.48) → `## Quiz`(l.134) → `## 次の一手`(l.183) の順で全 section を備えている。"
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+      "passed": true,
+      "evidence": "Background が「現行規則（commit前の `lilpacy/CLAUDE.md`）では、下記の定期処理 workflow が Domain Map を自動生成する契約になっていました：daily ingest / Concept Synthesis / weekly lint」と diff 外の運用ルールを説明し、Code section で削除された workflow・script・test の役割（request/continuation/merge/collect の4処理など）を実物に即して記述している。"
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": true,
+      "evidence": "Intuition に Source探索→検証→取得→Map構築（2View完成判定）を表す Mermaid flowchart(l.35-46)があり、3段階の経路説明も付いている。ただしノードラベル内に生の `\\n` を使っており Mermaid では改行として描画されない点は品質上の瑕疵。"
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": true,
+      "evidence": "問1〜問3の3問、各4択（A-D）。問1は canary がどの段階で失敗したか、問2は自動経路と明示依頼経路の差分、問3は再開条件の3実測項目を問い、いずれも本 commit の実質に踏み込んでいる。問3の正解「source選定精度／完成Map 1件あたりの費用／経時・共時2 Viewの完結率」は実際の diff（lilpacy/CLAUDE.md, docs/map-source-acquisition-feasibility.md の「再開条件」）と一致する。"
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": true,
+      "evidence": "クイズ直後に「**1問以上誤答** → どの領域が曖昧か教えていただければ、マイクロワールド（操作可能なツール）を提案します。例えば、commit の意思決定フローを対話的にステップスルーできるCLIツール、など。」と分岐を明示している(l.180)。"
+    }
+  ],
+  "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0},
+  "claims": [
+    {
+      "claim": "削除された workflow は117行、script は263行",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`git show --stat 7a3879fd` は map-source-dry-run.yml 117行、scripts/map_source_dry_run.rb 263行、test/map_source_dry_run_test.rb 203行の削除を示す。"
+    },
+    {
+      "claim": "test/map_source_dry_run_test.rb は21個のテストケースを含んでいた",
+      "type": "factual",
+      "verified": false,
+      "evidence": "削除前の同ファイルの `def test_` は9個。「21個」は誤り（次の一手でも「元の21個の振る舞い」と再掲され誤りが伝播している）。どの assertion もこの数値を検証しないため素通りしている。"
+    },
+    {
+      "claim": "design-case.json の status が design_review → deferred に変わり current_decision が追加された",
+      "type": "factual",
+      "verified": true,
+      "evidence": "commit 後の JSON は `\"status\": \"deferred\"` と `current_decision`（decided_at 2026-08-10, active_entrypoint「利用者による明示的なMap作成・更新依頼」, resumption_condition）を持つ。"
+    }
+  ]
+}

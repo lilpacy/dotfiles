@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": true,
+      "evidence": "全section存在。"
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈に位置づけている",
+      "passed": false,
+      "evidence": "呼び出し元workflowへの言及なし。"
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": true,
+      "evidence": "frontmatter例とcatalog出力例あり、mermaid 1個、ascii-artゼロ。"
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": true,
+      "evidence": "3問、解答付き。"
+    }
+  ]
+}

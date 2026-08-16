@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": true,
+      "evidence": "見出しは TL;DR → 「## Background (why)」→「## Intuition (what)」→「## Code (how)」→「## Quiz (check)」→「## 次の一手」の順で並び、4 section すべてが実体を持つ内容で存在する。"
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+      "passed": true,
+      "evidence": "Background で `lilpacy/CLAUDE.md:267-296` の Domain Map 完成条件（経時・共時2View、根拠不足なら保存しない）を説明し、さらに ee07d34b〜58c29305 の先行コミット表で助走の経緯を示している。削除された workflow/script の役割も Code 節の表で 117 行 / 263 行の内容ごと説明。"
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": true,
+      "evidence": "Intuition 内に mermaid flowchart が2つ。1つは変更前後の entrypoint 集合（5経路→明示依頼1本）、もう1つは「探索(課金)→取得(TLS失敗)→Map構築(未到達)」の費用と成果の非対称を図示している。"
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": true,
+      "evidence": "Q1〜Q3 の3問すべて A〜D の4択。Q1 は「明示依頼時に何が起きるか」（正解 B: Map作成は実行されるが有料API探索はしない）で、保留対象が Map 自体ではなく自動生成であるという最も誤読しやすい点を突いている。実際の diff のポリシー文と照合して正解は正しい。"
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": true,
+      "evidence": "クイズ直後に「誤答があった領域については…期待費用と期待 Map 数を出す小さなスクリプト — を作ることを提案する予定」と明記し、続く注記でも「全問正解なら Step 4 へ、誤答があれば該当領域のマイクロワールド提案（Step 3）へ分岐する」と分岐を説明している。"
+    }
+  ],
+  "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0}
+}

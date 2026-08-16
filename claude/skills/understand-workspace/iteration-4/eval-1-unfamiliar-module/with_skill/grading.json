@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": true,
+      "evidence": "TL;DR → 「## Background (why)」→「## Intuition (what)」→「## Code (how)」→「## Quiz (check)」→「## 次の一手」の順で全section存在。"
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+      "passed": true,
+      "evidence": "`.github/workflows/pi-concept-synthesis.yml` が48時間ごとに起動し cursor 以降の新着 Delta を選ぶ step の直後にこの script が入ることを説明。後段の `build_pi_synthesis_context.rb` への受け渡し、workflow 側の `mapfile -d '' -t synthesis_deltas < .../synthesis-delta-inputs.zlist` まで引用しており、実際の workflow 145 行目の記述と一致する。"
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": true,
+      "evidence": "実 Delta の `## Concept impact hints` 抜粋を示し、Q4 では新着 A.md 1件に対し LLM が `[\"B.md\",\"A.md\"]` を返す具体 JSON で union と uniq の先勝ちを追跡させている。Intuition の sequenceDiagram も catalog→LLM→merge の実データ受け渡しを具体化。ただし Intuition 本文内での逐次トレース例はやや薄く、具体例の主要部が Quiz 側に寄っている。"
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": true,
+      "evidence": "Q1 は 92件/hints有80件/none 5件から載る件数を計算させる（正解 B=75件、`next if hints.empty?` と `reject { |hint| hint == \"none\" }` の合成を理解していないと解けない）。Q2〜Q5 も設計変更の帰結を推論させる形で、本文の逐語再認では解けない。正解はコード実装（`@new_delta_paths + selected).uniq`、`binwrite` + NUL区切り）と照合して正しい。"
+    }
+  ],
+  "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}
+}

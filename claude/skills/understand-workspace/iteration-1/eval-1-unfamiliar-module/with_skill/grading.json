@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": false,
+      "evidence": "`## 1. Background` → `## 2. Intuition` → `## 3. Code` は順序通り存在するが、Quiz section が無い。冒頭で自ら「構造化説明フル + クイズ5問」と宣言しているのに、ファイルは `### まとめると` で終わっており1問も出題されていない（243行で終端）。"
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+      "passed": true,
+      "evidence": "1-Bで `.github/workflows/pi-concept-synthesis.yml` の5ステップを列挙し「← ここに本スクリプトが入る」とstep 3の位置を特定。前段 `synthesis_ledger.rb cursor` と git diff、後段 `build_pi_synthesis_context.rb`（336KB上限）と `pi_synthesis_apply.rb` を挙げ、Intuition末尾のMermaidで catalog → pi-coding-agent → merge → full context → PR の全経路を図示している。"
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": true,
+      "evidence": "Intuition (1) で「トイデータで catalog の出力を見るとこう（`New` が新着、`Old` が過去）」として、`## lilpacy/deltas/New.md [new]` と `## lilpacy/deltas/Old.md` の2件だけの最小 catalog 出力を提示し、`[new]` マーカーが唯一の非対称性であることを示している。"
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": false,
+      "evidence": "クイズが存在しない。冒頭で「クイズ5問」と予告しているが本文には1問も含まれず、Code section の後は `### まとめると` で終了している。"
+    }
+  ]
+}

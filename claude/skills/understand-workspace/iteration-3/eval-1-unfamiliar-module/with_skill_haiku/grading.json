@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": true,
+      "evidence": "## Background → ## Intuition → ## Code → ## Quiz が順に存在し、Quiz は3問の多肢選択。"
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+      "passed": false,
+      "evidence": "pi-concept-synthesis.yml、synthesis_ledger.rb、build_pi_synthesis_context.rb のいずれへの言及もゼロ。スクリプト単体の説明に閉じている。"
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": true,
+      "evidence": "Intuition で E2E高速化.md／テストの分離.md という2件のトイDeltaによるcatalog出力例を提示している。"
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": true,
+      "evidence": "3問あり、catalogの目的・除外理由・path traversal検査の意図など、本文の逐語再認ではなく仕組みの理解を問う。"
+    }
+  ]
+}

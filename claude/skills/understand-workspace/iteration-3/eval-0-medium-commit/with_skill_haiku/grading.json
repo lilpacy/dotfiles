@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": true,
+      "evidence": "`## Background（背景）`(L3) → `## Intuition（核となる決定）`(L26) → `## Code（変更の実装）`(L47) → `## Quiz（理解確認）`(L131) の順で全section存在。間に `## 実測と失敗` が挿入されるが順序自体は崩れていない。"
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+      "passed": true,
+      "evidence": "Domain Mapの経時/共時2View、`af107ef4` で追加された map-source-dry-run の役割（PI_API_KEY で web search し content-addressed snapshot を保存）、canary run #31355724703 のTLSエラーをdiff外情報として述べている。ただし前史コミットの日付関係を誤認（af107ef4 は 2026-08-10 で「約4週間前」ではなく同日）。"
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": true,
+      "evidence": "Intuition節（L30-43）に試行開始→feasibility検証→判断→保留という流れ図がある。ただしMermaidではなくコードブロック内の矢印テキスト（ascii図）で、具体例（実データや具体シナリオ）は含まれない。"
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": false,
+      "evidence": "3問すべて4択だが、問3の設定と公式解答が事実誤認。「利用者による明示依頼の仕組みそのものが、まだ実装されていない」を正解Bとしているが、実際は `lilpacy/CLAUDE.md:328` が明示依頼を唯一のentrypointと規定し L290以降に手動Map作成手順が存在する。誤った理解を正解として固定しており、変更の実質を問えていない。"
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": false,
+      "evidence": "末尾は「誤答があれば、その領域について質問してください」(L120)のみ。マイクロワールド提案や全問正解時の分岐先への言及がない。"
+    }
+  ]
+}

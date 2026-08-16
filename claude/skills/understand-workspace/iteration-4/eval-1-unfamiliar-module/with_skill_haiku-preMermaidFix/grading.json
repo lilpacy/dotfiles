@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": true,
+      "evidence": "TL;DR →「## Background」→「## Intuition」→「## Code」→「## Quiz」→「## 次の一手」の順で全section存在。"
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+      "passed": false,
+      "evidence": "呼び出し元 `.github/workflows/pi-concept-synthesis.yml` にも後段の `build_pi_synthesis_context.rb` にも一切言及がない。さらに選択ステップを「ユーザーが JSON 形式で選択」と誤って人間の操作として説明し、「『どの Delta を選ぶか』という JSON 選択ファイルの生成ロジックも別プロセス」「範囲外」と切り捨てている。実際は同 workflow 内の pi-coding-agent 呼び出しで、この script の catalog 出力を入力とする。CI pipeline 上の位置づけが未特定。"
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": false,
+      "evidence": "Intuition の例は `[新規 Delta 3個 投入] ↓ Catalog 操作 …` という抽象的な擬似フロー図（code block 内の ascii-art）で、具体的な Delta 名・hints 内容・件数・出力カタログの中身といったトイデータは一切登場しない。Code 節も実装のブロックごとの逐次解説で、入力から出力までを追う例がない。"
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": true,
+      "evidence": "3問すべて4択で、正解 C/B/B は実装と照らして正しい。Q3（`permitted_classes: [Date]` の理由）は `!ruby/object:` によるデシリアライズ risk という本文にない理解を要する。ただし Q1 の根拠行 `marker = @new_delta_paths.include?(relative) ? \" [new]\" : \"\"` と Q2 の根拠は Code 節に逐語で書かれており、2問は実質的に再認レベル。"
+    }
+  ],
+  "summary": {"passed": 2, "failed": 2, "total": 4, "pass_rate": 0.5}
+}

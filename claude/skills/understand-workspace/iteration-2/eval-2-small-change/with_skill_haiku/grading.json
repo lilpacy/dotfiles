@@ -1,0 +1,19 @@
+{
+  "expectations": [
+    {
+      "text": "説明が簡潔（本質的に数文レベル）で、小さなchoreコミットに見合っている",
+      "passed": false,
+      "evidence": "3.9KB / 61 lines for a single 78-line file deletion, padded with a 3-item numbered rationale list, a '副次的な効果' section, and a full 3-question quiz — longer than the with_skill (non-haiku) run despite the trivial diff."
+    },
+    {
+      "text": "クイズ・マイクロワールドを強制していない",
+      "passed": false,
+      "evidence": "A full quiz section with Q1-Q3 plus answers is appended, ending with '回答してください（または「掴めた」とおっしゃってください）' — the ritual is applied unconditionally to a chore commit."
+    },
+    {
+      "text": "何が削除されなぜ削除されたか（中間生成物の整理）は正しく伝えている",
+      "passed": true,
+      "evidence": "Correctly names the deleted file `docs/superpowers/plans/2026-08-16-development-process-artifacts.md` and the reason (the plan was already carried into `lilpacy/concepts/ソフトウェア開発プロセス.md`, so the intermediate artifact was obsolete). Minor imprecision: it credits only the preceding commit 5ecee513, whereas the work spanned 2a53eb61, 6818a609 and 5ecee513."
+    }
+  ]
+}

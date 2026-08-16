@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": false,
+      "evidence": "見出しは「一行でいうと」「背景：直前に何が起きていたか」「実際の変更内容」「このコミットの設計上の要点」で、Intuition・Code・Quiz に相当する明示的なsectionが無い。特にQuizは全く存在しない。"
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+      "passed": true,
+      "evidence": "「背景：直前に何が起きていたか」でPR #70（feasibility spike）とPR #71（手動dry-run追加）を個別コミットSHA付きで辿り、決め手になった実測2件（18 URLに非公式混在・stop_reason: max_tokens、run #31355724703 の TLS 接続エラー）を挙げている。lilpacy/CLAUDE.md の変更前後の運用ルール文も引用している。"
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": false,
+      "evidence": "Intuitionに相当するsectionが存在しない。図（Mermaid・ASCII図）も出力全体に一つも無く、あるのは design case の フィールド一覧表のみ。"
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": false,
+      "evidence": "クイズが一問も含まれていない。出力は解説のみで終わっている。"
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": false,
+      "evidence": "クイズ自体が無く、マイクロワールドやエスカレーション分岐への言及も一切ない。"
+    }
+  ]
+}

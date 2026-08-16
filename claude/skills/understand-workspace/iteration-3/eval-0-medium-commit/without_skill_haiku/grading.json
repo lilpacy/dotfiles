@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": false,
+      "evidence": "見出しは `## Summary` / `## What Changed` / `## Design Rationale (From Context)` / `## Files Changed: Summary` / `## Conclusion` で、Background・Intuition・Quiz に相当するsectionが存在しない。Quizは一問も無い。"
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+      "passed": false,
+      "evidence": "記述はすべてdiff内の情報に閉じている。CLAUDE.mdのbefore/after引用、design-case.jsonのフィールド、削除ファイルの行数はいずれもこのコミットのdiffそのもの。稼働中の他workflow、`PI_API_KEY` の由来、先行PRやprobe run（#31333925809 等）といったdiff外の文脈への参照は無く、削除workflowの役割説明もdeleted fileの中身の要約にとどまる。"
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": false,
+      "evidence": "Intuition相当のsectionが無く、図も皆無。視覚要素は `## Files Changed: Summary` の変更ファイル一覧表だけで、動作や方針転換を示す具体例・Mermaid・ASCII図は含まれない。"
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": false,
+      "evidence": "クイズが一問も含まれていない。出力は `## Conclusion` の解説で終わっている。"
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": false,
+      "evidence": "クイズ自体が存在せず、マイクロワールド・エスカレーション分岐への言及も一切ない。"
+    }
+  ]
+}

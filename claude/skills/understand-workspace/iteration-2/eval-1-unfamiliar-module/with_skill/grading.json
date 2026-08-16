@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": true,
+      "evidence": "`## Background` (L10), `## Intuition` (L78), `## Code` (L165), `## まとめ` (L383), `## Quiz` (L403) — the four required sections appear in the required order."
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+      "passed": true,
+      "evidence": "Names `.github/workflows/pi-concept-synthesis.yml` as the 48-hour caller, quotes the 2-lineage grounding constraint from its prompt, gives the downstream `build_pi_synthesis_context.rb` budget (`MAX_TOTAL_BYTES = 336_000`), and shows the actual workflow shell step `mapfile -d '' -t synthesis_deltas < .../synthesis-delta-inputs.zlist`. Closes with 'catalog → pi-coding-agent → merge という shell の3ステップ'."
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": true,
+      "evidence": "Runs the real script and shows measured output: `wc -c /tmp/cat.md` → 64825, a sample catalog excerpt with the `[new]` marker, `ls lilpacy/deltas/*.md | wc -l` → 92 vs `grep -c \"^## \"` → 90 with the two dropped `- none` files named, and a hand-written `/tmp/sel.json` fed to `merge` showing dedup to 2 paths via `tr '\\0' '\\n'`."
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": true,
+      "evidence": "3 four-option questions that require reasoning beyond recall: Q1 asks what breaks if the concat order in `merge` is reversed, Q2 asks the worst wiki-level consequence of truncating instead of raising, Q3 asks how synthesis behaves when a new Delta's hints are `- none`. Answers are not revealed."
+    }
+  ]
+}

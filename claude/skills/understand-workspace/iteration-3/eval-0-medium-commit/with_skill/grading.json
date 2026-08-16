@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": true,
+      "evidence": "見出しが `## Background — 変更前の世界`(L9) → `## Intuition — 「技術的成立」と「採用」を切り離した`(L53) → `## Code — 何がどう変わったか`(L117) → `## Quiz — 理解の確認（3問）`(L272) の順で全て存在する。"
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+      "passed": true,
+      "evidence": "`lilpacy/CLAUDE.md:267` 以降のDomain Map完成条件（経時/共時2View、map-sources content-addressed snapshot）を引き、さらに前史5コミット（ee07d34b〜58c29305）と feasibility 文書の×判定、canary run #31355724703 のTLS失敗というdiff外の事実を提示している。"
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": true,
+      "evidence": "Intuition節に Mermaid が3つ（削除pipelineのflowchart TD、変更前/変更後のentrypoint比較 flowchart LR）あり、費用発生点Cと失敗点Gを図中で対比している。"
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": true,
+      "evidence": "Q1〜Q3すべて4択。Q1は削除の動機（費用対効果 vs 権限/技術的不成立の識別）、Q2はdaily ingest後の挙動という境界条件、Q3はcontract testによる決定の固定という機構を問い、いずれも引用文の暗記では答えられない。"
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": true,
+      "evidence": "L299-302「全問正解なら『この explainer を wiki に取り込むか』を確認して終了、誤答があればその領域…に対して、削除前後の entrypoint 判定を並べて叩けるマイクロワールドを提案します」と分岐を明示している。"
+    }
+  ]
+}

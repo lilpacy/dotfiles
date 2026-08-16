@@ -1,0 +1,19 @@
+{
+  "expectations": [
+    {
+      "text": "説明が簡潔（本質的に数文レベル）で、小さなchoreコミットに見合っている",
+      "passed": false,
+      "evidence": "121行にわたり Background / Intuition / Code / Quiz のフル儀式を展開。削除されたファイルの内部構成を6項目に分解して列挙し、LLM Wikiの3層アーキテクチャ解説から始めている。1ファイル削除のchoreに対して明らかに過剰で、深さのcalibrationが働いていない。"
+    },
+    {
+      "text": "クイズ・マイクロワールドを強制していない",
+      "passed": false,
+      "evidence": "3問の選択式クイズを各選択肢の解説付きで提示しており（L66-116）、省略の検討にも言及がない。問3は「11の工程の11番目は何か」という削除済みファイル本文の暗記問題で、変更理解に寄与しない。"
+    },
+    {
+      "text": "何が削除されなぜ削除されたか（中間生成物の整理）は正しく伝えている",
+      "passed": true,
+      "evidence": "削除対象 `docs/superpowers/plans/2026-08-16-development-process-artifacts.md` を特定し、内容が `lilpacy/concepts/ソフトウェア開発プロセス.md` へ投影済みで中間生成物としての役目を終えたためと正しく説明。inputs 3件の引用や「11. 運用・保守・改善」も削除diffの実内容と一致する。"
+    }
+  ]
+}

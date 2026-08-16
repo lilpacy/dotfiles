@@ -1,0 +1,12 @@
+{
+  "eval_id": 0,
+  "eval_name": "medium-commit-explanation",
+  "prompt": "リポジトリのコミット 7a3879fd（fix: Domain Map作成を明示依頼に限定する）が何をしたのか理解したい。説明して。",
+  "assertions": [
+    {"text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）", "type": "structure"},
+    {"text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している", "type": "grounding"},
+    {"text": "Intuitionに具体例または図（Mermaid等）が含まれる", "type": "intuition"},
+    {"text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容", "type": "quiz"},
+    {"text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している", "type": "escalation"}
+  ]
+}

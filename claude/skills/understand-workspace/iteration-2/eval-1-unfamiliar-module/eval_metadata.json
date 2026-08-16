@@ -1,0 +1,11 @@
+{
+  "eval_id": 1,
+  "eval_name": "unfamiliar-module-walkthrough",
+  "prompt": "scripts/pi_synthesis_candidates.rb が何をしてるか分からない。walk me through this。",
+  "assertions": [
+    {"text": "Background→Intuition→Code→Quiz の構造を持つ", "type": "structure"},
+    {"text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている", "type": "grounding"},
+    {"text": "トイデータを使った具体例で動作を説明している", "type": "intuition"},
+    {"text": "クイズがあり、内容理解を要する問題になっている", "type": "quiz"}
+  ]
+}

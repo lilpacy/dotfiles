@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": true,
+      "evidence": "TL;DR→Background→Intuition→Code→Quiz→この後の流れ→次の一手 が順に存在。"
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキストに言及している",
+      "passed": true,
+      "evidence": "CLAUDE.mdの運用ルール、削除されたworkflow/scriptの経緯（af107ef4の試行と費用対効果）を周辺探索に基づき記述。"
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": true,
+      "evidence": "mermaid flowchart 1個と対比表。ascii-artゼロ。"
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": true,
+      "evidence": "3問の多肢選択。契約変更の適用範囲・再開条件など実質を問う。解答と解説を全問分含む。"
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": true,
+      "evidence": "「### この後の流れ」sectionで誤答領域ごとの具体的マイクロワールド案まで提示。"
+    }
+  ]
+}

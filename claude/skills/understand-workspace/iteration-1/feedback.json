@@ -1,0 +1,45 @@
+{
+  "reviews": [
+    {
+      "run_id": "eval-0-medium-commit-with_skill",
+      "feedback": "\u3053\u308c\u306f\u672c\u5f53\u306bhaiku\u306e\u30a2\u30a6\u30c8\u30d7\u30c3\u30c8\u306a\u306e\u304b\uff1f\u3068\u601d\u3048\u308b\u307b\u3069\u306b\u304b\u306a\u308a\u4e0a\u8cea\u306b\u898b\u3048\u308b\u3002\u3044\u3044\u611f\u3058",
+      "timestamp": "2026-08-16T14:40:27.989Z"
+    },
+    {
+      "run_id": "eval-0-medium-commit-with_skill_haiku",
+      "feedback": "ok\u3001\u30d5\u30a9\u30fc\u30de\u30c3\u30c8\u306b\u6cbf\u3063\u3066\u308b\u3068\u3044\u3046\u610f\u5473\u3067\u6700\u4f4e\u9650\u306e\u30af\u30aa\u30ea\u30c6\u30a3\u306a\u6c17\u304c\u3059\u308b\u3002",
+      "timestamp": "2026-08-16T14:40:27.989Z"
+    },
+    {
+      "run_id": "eval-0-medium-commit-without_skill",
+      "feedback": "\u30d5\u30a9\u30fc\u30de\u30c3\u30c8\u304c\u30a4\u30de\u30a4\u30c1",
+      "timestamp": "2026-08-16T14:40:27.989Z"
+    },
+    {
+      "run_id": "eval-0-medium-commit-without_skill_haiku",
+      "feedback": "\u6025\u306b\u65e5\u672c\u8a9e\u3067\u304a\u9858\u3044\u3057\u305f\u306b\u3082\u95a2\u308f\u3089\u305a\u6025\u306b\u82f1\u8a9e\u304c\u6df7\u3056\u3063\u3066\u304d\u3066\u3044\u3066\u8aad\u307f\u3065\u3089\u3044",
+      "timestamp": "2026-08-16T14:40:27.989Z"
+    },
+    {
+      "run_id": "eval-1-unfamiliar-module-with_skill",
+      "feedback": "structured-answer\u30b9\u30ad\u30eb\u3067\u6307\u793a\u3057\u305f\u969b\u306e\u3088\u3046\u306b\u69cb\u9020\u5316\u3055\u308c\u3066\u3066\u3044\u3066\u3001\u306a\u308b\u3079\u304f\u8a00\u8a9e\u3067\u306f\u306a\u304f\u56f3\u89e3\u3068\u30b3\u30fc\u30c9\u4f8b\u3067\u306e\u8aac\u660e\u304c\u3042\u308a\u975e\u5e38\u306b\u308f\u304b\u308a\u3084\u3059\u3044",
+      "timestamp": "2026-08-16T14:40:27.989Z"
+    },
+    {
+      "run_id": "eval-1-unfamiliar-module-with_skill_haiku",
+      "feedback": "structured-answer\u30b9\u30ad\u30eb\u3092\u9069\u7528\u3057\u305f\u6642\u306e\u3088\u3046\u306b\u3001\u69cb\u9020\u5316\u3057\u305f\u4e0a\u3067\u8a00\u8449\u3088\u308amermaid\u306a\u3069\u3067\u306e\u56f3\u89e3\u3068\u30b3\u30fc\u30c9\u4f8b\u3067\u8aac\u660e\u3057\u3066\u307b\u3057\u3044",
+      "timestamp": "2026-08-16T14:40:27.989Z"
+    },
+    {
+      "run_id": "eval-1-unfamiliar-module-without_skill",
+      "feedback": "structured-answer\u30b9\u30ad\u30eb\u3092\u9069\u7528\u3057\u305f\u6642\u306e\u3088\u3046\u306b\u3001\u69cb\u9020\u5316\u3057\u305f\u4e0a\u3067\u8a00\u8449\u3088\u308amermaid\u306a\u3069\u3067\u306e\u56f3\u89e3\u3068\u30b3\u30fc\u30c9\u4f8b\u3067\u8aac\u660e\u3057\u3066\u307b\u3057\u3044",
+      "timestamp": "2026-08-16T14:40:27.989Z"
+    },
+    {
+      "run_id": "eval-1-unfamiliar-module-without_skill_haiku",
+      "feedback": "structured-answer\u30b9\u30ad\u30eb\u3092\u9069\u7528\u3057\u305f\u6642\u306e\u3088\u3046\u306b\u3001\u69cb\u9020\u5316\u3057\u305f\u4e0a\u3067\u8a00\u8449\u3088\u308amermaid\u306a\u3069\u3067\u306e\u56f3\u89e3\u3068\u30b3\u30fc\u30c9\u4f8b\u3067\u8aac\u660e\u3057\u3066\u307b\u3057\u3044",
+      "timestamp": "2026-08-16T14:40:27.989Z"
+    }
+  ],
+  "status": "in_progress"
+}

@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": false,
+      "evidence": "見出しは「一言でいうと」「なぜこれが必要なのか（背景）」「`catalog` サブコマンド」「`merge` サブコマンド」「path 検証」「workflow の中での位置」「まとめ」で、Intuition と Quiz に相当するsectionが存在しない。Quizは一問も無い。"
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+      "passed": true,
+      "evidence": "「workflow の中での位置」で cursor 検出 → catalog → pi-coding-agent → merge → `build_pi_synthesis_context.rb` → `pi_synthesis_apply.rb` → Concept PR の全経路をASCII図で示し、呼び出し元 `.github/workflows/pi-concept-synthesis.yml`、cursor を管理する `synthesis_ledger.rb`、`mapfile -d ''` での読み取りまで具体的に挙げている。"
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": false,
+      "evidence": "具体例は「実際に走らせた出力の一部」として本物のvaultデータ（`2026-08-02 DGX Spark複数台連結の目的と帯域制約--8c9eb13082c5.md`）を1件貼っただけで、新着と過去の対比や `[new]` マーカーの意味を示す最小構成のトイデータは使っていない。実測値（92件で64,825 bytes）も実データ由来。"
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": false,
+      "evidence": "クイズが一問も含まれていない。出力は「まとめ」の表と関連ファイル一覧で終わっている。"
+    }
+  ]
+}

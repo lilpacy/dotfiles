@@ -1,0 +1,537 @@
+{
+  "metadata": {
+    "skill_name": "understand",
+    "skill_path": "/Users/lilpacy/.claude/skills/understand",
+    "executor_model": "fable-5 (main) + haiku (rows marked)",
+    "analyzer_model": "fable-5",
+    "timestamp": "2026-08-16T14:25:00Z",
+    "evals_run": [
+      0,
+      1,
+      2
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "eval_name": "eval-0-medium-commit",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+          "passed": true,
+          "evidence": "見出しが `## 1. Background` → `## 2. Intuition` → `## 3. Code` → `## 4. Quiz` の順で4つ全て存在する。"
+        },
+        {
+          "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+          "passed": true,
+          "evidence": "1-1でコミット時点で稼働中の5つのworkflow（daily-wiki-ingest.yml 等）と PI_API_KEY が有料クレデンシャルである点を説明し、1-2で `lilpacy/CLAUDE.md:267-296` のMap完成条件（経時・共時2 View、同じ試行で完結させる規則）を表で整理、1-3で直前のPR #70/#71 の spike と canary の役割をコミット履歴付きで説明している。いずれも diff 本体には現れない情報。"
+        },
+        {
+          "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+          "passed": true,
+          "evidence": "Intuition節に Mermaid が2つある。削除前 map-source-dry-run.yml のパイプライン flowchart（TLSエラーで停止・成果物ゼロを注記）と、変更前後の entrypoint 契約を対比する flowchart TB。"
+        },
+        {
+          "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+          "passed": true,
+          "evidence": "Q1〜Q3の3問、各問 (a)〜(d) の4択。Q1は削除理由（費用対効果 vs セキュリティ vs バグ）、Q2は design-case.json で SC1〜SC4 を残した理由、Q3は自然言語の方針文を文字列一致で検証するテストの狙いを問う。いずれも diff を読まないと選べない実質的な内容。"
+        },
+        {
+          "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+          "passed": true,
+          "evidence": "クイズ直後に「誤答があればその領域を特定して、挙動を手で触れるマイクロワールドの作成を提案する」と明記し、候補（入口イベント切替CLI、削除されたRubyの境界検証スクリプト）まで挙げている。末尾の注記でも全問正解時はStep 4、誤答時はStep 3へエスカレーションする分岐を説明している。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "eval_name": "eval-0-medium-commit",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.2,
+        "passed": 1,
+        "failed": 4,
+        "total": 5,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+          "passed": false,
+          "evidence": "見出しは「一行でいうと」「背景：直前に何が起きていたか」「実際の変更内容」「このコミットの設計上の要点」で、Intuition・Code・Quiz に相当する明示的なsectionが無い。特にQuizは全く存在しない。"
+        },
+        {
+          "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+          "passed": true,
+          "evidence": "「背景：直前に何が起きていたか」でPR #70（feasibility spike）とPR #71（手動dry-run追加）を個別コミットSHA付きで辿り、決め手になった実測2件（18 URLに非公式混在・stop_reason: max_tokens、run #31355724703 の TLS 接続エラー）を挙げている。lilpacy/CLAUDE.md の変更前後の運用ルール文も引用している。"
+        },
+        {
+          "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+          "passed": false,
+          "evidence": "Intuitionに相当するsectionが存在しない。図（Mermaid・ASCII図）も出力全体に一つも無く、あるのは design case の フィールド一覧表のみ。"
+        },
+        {
+          "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+          "passed": false,
+          "evidence": "クイズが一問も含まれていない。出力は解説のみで終わっている。"
+        },
+        {
+          "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+          "passed": false,
+          "evidence": "クイズ自体が無く、マイクロワールドやエスカレーション分岐への言及も一切ない。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "eval_name": "eval-0-medium-commit (haiku)",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.4,
+        "passed": 2,
+        "failed": 3,
+        "total": 5,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+          "passed": true,
+          "evidence": "`## Background` → `## Intuition` → `## Code` → `## Summary` → `## 理解度確認クイズ` の順で4つのcore sectionが全て存在し順序も正しい（間に Summary が挟まるが順序は崩れていない）。"
+        },
+        {
+          "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+          "passed": true,
+          "evidence": "Background で3層アーキテクチャと `lilpacy/CLAUDE.md` がschemaを保持する点、Domain Map が経時・共時2 Viewを持つ成果物である点、削除された仕組みが `PI_API_KEY`（有料API）でsource候補を自動探索する経路だった点を、diffに現れない前提として説明している。"
+        },
+        {
+          "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+          "passed": false,
+          "evidence": "Intuition section は「キーポイント」1文と箇条書き2点（source限定の失敗、TLSエラー）だけの散文で、Mermaid・ASCII図・トイデータ例のいずれも無い。出力全体を通しても図は一つも無く、あるのは引用ブロックのみ。"
+        },
+        {
+          "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+          "passed": false,
+          "evidence": "Q1〜Q3の4択が形式上は揃っているが、正解選択肢が `**...**` で太字強調されており（例: Q1の C、Q2の C、Q3の B）、読者が考える前に答えが露出している。理解度を測るクイズとして機能しないため形式的充足にとどまる。加えてQ2は選択肢AとCの指す内容が実質重複、Q3は「D) 詳細不明」を含む弱い設問。"
+        },
+        {
+          "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+          "passed": false,
+          "evidence": "出力はQ3の選択肢で終わっており、採点手順・誤答時のマイクロワールド提案・エスカレーション分岐への言及が一切無い。冒頭の「以下の3問に答えてください」以降にフォローアップの記述は存在しない。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "eval_name": "eval-0-medium-commit (haiku)",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.0,
+        "passed": 0,
+        "failed": 5,
+        "total": 5,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+          "passed": false,
+          "evidence": "見出しは `## Summary` / `## What Changed` / `## Design Rationale (From Context)` / `## Files Changed: Summary` / `## Conclusion` で、Background・Intuition・Quiz に相当するsectionが存在しない。Quizは一問も無い。"
+        },
+        {
+          "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+          "passed": false,
+          "evidence": "記述はすべてdiff内の情報に閉じている。CLAUDE.mdのbefore/after引用、design-case.jsonのフィールド、削除ファイルの行数はいずれもこのコミットのdiffそのもの。稼働中の他workflow、`PI_API_KEY` の由来、先行PRやprobe run（#31333925809 等）といったdiff外の文脈への参照は無く、削除workflowの役割説明もdeleted fileの中身の要約にとどまる。"
+        },
+        {
+          "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+          "passed": false,
+          "evidence": "Intuition相当のsectionが無く、図も皆無。視覚要素は `## Files Changed: Summary` の変更ファイル一覧表だけで、動作や方針転換を示す具体例・Mermaid・ASCII図は含まれない。"
+        },
+        {
+          "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+          "passed": false,
+          "evidence": "クイズが一問も含まれていない。出力は `## Conclusion` の解説で終わっている。"
+        },
+        {
+          "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+          "passed": false,
+          "evidence": "クイズ自体が存在せず、マイクロワールド・エスカレーション分岐への言及も一切ない。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "eval-1-unfamiliar-module",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Background→Intuition→Code→Quiz の構造を持つ",
+          "passed": false,
+          "evidence": "`## 1. Background` → `## 2. Intuition` → `## 3. Code` は順序通り存在するが、Quiz section が無い。冒頭で自ら「構造化説明フル + クイズ5問」と宣言しているのに、ファイルは `### まとめると` で終わっており1問も出題されていない（243行で終端）。"
+        },
+        {
+          "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+          "passed": true,
+          "evidence": "1-Bで `.github/workflows/pi-concept-synthesis.yml` の5ステップを列挙し「← ここに本スクリプトが入る」とstep 3の位置を特定。前段 `synthesis_ledger.rb cursor` と git diff、後段 `build_pi_synthesis_context.rb`（336KB上限）と `pi_synthesis_apply.rb` を挙げ、Intuition末尾のMermaidで catalog → pi-coding-agent → merge → full context → PR の全経路を図示している。"
+        },
+        {
+          "text": "トイデータを使った具体例で動作を説明している",
+          "passed": true,
+          "evidence": "Intuition (1) で「トイデータで catalog の出力を見るとこう（`New` が新着、`Old` が過去）」として、`## lilpacy/deltas/New.md [new]` と `## lilpacy/deltas/Old.md` の2件だけの最小 catalog 出力を提示し、`[new]` マーカーが唯一の非対称性であることを示している。"
+        },
+        {
+          "text": "クイズがあり、内容理解を要する問題になっている",
+          "passed": false,
+          "evidence": "クイズが存在しない。冒頭で「クイズ5問」と予告しているが本文には1問も含まれず、Code section の後は `### まとめると` で終了している。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "eval-1-unfamiliar-module",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.25,
+        "passed": 1,
+        "failed": 3,
+        "total": 4,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Background→Intuition→Code→Quiz の構造を持つ",
+          "passed": false,
+          "evidence": "見出しは「一言でいうと」「なぜこれが必要なのか（背景）」「`catalog` サブコマンド」「`merge` サブコマンド」「path 検証」「workflow の中での位置」「まとめ」で、Intuition と Quiz に相当するsectionが存在しない。Quizは一問も無い。"
+        },
+        {
+          "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+          "passed": true,
+          "evidence": "「workflow の中での位置」で cursor 検出 → catalog → pi-coding-agent → merge → `build_pi_synthesis_context.rb` → `pi_synthesis_apply.rb` → Concept PR の全経路をASCII図で示し、呼び出し元 `.github/workflows/pi-concept-synthesis.yml`、cursor を管理する `synthesis_ledger.rb`、`mapfile -d ''` での読み取りまで具体的に挙げている。"
+        },
+        {
+          "text": "トイデータを使った具体例で動作を説明している",
+          "passed": false,
+          "evidence": "具体例は「実際に走らせた出力の一部」として本物のvaultデータ（`2026-08-02 DGX Spark複数台連結の目的と帯域制約--8c9eb13082c5.md`）を1件貼っただけで、新着と過去の対比や `[new]` マーカーの意味を示す最小構成のトイデータは使っていない。実測値（92件で64,825 bytes）も実データ由来。"
+        },
+        {
+          "text": "クイズがあり、内容理解を要する問題になっている",
+          "passed": false,
+          "evidence": "クイズが一問も含まれていない。出力は「まとめ」の表と関連ファイル一覧で終わっている。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "eval-1-unfamiliar-module (haiku)",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Background→Intuition→Code→Quiz の構造を持つ",
+          "passed": true,
+          "evidence": "`## Background` → `## Intuition` → `## Code` → `## Quiz` の4sectionが宣言順どおりに全て存在し、Quizには実際にQ1〜Q4が出題されている。"
+        },
+        {
+          "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+          "passed": false,
+          "evidence": "Background はAGENTS.mdの3層構造とDeltaの説明にとどまり、実際の呼び出し元 `.github/workflows/pi-concept-synthesis.yml` にも前後のscript（`synthesis_ledger.rb`、`build_pi_synthesis_context.rb`、`pi_synthesis_apply.rb`）にも一切触れていない。「(1)catalog →(2)エージェントか人間が選ぶ →(3)merge」という記述はスクリプト自身のCLIから読み取れる範囲の一般化で、CI pipeline上の位置づけになっていない。"
+        },
+        {
+          "text": "トイデータを使った具体例で動作を説明している",
+          "passed": false,
+          "evidence": "Intuition にあるのは Catalog/Merge の2段を囲みで示した抽象的なASCII図だけで、入力Deltaの中身や生成されるcatalogの実際の行を示したトイデータ例が無い。Code section も実装コードの逐次引用にとどまり、入力→出力を辿る例は提示されていない。"
+        },
+        {
+          "text": "クイズがあり、内容理解を要する問題になっている",
+          "passed": true,
+          "evidence": "Q1〜Q4の4択が正解を明示せずに出題されており、hints無しDeltaをskipする理由、`[new]` マーカーの用途、NUL区切り出力が `xargs -0` 向けである理由、`required_link` の正規表現の役割を問う。いずれも本文の説明を理解していないと選べない内容で、末尾に回答を促す一文もある。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "eval-1-unfamiliar-module (haiku)",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.0,
+        "passed": 0,
+        "failed": 4,
+        "total": 4,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Background→Intuition→Code→Quiz の構造を持つ",
+          "passed": false,
+          "evidence": "見出しは `## Overview` / `## Architecture: Two Classes` / `## Command-Line Usage` / `## Key Implementation Details` / `## Why This Exists` / `## Safety & Constraints` で、Background・Intuition・Quiz に相当するsectionが無い。クイズは一問も含まれない。"
+        },
+        {
+          "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+          "passed": false,
+          "evidence": "冒頭で「\"Pi Synthesis\" — likely a process that synthesizes ... concepts」と推測で済ませており、実際の呼び出し元 `.github/workflows/pi-concept-synthesis.yml` も前後のscriptも一切登場しない。`## Why This Exists` の4ステップも「Someone (human or another tool) reviews the catalog」という一般論で、CI上の実際の経路を特定していない。"
+        },
+        {
+          "text": "トイデータを使った具体例で動作を説明している",
+          "passed": false,
+          "evidence": "`Example output structure` は `## lilpacy/deltas/some-file.md [new]` / `- hint 1` というプレースホルダで出力書式を示しただけで、入力Deltaの中身が無く、新着と過去の対比も無い。CLI例（`new1.md new2.md`）も起動コマンドの雛形にとどまり、入力から出力を辿るトイデータの実行例になっていない。"
+        },
+        {
+          "text": "クイズがあり、内容理解を要する問題になっている",
+          "passed": false,
+          "evidence": "クイズが一問も含まれていない。出力は `## Safety & Constraints` の箇条書きで終わっている。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "eval-2-small-change",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6666666666666666,
+        "passed": 2,
+        "failed": 1,
+        "total": 3,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "説明が簡潔（本質的に数文レベル）で、小さなchoreコミットに見合っている",
+          "passed": false,
+          "evidence": "1ファイル78行削除・追加ゼロのchoreコミットに対し76行・6セクション（一言でいうと / 背景 / 直感 / コードのウォークスルー / クイズについて / 共有について）を出力し、4コミットの系譜をMermaidで図示している。クイズは省いたがそれ以外の構造は完全に維持されており「数文レベル」とは言えない。「足場は建物が建ったら外す」という直感節や共有オプション3択の提示は、この規模の後片付けコミットには過剰。"
+        },
+        {
+          "text": "クイズ・マイクロワールドを強制していない",
+          "passed": true,
+          "evidence": "「クイズについて」節で「1ファイル削除・追加行ゼロで、理解すべき状態遷移やアルゴリズムがありません…クイズとマイクロワールドは実行しません」と明示的に省略を宣言し、「作っても『削除されたファイルは何行でしたか』のような…暗記問題になってしまいます」と理由まで述べている。実際に出題は0問。"
+        },
+        {
+          "text": "何が削除されなぜ削除されたか（中間生成物の整理）は正しく伝えている",
+          "passed": true,
+          "evidence": "削除対象を `docs/superpowers/plans/2026-08-16-development-process-artifacts.md`（78行）と正しく特定（git show --stat と一致）。理由も、同一ブランチ `worktree/quiet-field-6595` の先行3コミット（2a53eb61 / 6818a609 / 5ecee513）で計画が消化され成果が `lilpacy/concepts/ソフトウェア開発プロセス.md` に反映済みであること、計画が実装に追随して書き換えられていたため最終成果物の劣化した複製に収束し single source of truth を1つに戻す意味があること、と正確に説明している。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "eval-2-small-change",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6666666666666666,
+        "passed": 2,
+        "failed": 1,
+        "total": 3,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "説明が簡潔（本質的に数文レベル）で、小さなchoreコミットに見合っている",
+          "passed": false,
+          "evidence": "65行・6セクションで、削除されたファイルの中身を5項目の箇条書き（工程別成果物の設計、精緻化系列、検証手順など）まで再構成している。with_skill より短いだけで、1ファイル削除のchoreコミットに対する「数文レベル」の水準には達していない。"
+        },
+        {
+          "text": "クイズ・マイクロワールドを強制していない",
+          "passed": true,
+          "evidence": "クイズもマイクロワールドの提案も一切含まれず、解説のみ。「気をつけるとよい点」で計画ドキュメントの扱いが一貫していない旨を指摘して終わっている。"
+        },
+        {
+          "text": "何が削除されなぜ削除されたか（中間生成物の整理）は正しく伝えている",
+          "passed": true,
+          "evidence": "削除対象を `docs/superpowers/plans/2026-08-16-development-process-artifacts.md`（78行削除・追加ゼロ）と正しく特定し、ブランチ `worktree/quiet-field-6595` 内の4コミットの表で「計画作成 → 更新 → 更新 → 削除」の流れを示し、計画に沿った実装が完了して役目を終えた足場を畳んだ、と正しく説明している。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "eval-2-small-change (haiku)",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "説明が簡潔（本質的に数文レベル）で、小さなchoreコミットに見合っている",
+          "passed": true,
+          "evidence": "全体1,590文字・約25行で、Background/Intuition/Code/Quizのフル儀式を展開していない。`## What Changed` の2文で削除対象と正体を述べ、`## Why This Happened` で理由を数文にまとめている。1ファイル78行削除のchoreに対して妥当な深さ（同evalのwith_skill/Sonnet run は76行・6sectionで過剰だった）。"
+        },
+        {
+          "text": "クイズ・マイクロワールドを強制していない",
+          "passed": true,
+          "evidence": "`## Depth Assessment` で「categorized as typo / temporary artifact / cleanup ... No quiz or deeper exploration needed」と明示し、`## Quiz` 見出しの下でも出題せず「This change is self-contained cleanup; understanding it doesn't require additional testing or micro-worlds unless you want to」と省略を宣言している。実際の出題は0問。ただし空の `## Quiz` 見出し自体は儀式の残骸として残っている。"
+        },
+        {
+          "text": "何が削除されなぜ削除されたか（中間生成物の整理）は正しく伝えている",
+          "passed": true,
+          "evidence": "削除対象を `docs/superpowers/plans/2026-08-16-development-process-artifacts.md`（78行）と特定し、git show --stat（1 file changed, 78 deletions）と一致。内容の要約（工程ごとに何を確定しどの成果物を次工程へ渡すかへConceptを更新する計画、概念設計・ドメイン設計を条件付き活動として統合）も実ファイルのGoal・方針節と合致し、中間生成物の後片付けという性質を正しく述べている。"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "eval-2-small-change (haiku)",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "説明が簡潔（本質的に数文レベル）で、小さなchoreコミットに見合っている",
+          "passed": true,
+          "evidence": "全体1,634文字・約22行で、構造化儀式は無く `## What Changed` / `## What Was Deleted` / `## Key Contents of the Plan` / `## Why It Was Deleted` の素直な4section。削除されたplanの中身を4項目まで展開している点はやや冗長だが、1ファイル削除のchoreに対する分量として逸脱していない。"
+        },
+        {
+          "text": "クイズ・マイクロワールドを強制していない",
+          "passed": true,
+          "evidence": "クイズもマイクロワールド提案も一切含まれず、`## Why It Was Deleted` の解説で終わっている。"
+        },
+        {
+          "text": "何が削除されなぜ削除されたか（中間生成物の整理）は正しく伝えている",
+          "passed": true,
+          "evidence": "削除対象と78行削除をgit show --statどおりに特定し、planの内容（更新対象3ファイル `ソフトウェア開発プロセス.md`/`index.md`/`log.md`、summary 3件の追加、概念設計・ドメイン設計の統合、Mermaidによる成果物精緻化、11工程、6項目の検証手順）はいずれも実ファイルと一致。commit message を引いて中間生成物の後片付けだと説明している。"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.722,
+        "stddev": 0.208,
+        "min": 0.5,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "tokens": {
+        "mean": 0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.372,
+        "stddev": 0.209,
+        "min": 0.2,
+        "max": 0.6666666666666666
+      },
+      "time_seconds": {
+        "mean": 0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      },
+      "tokens": {
+        "mean": 0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.35"
+    }
+  },
+  "notes": [
+    "Fable with_skill: eval-0 5/5, eval-1 2/4 (Quiz section missing despite announcing it), eval-2 2/3 (76-line full-structure output for a trivial 1-file chore — depth calibration failed in strict reading).",
+    "Fable without_skill: strong prose but no quiz/escalation anywhere (eval-0 1/5, eval-1 1/4).",
+    "Haiku with_skill vs without: 2/5 vs 0/5 (eval-0), 2/4 vs 0/4 (eval-1), 3/3 vs 3/3 (eval-2). Skill lifts Haiku's structure but Haiku still drops quiz/diagrams — instructions may need to be more insistent about Quiz being part of the deliverable.",
+    "Non-discriminating assertion: eval-2 'correctness' passed everywhere.",
+    "Both Fable and Haiku with_skill failed to include Quiz in eval-1 → SKILL.md likely buries the quiz requirement; consider stating that the explanation is incomplete without the quiz section."
+  ]
+}

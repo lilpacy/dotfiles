@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": true,
+      "evidence": "`## Background` → `## Intuition` → `## Code` → `## Summary` → `## 理解度確認クイズ` の順で4つのcore sectionが全て存在し順序も正しい（間に Summary が挟まるが順序は崩れていない）。"
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+      "passed": true,
+      "evidence": "Background で3層アーキテクチャと `lilpacy/CLAUDE.md` がschemaを保持する点、Domain Map が経時・共時2 Viewを持つ成果物である点、削除された仕組みが `PI_API_KEY`（有料API）でsource候補を自動探索する経路だった点を、diffに現れない前提として説明している。"
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": false,
+      "evidence": "Intuition section は「キーポイント」1文と箇条書き2点（source限定の失敗、TLSエラー）だけの散文で、Mermaid・ASCII図・トイデータ例のいずれも無い。出力全体を通しても図は一つも無く、あるのは引用ブロックのみ。"
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": false,
+      "evidence": "Q1〜Q3の4択が形式上は揃っているが、正解選択肢が `**...**` で太字強調されており（例: Q1の C、Q2の C、Q3の B）、読者が考える前に答えが露出している。理解度を測るクイズとして機能しないため形式的充足にとどまる。加えてQ2は選択肢AとCの指す内容が実質重複、Q3は「D) 詳細不明」を含む弱い設問。"
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": false,
+      "evidence": "出力はQ3の選択肢で終わっており、採点手順・誤答時のマイクロワールド提案・エスカレーション分岐への言及が一切無い。冒頭の「以下の3問に答えてください」以降にフォローアップの記述は存在しない。"
+    }
+  ]
+}

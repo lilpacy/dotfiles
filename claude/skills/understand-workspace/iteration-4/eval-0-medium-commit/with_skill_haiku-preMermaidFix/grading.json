@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": true,
+      "evidence": "「## Background：なぜこの変更が存在するのか」→「## Intuition：何をゴールとしているのか」→「## Code：何が削除・変更されたか」→「## Quiz：理解の確認」→「## 次の一手」の順で全section存在。"
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+      "passed": true,
+      "evidence": "Background で Domain Map の経時View/共時Viewの役割、自動化構想（Concept Synthesis や daily ingest 完了時に自動生成する設計意図）、先行 probe の存在に触れている。ただし「従来、Map 作成は利用者が明示的に依頼する方式でした」は変更前 CLAUDE.md の記述（明示依頼は正当な entrypoint の一つで自動化も将来予定）とずれる不正確さがある。"
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": true,
+      "evidence": "Intuition に mermaid が2つ（変更前後のトリガー経路図、明示依頼有無の decision tree）。ただしノードラベル内に「↓」を並べて擬似フロー化しており図として読みにくい。"
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": true,
+      "evidence": "Q1〜Q4 の4問すべて4択で、正解（C/C/B/B）は diff と docs の記述に照らして正しい。ただし末尾に「クイズは短縮形（3 問）で提示しました」と実際の問題数と矛盾する記述があり、Q2 はポリシー文のほぼ逐語再現、Q3 は「git 履歴に残るか」という本コミット固有でない一般知識の問いで、実質を問う度合いが弱い。"
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": false,
+      "evidence": "各問の正解と解説を即座に開示しており回答待ちの分岐が存在しない。「次の一手」以降にもマイクロワールド提案や誤答時の分岐への言及はなく、末尾は「ここがまだピンとこない領域がありますか？」という一般的な問いかけのみ。"
+    }
+  ],
+  "summary": {"passed": 4, "failed": 1, "total": 5, "pass_rate": 0.8}
+}

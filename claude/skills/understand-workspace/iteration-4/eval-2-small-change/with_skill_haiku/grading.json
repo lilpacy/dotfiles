@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "説明が簡潔（本質的に数文レベル）で、小さなchoreコミットに見合っている",
+      "passed": false,
+      "evidence": "commit e4f5325f は 1ファイル78行削除の chore だが、出力は136行・8,412文字で TL;DR / Background / Intuition（Mermaid stateDiagram 付き）/ Code（7行の構成テーブル）/ Quiz 3問 / 次の一手 という完全な儀式を踏んでいる。省略の判断や規模への言及は一切なく、深さ較正が働いていない。"
+    },
+    {
+      "text": "クイズ・マイクロワールドを強制していない",
+      "passed": false,
+      "evidence": "`## Quiz`(l.75) で「理解を確認するため、以下の問題に答えてください」と Q1〜Q3 の多肢選択を課している。マイクロワールドの提案はないが、クイズは明確に強制されており、規模に対する省略の注記もない。"
+    },
+    {
+      "text": "何が削除されなぜ削除されたか（中間生成物の整理）は正しく伝えている",
+      "passed": true,
+      "evidence": "削除対象を `docs/superpowers/plans/2026-08-16-development-process-artifacts.md`（78行）と正しく特定し、削除前の内容（`concepts/ソフトウェア開発プロセス.md` を正本へ更新する計画、index.md / log.md の更新範囲、工程別成果物表、Mermaid 精緻化系列、検証手順）を実物と一致する形で要約している。理由も「計画は実装完了後に役割を終える一時成果物」として commit message『chore: 中間生成物の実装計画を削除』と整合。"
+    }
+  ],
+  "summary": {"passed": 1, "failed": 2, "total": 3, "pass_rate": 0.33},
+  "claims": [
+    {
+      "claim": "計画は 2a53eb61 / 6818a609 / 5ecee513 で実装済み",
+      "type": "factual",
+      "verified": true,
+      "evidence": "3 commit いずれも存在し、message は「docs: 開発工程と成果物の対応を整理」「fix: 概念設計とドメイン設計を全体フローへ統合」「fix: 開発フロー分岐と成果物表を条件付き活動として整合」で、削除された計画の変更範囲と対応する。"
+    },
+    {
+      "claim": "削除された計画ファイルは78行だった",
+      "type": "factual",
+      "verified": true,
+      "evidence": "`git show --stat e4f5325f` は 78 deletions の1ファイル変更を示す。"
+    },
+    {
+      "claim": "Q2 は「複数正解」（A と C）である",
+      "type": "quality",
+      "verified": false,
+      "evidence": "選択肢 C にだけ `**複数正解**` と付きつつ解説で A,C を正解とし、さらに B の解説も肯定的で、択問として整合していない。小規模 commit に無理にクイズを作った副作用。"
+    }
+  ]
+}

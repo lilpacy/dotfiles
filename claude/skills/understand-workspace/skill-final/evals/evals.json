@@ -1,0 +1,26 @@
+{
+  "skill_name": "understand",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "medium-commit-explanation",
+      "prompt": "リポジトリ /Users/lilpacy/.herdr/worktrees/obsidian/worktree-rapid-stone-a736 のコミット 7a3879fd（fix: Domain Map作成を明示依頼に限定する）が何をしたのか理解したい。説明して。",
+      "expected_output": "Background（周辺コード探索に基づく）→ Intuition（図解含む）→ Code walkthrough → 3問程度のクイズ、の構造化された説明。一方的な要約で終わらずクイズで理解確認する。",
+      "files": []
+    },
+    {
+      "id": 1,
+      "eval_name": "unfamiliar-module-walkthrough",
+      "prompt": "/Users/lilpacy/.herdr/worktrees/obsidian/worktree-rapid-stone-a736/scripts/pi_synthesis_candidates.rb が何をしてるか分からない。walk me through this。",
+      "expected_output": "スクリプトの役割をシステム全体（CI synthesis pipeline）の文脈に置いた Background、トイデータでの Intuition、コードのウォークスルー、クイズ。",
+      "files": []
+    },
+    {
+      "id": 2,
+      "eval_name": "small-change-no-ritual",
+      "prompt": "リポジトリ /Users/lilpacy/.herdr/worktrees/obsidian/worktree-rapid-stone-a736 のコミット e4f5325f を理解したい。説明して。",
+      "expected_output": "1ファイル削除だけの小さなchoreコミットなので、1-2文の説明で完結し、クイズやマイクロワールドの儀式を強制しない（深さの調整ができているか）。",
+      "files": []
+    }
+  ]
+}

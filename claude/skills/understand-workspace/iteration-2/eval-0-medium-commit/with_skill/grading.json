@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": true,
+      "evidence": "explanation.md has `## Background` (L10), `## Intuition` (L70), `## Code` (L134), `## Quiz` (L244) in exactly that order, all substantive."
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+      "passed": true,
+      "evidence": "Background cites `lilpacy/CLAUDE.md:267-301` Domain Map rules with a 経時/共時 View table, content-addressed `map-sources/<body_sha256>.md` snapshots, and explains the deleted canary's role (workflow_dispatch, HTTPS-only, redirect 0, 1MiB cap, `permissions: contents: read`) plus the 3 preceding spike commits."
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": true,
+      "evidence": "Intuition contains a Mermaid `flowchart TB` (L84-99) contrasting BEFORE two-track entrypoints vs AFTER single-track, and Background has a second Mermaid flowchart of the commit lineage."
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": true,
+      "evidence": "Exactly 3 questions, each with 4 options A-D. Q1 tests the declared-vs-implemented workflow distinction, Q2 what the rewritten contract test guards, Q3 the measured TLS failure as the trigger. Answers are hidden in a `<details>` block so the reader must commit first."
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": true,
+      "evidence": "L284-296 states the branching: all-correct → Step 4 confirm wiki ingest once; wrong answers → diagnose the missing intuition and propose a Step 3 micro-world, with a concrete example script comparing `.github/workflows/` and CLAUDE.md across commits."
+    }
+  ]
+}

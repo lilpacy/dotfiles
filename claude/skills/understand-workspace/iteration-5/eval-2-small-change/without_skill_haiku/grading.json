@@ -1,0 +1,19 @@
+{
+  "expectations": [
+    {
+      "text": "説明が簡潔（本質的に数文レベル）で、小さなchoreコミットに見合っている",
+      "passed": true,
+      "evidence": "全体1,634文字・約22行で、構造化儀式は無く `## What Changed` / `## What Was Deleted` / `## Key Contents of the Plan` / `## Why It Was Deleted` の素直な4section。削除されたplanの中身を4項目まで展開している点はやや冗長だが、1ファイル削除のchoreに対する分量として逸脱していない。"
+    },
+    {
+      "text": "クイズ・マイクロワールドを強制していない",
+      "passed": true,
+      "evidence": "クイズもマイクロワールド提案も一切含まれず、`## Why It Was Deleted` の解説で終わっている。"
+    },
+    {
+      "text": "何が削除されなぜ削除されたか（中間生成物の整理）は正しく伝えている",
+      "passed": true,
+      "evidence": "削除対象と78行削除をgit show --statどおりに特定し、planの内容（更新対象3ファイル `ソフトウェア開発プロセス.md`/`index.md`/`log.md`、summary 3件の追加、概念設計・ドメイン設計の統合、Mermaidによる成果物精緻化、11工程、6項目の検証手順）はいずれも実ファイルと一致。commit message を引いて中間生成物の後片付けだと説明している。"
+    }
+  ]
+}

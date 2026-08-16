@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": false,
+      "evidence": "見出しは `## Overview` / `## Architecture: Two Classes` / `## Command-Line Usage` / `## Key Implementation Details` / `## Why This Exists` / `## Safety & Constraints` で、Background・Intuition・Quiz に相当するsectionが無い。クイズは一問も含まれない。"
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈（呼び出し元workflow、前後のscript）に位置づけている",
+      "passed": false,
+      "evidence": "冒頭で「\"Pi Synthesis\" — likely a process that synthesizes ... concepts」と推測で済ませており、実際の呼び出し元 `.github/workflows/pi-concept-synthesis.yml` も前後のscriptも一切登場しない。`## Why This Exists` の4ステップも「Someone (human or another tool) reviews the catalog」という一般論で、CI上の実際の経路を特定していない。"
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": false,
+      "evidence": "`Example output structure` は `## lilpacy/deltas/some-file.md [new]` / `- hint 1` というプレースホルダで出力書式を示しただけで、入力Deltaの中身が無く、新着と過去の対比も無い。CLI例（`new1.md new2.md`）も起動コマンドの雛形にとどまり、入力から出力を辿るトイデータの実行例になっていない。"
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": false,
+      "evidence": "クイズが一問も含まれていない。出力は `## Safety & Constraints` の箇条書きで終わっている。"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ（順序と全section存在）",
+      "passed": true,
+      "evidence": "見出しが `## 1. Background` → `## 2. Intuition` → `## 3. Code` → `## 4. Quiz` の順で4つ全て存在する。"
+    },
+    {
+      "text": "Backgroundがdiff外の周辺コンテキスト（CLAUDE.mdの運用ルール、削除されたworkflow/scriptの役割など）に言及している",
+      "passed": true,
+      "evidence": "1-1でコミット時点で稼働中の5つのworkflow（daily-wiki-ingest.yml 等）と PI_API_KEY が有料クレデンシャルである点を説明し、1-2で `lilpacy/CLAUDE.md:267-296` のMap完成条件（経時・共時2 View、同じ試行で完結させる規則）を表で整理、1-3で直前のPR #70/#71 の spike と canary の役割をコミット履歴付きで説明している。いずれも diff 本体には現れない情報。"
+    },
+    {
+      "text": "Intuitionに具体例または図（Mermaid等）が含まれる",
+      "passed": true,
+      "evidence": "Intuition節に Mermaid が2つある。削除前 map-source-dry-run.yml のパイプライン flowchart（TLSエラーで停止・成果物ゼロを注記）と、変更前後の entrypoint 契約を対比する flowchart TB。"
+    },
+    {
+      "text": "クイズが3問程度あり、各問が多肢選択で、変更の実質を問う内容",
+      "passed": true,
+      "evidence": "Q1〜Q3の3問、各問 (a)〜(d) の4択。Q1は削除理由（費用対効果 vs セキュリティ vs バグ）、Q2は design-case.json で SC1〜SC4 を残した理由、Q3は自然言語の方針文を文字列一致で検証するテストの狙いを問う。いずれも diff を読まないと選べない実質的な内容。"
+    },
+    {
+      "text": "クイズ後の分岐（誤答ならマイクロワールド提案）に言及している",
+      "passed": true,
+      "evidence": "クイズ直後に「誤答があればその領域を特定して、挙動を手で触れるマイクロワールドの作成を提案する」と明記し、候補（入口イベント切替CLI、削除されたRubyの境界検証スクリプト）まで挙げている。末尾の注記でも全問正解時はStep 4、誤答時はStep 3へエスカレーションする分岐を説明している。"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "expectations": [
+    {
+      "text": "Background→Intuition→Code→Quiz の構造を持つ",
+      "passed": true,
+      "evidence": "全section存在、順序どおり。解答と解説sectionあり。"
+    },
+    {
+      "text": "スクリプトをCI synthesis pipeline全体の文脈に位置づけている",
+      "passed": true,
+      "evidence": "pi-concept-synthesis.yml と前後script（synthesis_ledger/build_pi_synthesis_context）への言及あり。"
+    },
+    {
+      "text": "トイデータを使った具体例で動作を説明している",
+      "passed": true,
+      "evidence": "実在Delta名を使ったcatalog出力例を提示。"
+    },
+    {
+      "text": "クイズがあり、内容理解を要する問題になっている",
+      "passed": true,
+      "evidence": "適用型の問題。解答と解説を分離配置。"
+    }
+  ]
+}
