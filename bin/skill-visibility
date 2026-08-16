@@ -273,7 +273,24 @@ def matrix_to_json(rows: list[MatrixRow]) -> list[dict[str, object]]:
 
 def filter_rows(rows: list[MatrixRow], query: str) -> list[MatrixRow]:
     needle = query.casefold().strip()
-    return rows if not needle else [row for row in rows if needle in row.name.casefold()]
+    if not needle:
+        return rows
+    return [
+        row
+        for row in rows
+        if any(
+            needle in value.casefold()
+            for value in (
+                row.name,
+                "yes" if row.canonical else "no",
+                row.claude,
+                row.codex,
+                row.owner,
+                row.created,
+                row.modified,
+            )
+        )
+    ]
 
 
 def page_target(selected: int, direction: int, item_count: int, screen_height: int) -> int:

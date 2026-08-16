@@ -228,16 +228,17 @@ CODEX_SKILLS=(
         self.assertEqual(plan["operations"], [{"action": "audit"}])
         self.assertEqual(plan["explanation"], "確認")
 
-    def test_12_正常系_一覧の検索語に一致するSkillだけを表示できる(self):
-        rows = [
-            self.module.MatrixRow("alpha", True, "off", "off"),
-            self.module.MatrixRow("beta-tool", True, "canonical-link", "off"),
-        ]
-
-        self.assertEqual(
-            [row.name for row in self.module.filter_rows(rows, "TOOL")],
-            ["beta-tool"],
+    def test_12_正常系_一覧の検索語に一致する列を持つ行だけを表示できる(self):
+        matching = self.module.MatrixRow(
+            "beta-tool", True, "canonical-link", "agent-specific", "external", "2026-08-15", "2026-08-17"
         )
+        rows = [self.module.MatrixRow("alpha", False, "off", "off"), matching]
+
+        for query in (
+            "TOOL", "YES", "CANONICAL-LINK", "AGENT-SPECIFIC", "EXTERNAL", "2026-08-15", "2026-08-17"
+        ):
+            with self.subTest(query=query):
+                self.assertEqual(self.module.filter_rows(rows, query), [matching])
 
     def test_13_正常系_行と対象agentから実行可能な操作だけが得られる(self):
         canonical = self.module.MatrixRow("shared", True, "off", "canonical-link")
