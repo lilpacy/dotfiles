@@ -21,7 +21,7 @@ AGENT_ARRAYS = {"claude": "CLAUDE_SKILLS", "codex": "CODEX_SKILLS"}
 IGNORED_DIRS = {"__pycache__"}
 IGNORED_FILES = {".DS_Store"}
 NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
-ALLOWED_ACTIONS = {"enable", "disable", "promote", "delete", "audit"}
+ALLOWED_ACTIONS = {"enable", "disable", "promote", "delete", "delete-canonical", "audit"}
 STATUS_COLOR_PAIRS = {
     "canonical-link": 2,
     "agent-specific": 3,
@@ -98,13 +98,17 @@ def _write_declaration(script: Path, array_name: str, names: list[str]) -> None:
     )
 
 
-def _validate(root: Path, agent: str, name: str) -> None:
-    if agent not in AGENT_ARRAYS:
-        raise SkillVisibilityError(f"未対応の agent です: {agent}")
+def _validate_skill(root: Path, name: str) -> None:
     if not NAME_PATTERN.fullmatch(name):
         raise SkillVisibilityError(f"不正な Skill 名です: {name}")
     if not (root / "link-skills.sh").is_file():
         raise SkillVisibilityError(f"dotfiles root ではありません: {root}")
+
+
+def _validate(root: Path, agent: str, name: str) -> None:
+    if agent not in AGENT_ARRAYS:
+        raise SkillVisibilityError(f"未対応の agent です: {agent}")
+    _validate_skill(root, name)
 
 
 def _skill_files(path: Path) -> dict[str, bytes | str]:
@@ -315,15 +319,22 @@ def validate_operations(operations: object) -> list[dict[str, object]]:
         if action == "audit":
             validated.append({"action": "audit"})
             continue
-        agent = operation.get("agent")
         skill = operation.get("skill")
-        if agent not in AGENT_ARRAYS:
-            raise SkillVisibilityError(f"未対応の agent です: {agent}")
         if not isinstance(skill, str) or not NAME_PATTERN.fullmatch(skill):
             raise SkillVisibilityError(f"不正な Skill 名です: {skill}")
         keep_divergent = operation.get("keep_divergent") or False
         if not isinstance(keep_divergent, bool):
             raise SkillVisibilityError("keep_divergent はbooleanである必要があります")
+        if action == "delete-canonical":
+            if operation.get("agent") is not None:
+                raise SkillVisibilityError("正本削除に agent は指定できません")
+            if keep_divergent:
+                raise SkillVisibilityError("keep_divergent はpromoteでのみ指定できます")
+            validated.append({"action": action, "skill": skill})
+            continue
+        agent = operation.get("agent")
+        if agent not in AGENT_ARRAYS:
+            raise SkillVisibilityError(f"未対応の agent です: {agent}")
         normalized = {"action": action, "agent": agent, "skill": skill}
         if action == "promote":
             normalized["keep_divergent"] = keep_divergent
@@ -435,6 +446,8 @@ def run_operations(
                     delete_agent_skill(
                         root, str(operation["agent"]), str(operation["skill"]), synchronize
                     )
+                elif action == "delete-canonical":
+                    delete_canonical_skill(root, str(operation["skill"]), synchronize)
                 elif action == "promote":
                     promote(
                         root,
@@ -541,7 +554,7 @@ def propose_operations(
     prompt = (
         "次のSkill可視性matrixと依頼から、変更計画だけをJSONで返してください。"
         "ファイルや外部サービスへアクセスせず、推測でSkill名を作らないでください。"
-        "形式は operations と explanation。actionはenable/disable/promote/delete/auditのみです。\n"
+        "形式は operations と explanation。actionはenable/disable/promote/delete/delete-canonical/auditのみです。\n"
         f"matrix: {matrix}\n依頼: {request}"
     )
     with tempfile.TemporaryDirectory(prefix="skill-visibility-agent-") as directory:
@@ -648,6 +661,59 @@ def delete_agent_skill(
             shutil.rmtree(target)
         if backup.exists():
             backup.rename(target)
+        raise
+    finally:
+        shutil.rmtree(backup_root, ignore_errors=True)
+
+
+def delete_canonical_skill(
+    root: Path,
+    name: str,
+    synchronize=_default_synchronize,
+) -> None:
+    _validate_skill(root, name)
+    canonical = root / "skills" / name
+    if canonical.is_symlink() or not (canonical / "SKILL.md").is_file():
+        raise SkillVisibilityError(f"削除できる正本 Skill がありません: {canonical}")
+    canonical_target = canonical.resolve(strict=True)
+    links = {}
+    for agent in AGENT_ARRAYS:
+        path = root / agent / "skills" / name
+        if not path.is_symlink():
+            continue
+        try:
+            points_to_canonical = path.resolve(strict=True) == canonical_target
+        except FileNotFoundError:
+            points_to_canonical = False
+        if not points_to_canonical:
+            raise SkillVisibilityError(f"正本を指さない symlink は削除できません: {path}")
+        links[path] = os.readlink(path)
+
+    script = root / "link-skills.sh"
+    old_script = script.read_text(encoding="utf-8")
+    backup_root = Path(tempfile.mkdtemp(prefix=".skill-visibility-delete-canonical-", dir=root))
+    backup = backup_root / name
+    try:
+        for array_name in AGENT_ARRAYS.values():
+            declarations = read_declarations(script)[array_name]
+            _write_declaration(script, array_name, [item for item in declarations if item != name])
+        canonical.rename(backup)
+        for path in links:
+            path.unlink()
+        synchronize(root)
+    except Exception:
+        script.write_text(old_script, encoding="utf-8")
+        if canonical.is_symlink() or canonical.is_file():
+            canonical.unlink()
+        elif canonical.is_dir():
+            shutil.rmtree(canonical)
+        if backup.exists():
+            backup.rename(canonical)
+        for path, target in links.items():
+            if path.is_symlink():
+                path.unlink()
+            if not path.exists():
+                path.symlink_to(target)
         raise
     finally:
         shutil.rmtree(backup_root, ignore_errors=True)
@@ -884,7 +950,7 @@ def _draw_tui(
             screen,
             height - 2,
             0,
-            "j/k=行 Ctrl-d/u=半頁 gg/G=先頭/末尾 Tab=対象 /=検索 o=開く b=Agent切替",
+            "j/k=行 ^d/^u=半頁 gg/G=端 Tab=対象 /=検索 o=開く b=Agent切替 r=更新 c=解除",
             width - 1,
             curses.A_DIM,
         )
@@ -892,7 +958,7 @@ def _draw_tui(
         screen,
         height - 1,
         0,
-        "e/d=追加/オフ p/P=昇格/差分 x=削除 a=監査 :=自然文で操作 r=更新 c=解除 q=終了",
+        "e/d=追加/オフ p/P=昇格/差分 x/X=固有/正本削除 a=監査 :=自然文で操作 q=終了",
         width - 1,
         curses.A_DIM,
     )
@@ -1054,6 +1120,18 @@ def _run_tui(root: Path, backend: str) -> None:
                     }
                     message = "監査を実行します"
                     continue
+                if key == ord("X") and visible:
+                    row = visible[selected]
+                    if not row.canonical:
+                        message = f"{row.name} に削除できる正本はありません"
+                        continue
+                    pending = {
+                        "operations": [{"action": "delete-canonical", "skill": row.name}],
+                        "source": "cli",
+                        "fingerprint": _state_fingerprint(root),
+                    }
+                    message = f"{row.name} の正本と全symlinkを完全に削除します"
+                    continue
                 if key not in (ord("e"), ord("d"), ord("p"), ord("P"), ord("x")) or not visible:
                     continue
                 action = {
@@ -1110,6 +1188,10 @@ def _parser() -> argparse.ArgumentParser:
     action.add_argument("skill")
     action.add_argument("--yes", action="store_true", required=True)
     action.add_argument("--json", action="store_true")
+    action = subparsers.add_parser("delete-canonical", help="正本と正本 symlink を削除")
+    action.add_argument("skill")
+    action.add_argument("--yes", action="store_true", required=True)
+    action.add_argument("--json", action="store_true")
     action = subparsers.add_parser("promote")
     action.add_argument("agent", choices=AGENT_ARRAYS, help="正本として採用する側")
     action.add_argument("skill")
@@ -1133,11 +1215,9 @@ def main() -> int:
             elif arguments.command == "audit":
                 result = run_operations(root, [{"action": "audit"}])
             else:
-                operation = {
-                    "action": arguments.command,
-                    "agent": arguments.agent,
-                    "skill": arguments.skill,
-                }
+                operation = {"action": arguments.command, "skill": arguments.skill}
+                if arguments.command != "delete-canonical":
+                    operation["agent"] = arguments.agent
                 if arguments.command == "promote":
                     operation["keep_divergent"] = arguments.keep_divergent
                 result = run_operations(root, [operation])
@@ -1158,8 +1238,11 @@ def main() -> int:
         elif arguments.command == "promote":
             promote(root, arguments.agent, arguments.skill, arguments.keep_divergent)
             _print_matrix(root)
-        else:
+        elif arguments.command == "delete":
             delete_agent_skill(root, arguments.agent, arguments.skill)
+            _print_matrix(root)
+        else:
+            delete_canonical_skill(root, arguments.skill)
             _print_matrix(root)
     except KeyboardInterrupt:
         return 130

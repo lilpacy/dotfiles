@@ -36,7 +36,9 @@ the approved operations then use the same validation, rollback, audit, and
 result contract as direct TUI operations.
 
 The lower pane shows the selected Skill's frontmatter `description`. Press `o`
-only when the full Skill folder needs inspection.
+only when the full Skill folder needs inspection. Press `x` to delete the
+selected agent's real agent-specific directory, or `X` to delete the canonical
+Skill and every symlink that points to it. Both actions require confirmation.
 
 ## CLI Operations
 
@@ -49,6 +51,7 @@ skill-visibility disable claude <skill>
 skill-visibility disable codex <skill>
 skill-visibility delete claude <skill> --yes
 skill-visibility delete codex <skill> --yes
+skill-visibility delete-canonical <skill> --yes
 skill-visibility promote claude <skill>
 skill-visibility promote codex <skill>
 skill-visibility audit
@@ -61,6 +64,10 @@ resulting state.
 An agent-specific real directory cannot be turned off by `disable`. Delete it
 with `delete <agent> <skill> --yes`, or preserve it by running `promote <agent>
 <skill>` and then `disable <agent> <skill>`.
+
+`delete-canonical <skill> --yes` removes the canonical directory, both agents'
+declarations, and symlinks that point to that canonical directory. It preserves
+agent-specific real directories, including divergent copies.
 
 ## Promotion Conflicts
 

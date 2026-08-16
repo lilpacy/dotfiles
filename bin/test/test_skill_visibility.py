@@ -502,6 +502,107 @@ CODEX_SKILLS=(
         arguments = parser.parse_args(["delete", "claude", "private", "--yes"])
         self.assertTrue(arguments.yes)
 
+    def test_40_準正常系_正本を削除しても差分のあるagent固有Skillは残る(self):
+        canonical = self.write_skill("skills/shared", "canonical")
+        divergent = self.write_skill("claude/skills/shared", "claude")
+        self.module.enable(self.root, "codex", "shared", self.synchronize)
+
+        self.module.run_operations(
+            self.root,
+            [{"action": "delete-canonical", "agent": None, "skill": "shared"}],
+            synchronize=self.synchronize,
+        )
+
+        self.assertFalse(canonical.exists())
+        self.assertEqual((divergent / "SKILL.md").read_text(encoding="utf-8"), "claude")
+        self.assertFalse((self.root / "codex/skills/shared").exists())
+
+    def test_41_正常系_正本と両agentのsymlinkをまとめて削除できる(self):
+        canonical = self.write_skill("skills/shared", "shared")
+        self.module.enable(self.root, "claude", "shared", self.synchronize)
+        self.module.enable(self.root, "codex", "shared", self.synchronize)
+
+        result = self.module.run_operations(
+            self.root,
+            [{"action": "delete-canonical", "agent": None, "skill": "shared"}],
+            synchronize=self.synchronize,
+        )
+
+        declarations = self.module.read_declarations(self.root / "link-skills.sh")
+        self.assertEqual(result["status"], "succeeded")
+        self.assertFalse(canonical.exists())
+        self.assertFalse((self.root / "claude/skills/shared").exists())
+        self.assertFalse((self.root / "codex/skills/shared").exists())
+        self.assertNotIn("shared", declarations["CLAUDE_SKILLS"])
+        self.assertNotIn("shared", declarations["CODEX_SKILLS"])
+
+    def test_42_正常系_CLIでyesを明示すると正本を削除できる(self):
+        canonical = self.write_skill("skills/shared", "shared")
+        (self.root / "link-skills.sh").chmod(0o755)
+        arguments = [
+            str(SCRIPT),
+            "--dotfiles",
+            str(self.root),
+            "delete-canonical",
+            "shared",
+            "--yes",
+        ]
+
+        with patch.object(sys, "argv", arguments), patch.object(sys, "stdout", io.StringIO()):
+            self.assertEqual(self.module.main(), 0)
+
+        self.assertFalse(canonical.exists())
+
+    def test_43_異常系_正本以外を指すsymlinkと壊れたsymlinkは削除しない(self):
+        self.write_skill("skills/shared", "shared")
+        self.write_skill("skills/other", "other")
+        target = self.root / "claude/skills/shared"
+
+        for link in ("../../skills/other", "../../skills/missing"):
+            with self.subTest(link=link):
+                if target.is_symlink():
+                    target.unlink()
+                target.symlink_to(link)
+
+                with self.assertRaisesRegex(self.module.SkillVisibilityError, "正本を指さない"):
+                    self.module.delete_canonical_skill(
+                        self.root, "shared", self.synchronize
+                    )
+
+                self.assertTrue(target.is_symlink())
+
+    def test_44_異常系_正本削除後の監査に失敗すると正本とsymlinkが元へ戻る(self):
+        canonical = self.write_skill("skills/shared", "shared")
+        self.module.enable(self.root, "claude", "shared", self.synchronize)
+
+        def fail(_root):
+            raise self.module.SkillVisibilityError("forced")
+
+        with self.assertRaises(self.module.SkillVisibilityError):
+            self.module.delete_canonical_skill(self.root, "shared", fail)
+
+        declarations = self.module.read_declarations(self.root / "link-skills.sh")
+        self.assertEqual((canonical / "SKILL.md").read_text(encoding="utf-8"), "shared")
+        self.assertTrue((self.root / "claude/skills/shared").is_symlink())
+        self.assertIn("shared", declarations["CLAUDE_SKILLS"])
+
+    def test_45_異常系_CLIからの正本削除はyesの明示を必須とする(self):
+        parser = self.module._parser()
+
+        with patch.object(sys, "stderr", io.StringIO()), self.assertRaises(SystemExit):
+            parser.parse_args(["delete-canonical", "shared"])
+
+        arguments = parser.parse_args(["delete-canonical", "shared", "--yes"])
+        self.assertTrue(arguments.yes)
+
+    def test_46_異常系_正本が存在しないSkillは正本削除できない(self):
+        self.write_skill("claude/skills/private", "private")
+
+        with self.assertRaisesRegex(self.module.SkillVisibilityError, "正本 Skill がありません"):
+            self.module.delete_canonical_skill(
+                self.root, "private", self.synchronize
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
