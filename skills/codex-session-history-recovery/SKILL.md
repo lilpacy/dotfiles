@@ -20,10 +20,11 @@ Do not use this skill when the current thread already contains the needed exchan
 1. State the boundary: do not claim personal memory of another thread before locating evidence.
 2. Search the local session store broadly for distinctive, non-secret anchors such as repository names, URLs, feature names, or command names.
 3. Treat raw text matches only as candidates. The same anchor can occur in injected `AGENTS.md`, tool output, quoted history, or a later summary.
-4. Parse candidate JSONL and isolate actual `response_item` messages whose role is `user` or `assistant`.
-5. Compare the real user requests, timestamps, session ID, and assistant completion messages to identify the relevant session.
-6. Report the smallest useful result: session identity, approximate time, request, outcome, and a local source link when helpful.
-7. Warn before exposing a full transcript if it contains credentials, incident details, personal data, or other sensitive material.
+4. Parse candidate JSONL and isolate `response_item` messages whose role is `user` or `assistant`.
+5. Treat role filtering as noise reduction, not proof of user intent. A `user` record can still contain injected `AGENTS.md`, `<environment_context>`, or other harness context; classify these separately from the user's natural-language request.
+6. Compare the genuine user requests, timestamps, ordinals, session ID, and assistant completion messages to identify the relevant session.
+7. Report the smallest useful result: session identity, approximate time, request, outcome, and a local source link when helpful.
+8. Warn before exposing a full transcript if it contains credentials, incident details, personal data, or other sensitive material.
 
 ## Evidence Standard
 
