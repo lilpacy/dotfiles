@@ -299,6 +299,46 @@ def _default_audit(root: Path) -> str:
     return result.stdout.strip()
 
 
+def _snapshot_operation_state(
+    root: Path,
+    operations: list[dict[str, object]],
+    backup: Path,
+) -> tuple[str, dict[Path, tuple[str, object]]]:
+    names = sorted({str(item["skill"]) for item in operations if item["action"] != "audit"})
+    paths = [root / base / name for name in names for base in ("skills", "claude/skills", "codex/skills")]
+    states = {}
+    for index, path in enumerate(paths):
+        if path.is_symlink():
+            states[path] = ("link", os.readlink(path))
+        elif path.is_dir():
+            copy = backup / str(index)
+            shutil.copytree(path, copy, symlinks=True)
+            states[path] = ("dir", copy)
+        elif path.exists():
+            copy = backup / str(index)
+            shutil.copy2(path, copy)
+            states[path] = ("file", copy)
+        else:
+            states[path] = ("missing", None)
+    return (root / "link-skills.sh").read_text(encoding="utf-8"), states
+
+
+def _restore_operation_state(root: Path, snapshot: tuple[str, dict[Path, tuple[str, object]]]) -> None:
+    script, states = snapshot
+    (root / "link-skills.sh").write_text(script, encoding="utf-8")
+    for path, (kind, value) in states.items():
+        if path.is_symlink() or path.is_file():
+            path.unlink()
+        elif path.is_dir():
+            shutil.rmtree(path)
+        if kind == "link":
+            path.symlink_to(str(value))
+        elif kind == "dir":
+            shutil.copytree(Path(value), path, symlinks=True)
+        elif kind == "file":
+            shutil.copy2(Path(value), path)
+
+
 def run_operations(
     root: Path,
     operations: object,
@@ -309,37 +349,47 @@ def run_operations(
         raise SkillVisibilityError(f"未対応の操作元です: {source}")
     synchronize = synchronize or _default_synchronize
     validated = validate_operations(operations)
+    before_plan = _state_fingerprint(root)
+    backup = Path(tempfile.mkdtemp(prefix=".skill-visibility-plan-", dir=root))
     results = []
-    for operation in validated:
-        before = _state_fingerprint(root)
-        try:
-            action = operation["action"]
-            if action == "enable":
-                enable(root, str(operation["agent"]), str(operation["skill"]), synchronize)
-            elif action == "disable":
-                disable(root, str(operation["agent"]), str(operation["skill"]), synchronize)
-            elif action == "promote":
-                promote(
-                    root,
-                    str(operation["agent"]),
-                    str(operation["skill"]),
-                    bool(operation.get("keep_divergent", False)),
-                    synchronize,
+    try:
+        snapshot = _snapshot_operation_state(root, validated, backup)
+        for operation in validated:
+            before = _state_fingerprint(root)
+            try:
+                action = operation["action"]
+                if action == "enable":
+                    enable(root, str(operation["agent"]), str(operation["skill"]), synchronize)
+                elif action == "disable":
+                    disable(root, str(operation["agent"]), str(operation["skill"]), synchronize)
+                elif action == "promote":
+                    promote(
+                        root,
+                        str(operation["agent"]),
+                        str(operation["skill"]),
+                        bool(operation.get("keep_divergent", False)),
+                        synchronize,
+                    )
+                else:
+                    _default_audit(root)
+            except (SkillVisibilityError, subprocess.CalledProcessError) as error:
+                results.append(
+                    {
+                        "operation": operation,
+                        "ok": False,
+                        "error": str(error),
+                        "state_preserved": before == _state_fingerprint(root),
+                    }
                 )
-            else:
-                _default_audit(root)
-        except (SkillVisibilityError, subprocess.CalledProcessError) as error:
-            results.append(
-                {
-                    "operation": operation,
-                    "ok": False,
-                    "error": str(error),
-                    "state_preserved": before == _state_fingerprint(root),
-                }
-            )
-            break
-        results.append({"operation": operation, "ok": True, "error": None, "state_preserved": True})
-    succeeded = len(results) == len(validated) and all(item["ok"] for item in results)
+                break
+            results.append({"operation": operation, "ok": True, "error": None, "state_preserved": True})
+        succeeded = len(results) == len(validated) and all(item["ok"] for item in results)
+        if not succeeded:
+            _restore_operation_state(root, snapshot)
+            for result in results:
+                result["state_preserved"] = before_plan == _state_fingerprint(root)
+    finally:
+        shutil.rmtree(backup, ignore_errors=True)
     audit = (
         {"ok": succeeded, "detail": "audit OK" if succeeded else "operation failed"}
         if validated

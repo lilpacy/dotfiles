@@ -349,6 +349,35 @@ CODEX_SKILLS=(
                 runner=mutate,
             )
 
+    def test_26_異常系_複数操作の途中で失敗すると全操作が元へ戻る(self):
+        self.write_skill("skills/first")
+        self.write_skill("skills/second")
+        calls = 0
+
+        def fail_second(root):
+            nonlocal calls
+            calls += 1
+            if calls == 2:
+                raise self.module.SkillVisibilityError("forced")
+            self.synchronize(root)
+
+        result = self.module.run_operations(
+            self.root,
+            [
+                {"action": "enable", "agent": "claude", "skill": "first"},
+                {"action": "enable", "agent": "codex", "skill": "second"},
+            ],
+            source="agent",
+            synchronize=fail_second,
+        )
+
+        declarations = self.module.read_declarations(self.root / "link-skills.sh")
+        self.assertEqual(result["status"], "failed")
+        self.assertNotIn("first", declarations["CLAUDE_SKILLS"])
+        self.assertNotIn("second", declarations["CODEX_SKILLS"])
+        self.assertFalse((self.root / "claude/skills/first").exists())
+        self.assertFalse((self.root / "codex/skills/second").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
