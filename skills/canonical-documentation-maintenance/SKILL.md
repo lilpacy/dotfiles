@@ -74,6 +74,14 @@ Parallel consumers of the same event are not automatically one development unit.
 - Link to an authoritative definition rather than copying it into multiple files.
 - When a previous ADR remains partly valid, add a superseding ADR or narrowly supersede the affected decision; do not rewrite accepted history as though the former decision never existed.
 
+For a page that promises an overall or end-to-end process, make the overview independently answer:
+
+- What is the normal path?
+- Which activities are conditional, and what observable condition starts each one?
+- What downstream observation returns work to an earlier activity?
+
+Keep output details in a nearby table when that is clearer, but do not move triggers or return paths exclusively into a later table merely to preserve a simpler overview. If readers must mentally join several diagrams or tables to reconstruct when an activity happens, the overview is incomplete even when every fact exists somewhere on the page.
+
 ### 4. Isolate procedure
 
 Move ordered work, Red/Green steps, migration sequencing, commands, validation checklists, rollout stages, and remaining tasks into the repository's procedural artifact. A plan may link to canonical documents, but canonical documents should not depend on the plan to state the final contract.
