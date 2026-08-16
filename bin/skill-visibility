@@ -219,10 +219,10 @@ def _skill_dates(paths: list[Path]) -> tuple[str, str]:
             if index == 0 and (timestamp := _creation_timestamp(stat)) is not None:
                 created.append(timestamp)
             modified.append(stat.st_mtime)
-    if not created or not modified:
+    if not modified:
         return "-", "-"
     date = lambda timestamp: datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
-    return date(min(created)), date(max(modified))
+    return date(min(created)) if created else "-", date(max(modified))
 
 
 def build_matrix(root: Path) -> list[MatrixRow]:

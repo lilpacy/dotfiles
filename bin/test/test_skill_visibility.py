@@ -639,9 +639,17 @@ CODEX_SKILLS=(
         self.assertEqual(owners["shared"], "external")
 
     def test_51_準正常系_作成日時を取得できない環境では作成日を不明として扱う(self):
-        stat = SimpleNamespace(st_ctime=1, st_mtime=2)
+        class PathWithoutCreationTime:
+            def rglob(self, _pattern):
+                return []
 
-        self.assertIsNone(self.module._creation_timestamp(stat))
+            def stat(self):
+                return SimpleNamespace(st_ctime=1, st_mtime=2)
+
+        created, modified = self.module._skill_dates([PathWithoutCreationTime()])
+
+        self.assertEqual(created, "-")
+        self.assertRegex(modified, r"^\d{4}-\d{2}-\d{2}$")
 
 
 if __name__ == "__main__":
