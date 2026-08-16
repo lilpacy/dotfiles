@@ -1,4 +1,4 @@
 # skills
 
-コーディングエージェント共通のskillsを配置する場所。  
-`link.sh`の`ln -sf ~/dotfiles/skills ~/.agents/skills`コマンドでシンボリックリンクを配置して使う。  
+Skill の正本を配置する場所。
+Claude Code / Codex への公開は `skill-visibility` CLI で個別に管理する。

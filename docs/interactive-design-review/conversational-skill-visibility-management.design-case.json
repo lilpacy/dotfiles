@@ -1,0 +1,1307 @@
+{
+  "schema_version": "2.0",
+  "project": {
+    "name": "Conversational skill visibility management",
+    "scope": "ユーザーが会話・CLI・TUIなどの入口から、正本とagent別の可視Skillを棚卸しした一覧を確認し、Skillの表示・非表示またはagent固有Skillの正本昇格を選んで反映するローカル管理UX",
+    "status": "approved",
+    "success_conditions": [
+      {
+        "id": "SC1",
+        "statement": "管理開始時に、正本に存在するSkill、Claude Codeから見えるSkill、Codexから見えるSkillが一覧化される",
+        "verification": "実ファイルと各agentの探索経路を調査し、一覧の各項目が現在状態と一致する",
+        "status": "confirmed"
+      },
+      {
+        "id": "SC2",
+        "statement": "一覧を見たユーザーは、正本にあるSkillをClaude CodeまたはCodexへ追加するか、現在見えるSkillを対象agentでオフにできる",
+        "verification": "追加とオフの正常系シナリオで、選択したagentの宣言配列とsymlinkだけが変更される",
+        "status": "confirmed"
+      },
+      {
+        "id": "SC3",
+        "statement": "ユーザーは設定ファイルやlink-skills.shを直接編集せず、対話的な入口から棚卸しと可視性変更を完了できる",
+        "verification": "会話・CLI・TUIのいずれかの採用入口で、ユーザーのファイル編集なしに一覧表示、選択、変更、確認が完了する",
+        "status": "confirmed"
+      },
+      {
+        "id": "SC4",
+        "statement": "非表示にしたSkillは対象agentの新規セッションで読み込まれない",
+        "verification": "対象agentの新規プロンプトまたはSkill一覧でSkillが存在しないことを確認する",
+        "status": "confirmed"
+      },
+      {
+        "id": "SC5",
+        "statement": "変更後に更新済み一覧が示され、ユーザーが追加・オフの結果を確認できる",
+        "verification": "変更後の再棚卸しで、選択したSkillのagent別可視状態だけが変更前と異なる",
+        "status": "confirmed"
+      },
+      {
+        "id": "SC6",
+        "statement": "正本にないagent固有Skillを、内容を変えずに正本へ昇格できる",
+        "verification": "昇格後に./skillsへSkillが存在し、元のagent固有配置がその正本へのsymlinkへ置き換わり、他agentの可視状態は無断で変わらない",
+        "status": "confirmed"
+      }
+    ]
+  },
+  "pipeline": {
+    "current_stage": "ui_behavior",
+    "stages": [
+      {
+        "id": "business_understanding",
+        "status": "approved",
+        "review_notes": [
+          "旧cross-agent-skill-managementケースは自動作成・更新・ownership・復元まで含み、今回の対象より広いため引き継がない",
+          "今回の中心価値は、正本とagent別の可視Skillを最初に一覧し、その場で追加・オフを選べること",
+          "2026-08-16のS1回答nを受け、対象Skillを先に指定する命令型フローから棚卸し先行フローへ修正した",
+          "正本にないagent固有Skillの表示と正本昇格が追加されたため、S1を差分再開した",
+          "2026-08-16にユーザーが内容を変えない正本昇格と他agentの可視性維持を承認した"
+        ],
+        "approved_by": "user",
+        "approval_evidence": "2026-08-16: Q10へy。agent固有Skillを内容変更なしで正本化し、他agentは自動オンにしない"
+      },
+      {
+        "id": "decision_requirements",
+        "status": "approved",
+        "review_notes": [
+          "会話は必須条件ではなく、CLIまたはTUIも許容される",
+          "実装形式を選ぶ前に、一覧と変更に必要な判断を確定する",
+          "2026-08-16にユーザーがCodexの公開先を~/.codex/skillsへ一本化する方針を承認した",
+          "正本昇格時の同名agent固有Skill競合を追加判断として扱う",
+          "2026-08-17にユーザーが同一内容は統合、異なる内容は停止するルールを承認した"
+        ]
+      },
+      {
+        "id": "target_value_loop",
+        "status": "approved",
+        "review_notes": [
+          "価値はsymlink更新ではなく、更新後の新規セッションで選択どおりの実効可視性を確認できた時点で成立する",
+          "2026-08-16にユーザーが実効可視性までを完了条件として承認した",
+          "毎回の実セッション確認で操作が遅くなることは許容しない",
+          "正本昇格では内容保持、既存可視性保持、正本化の確認を価値獲得へ追加した"
+        ]
+      },
+      {
+        "id": "decision_specification",
+        "status": "approved",
+        "review_notes": [
+          "通常操作の速度と実効可視性の保証を両立する確認方式を決める",
+          "2026-08-16に通常はローカル監査、必要時だけ新規セッション確認する方式をユーザーが承認した",
+          "同名agent固有Skillは内容一致なら統合、相違なら停止するDecision Tableを追加した"
+        ]
+      },
+      {
+        "id": "design_principles",
+        "status": "approved",
+        "review_notes": [
+          "正しさ、通常操作の速度、正本保護の順で設計判断を拘束する",
+          "2026-08-16にユーザーが3原則と優先順を承認した",
+          "正本昇格の追加に伴い、内容を無言で失わない原則を追加確認する",
+          "2026-08-17にユーザーが内容保護を通常操作の速度より優先する原則を承認した"
+        ]
+      },
+      {
+        "id": "contradiction_check",
+        "status": "approved",
+        "review_notes": [
+          "現行の全件公開経路と選択公開の矛盾は、~/.agents/skillsの全件公開を廃止して解消する",
+          "実効可視性の確実性と通常操作の速度は、条件付きの実セッション確認で両立する",
+          "2026-08-16にユーザーが2件の矛盾解消を承認した",
+          "raw directory比較では.DS_Storeだけの差も競合になるため、Skill内容の同一判定を追加確認する",
+          "2026-08-17にユーザーが.DS_Store、__pycache__、*.pycだけを比較対象外とするルールを承認した"
+        ]
+      },
+      {
+        "id": "state_machine",
+        "status": "approved",
+        "review_notes": [
+          "通常の高速経路と条件付き実セッション確認を別状態として表す",
+          "反映または監査失敗時は操作前の宣言とsymlinkへ自動復元する",
+          "2026-08-16にユーザーが自動復元と一覧選択への復帰を承認した",
+          "内容相違時は昇格競合状態へ入り、明示的な選択または中止を待つ",
+          "2026-08-17にユーザーが未選択側をagent固有・正本と相違として保持することを承認した"
+        ]
+      },
+      {
+        "id": "information_architecture",
+        "status": "approved",
+        "review_notes": [
+          "正本・Claude Code・Codexの状態を1行で比較できるSkillマトリクスを主情報として提案する",
+          "2026-08-16にユーザーが1つの比較マトリクスを承認した",
+          "agent固有と正本linkを区別するセル状態を追加する",
+          "内容相違時の固有状態と正本候補選択情報を追加する",
+          "2026-08-17にユーザーが4状態と条件付き昇格操作を承認した"
+        ]
+      },
+      {
+        "id": "ui_behavior",
+        "status": "approved",
+        "review_notes": [
+          "初版は既存link-skills.shを反映・監査エンジンとして再利用するCLIを処理本体にする",
+          "既存skill-visibility-management Skillはユーザーの会話をCLI操作へ変換する薄い入口として残す",
+          "TUIはCLIの一覧選択が実測で負担になった場合に追加する",
+          "2026-08-17にユーザーがCLI本体＋薄いSkill入口を承認した"
+        ]
+      }
+    ]
+  },
+  "facts": [
+    {
+      "id": "F1",
+      "statement": "ユーザーはCodexまたはClaude Codeへ話しかけると、まず正本のSkill一覧と、Claude Code・Codexから見えるSkill一覧が示されることを期待している",
+      "source": "user",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F2",
+      "statement": "共通Skillの正本は./skillsに置き、agent別のSkillフォルダへ必要なSkillだけをsymlinkする設計である",
+      "source": "user and git history",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F3",
+      "statement": "link-skills.shのCLAUDE_SKILLSとCODEX_SKILLSがagent別symlinkの宣言元である",
+      "source": "local inspection",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F4",
+      "statement": "symlinkはlink-skills.shの生成物であり、直接編集しない運用になっている",
+      "source": "skill-visibility-management and local inspection",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F5",
+      "statement": "『skillを整理したい』という依頼を可視性変更ではなく構成再設計として解釈し、意図しない変更へ進んだ実例がある",
+      "source": "current conversation",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F6",
+      "statement": "現在のCodexは~/.codex/skillsに加えて~/.agents/skillsも探索し、./skillsの全件を読み込んでいる",
+      "source": "fresh Codex prompt inspection",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F7",
+      "statement": "ユーザーは一覧を見て、正本にあるSkillをClaude CodeまたはCodexへ追加し、現在見えるSkillを対象agentでオフにしたい",
+      "source": "user",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F8",
+      "statement": "ユーザーにとって管理の入口は会話に限定されず、同じ棚卸し・選択フローを満たすならCLIまたはTUIでもよい",
+      "source": "user",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F9",
+      "statement": "Codexへの選択的公開は~/.codex/skillsだけで制御し、~/.agents/skillsから正本全体を公開しない設計にする",
+      "source": "user",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F10",
+      "statement": "ユーザーはSkill可視性管理を使うたびに待たされ、利用自体が億劫になる体験を許容しない",
+      "source": "user",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F11",
+      "statement": "codex/skillsとclaude/skillsには、./skillsに正本がなくagent固有の実ディレクトリとして存在するSkillがある",
+      "source": "local inspection",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F12",
+      "statement": "ユーザーは正本にないagent固有Skillを一覧で識別し、agent固有配置から正本へ昇格できることを望んでいる",
+      "source": "user",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F13",
+      "statement": "Claude CodeとCodexの両方に正本なしの同名agent固有Skillが14件あり、.DS_Storeを除くと12件は同一内容、2件はSKILL.mdまたはrulesの内容が異なる",
+      "source": "local diff inspection",
+      "confidence": "confirmed"
+    }
+  ],
+  "actors": [
+    {
+      "id": "A1",
+      "name": "ユーザー",
+      "role": "Skill可視性の依頼者・決定者",
+      "authority": ["一覧から対象agentを選ぶ", "一覧から対象Skillを選ぶ", "追加・オフを決める", "agent固有Skillの正本昇格を決める"],
+      "responsibilities": ["提示された棚卸し結果を確認し、変更対象を選ぶ"],
+      "goal": "設定ファイルを直接触らず、会話だけで各agentが読むSkillを管理する"
+    },
+    {
+      "id": "A2",
+      "name": "Skill可視性管理ツール",
+      "role": "Skill棚卸しの提示と可視性変更の実行者",
+      "authority": ["正本とagent別可視状態を調査する", "宣言配列を更新する", "agent固有Skillを正本へ昇格する", "生成スクリプトを実行する", "監査する"],
+      "responsibilities": ["変更前に3つの一覧を示す", "Skill正本を変更しない", "変更後の一覧を再提示する"],
+      "goal": "入口の形式にかかわらず、ユーザーが現状を見て選べる状態を作り、選択どおりの最小変更を安全に完了する"
+    },
+    {
+      "id": "A3",
+      "name": "Skill visibility manager",
+      "role": "宣言からsymlinkを生成・監査する仕組み",
+      "authority": ["宣言済みsymlinkを生成する", "宣言と生成物のdriftを検出する"],
+      "responsibilities": ["正本とsymlinkの対応を再現可能に保つ"],
+      "goal": "agent別の可視性宣言と実symlinkを一致させる"
+    }
+  ],
+  "constraints": [
+    {
+      "id": "K1",
+      "type": "technical",
+      "statement": "共通Skillの内容は./skillsだけを正本とし、agent別フォルダへ複製しない",
+      "status": "confirmed"
+    },
+    {
+      "id": "K2",
+      "type": "technical",
+      "statement": "現在の~/.agents/skills -> ./skillsがCodexの追加探索経路になっており、CODEX_SKILLSから外しても実効上は非表示にならない",
+      "status": "confirmed"
+    },
+    {
+      "id": "K3",
+      "type": "quality",
+      "statement": "通常の可視性変更ではSkill正本を変更せず、正本昇格ではagent固有Skillの内容を変更せず配置だけを正本へ移す",
+      "status": "confirmed"
+    },
+    {
+      "id": "K4",
+      "type": "technical",
+      "statement": "Codexの管理対象Skillは~/.codex/skillsからだけ公開し、~/.agents/skillsを正本全体への公開経路にしない",
+      "status": "confirmed"
+    },
+    {
+      "id": "K5",
+      "type": "performance",
+      "statement": "通常の一覧表示と追加・オフ操作は、agentの新規セッション起動を毎回待たない",
+      "status": "confirmed"
+    },
+    {
+      "id": "K6",
+      "type": "quality",
+      "statement": "agent固有Skillの内容比較では.DS_Store、__pycache__、*.pycだけを除外し、それ以外の差は競合とする",
+      "status": "confirmed"
+    }
+  ],
+  "business_workflow": {
+    "start_event": "ユーザーが会話・CLI・TUIのいずれかの入口からSkillの整理・管理を開始する",
+    "end_event": "選択した追加・オフが反映され、更新済みのagent別可視Skill一覧がユーザーへ示される",
+    "steps": [
+      {
+        "id": "W1",
+        "actor_id": "A1",
+        "action": "Skillの整理・管理を開始する",
+        "input": ["Skillの現状を確認して整理したい意図"],
+        "output": ["棚卸し開始依頼"],
+        "next_step_ids": ["W2"]
+      },
+      {
+        "id": "W2",
+        "actor_id": "A2",
+        "action": "正本に存在するSkillと、Claude Code・Codexから実際に見えるSkillを調査する",
+        "input": ["棚卸し開始依頼"],
+        "output": ["正本一覧", "Claude Code可視一覧", "Codex可視一覧"],
+        "next_step_ids": ["W3"]
+      },
+      {
+        "id": "W3",
+        "actor_id": "A2",
+        "action": "3つの一覧を比較できる形でユーザーへ示す",
+        "input": ["正本一覧", "Claude Code可視一覧", "Codex可視一覧"],
+        "output": ["Skill棚卸し表"],
+        "next_step_ids": ["W4"]
+      },
+      {
+        "id": "W4",
+        "actor_id": "A1",
+        "action": "一覧から、正本にあるSkillの追加先、現在見えるSkillのオフ対象、または正本にないagent固有Skillの正本昇格を選ぶ",
+        "input": ["Skill棚卸し表"],
+        "output": ["可視性変更選択"],
+        "next_step_ids": ["W5"]
+      },
+      {
+        "id": "W5",
+        "actor_id": "A2",
+        "action": "追加・オフ・正本昇格の選択が現在状態に対して有効か検証する",
+        "input": ["可視性変更選択"],
+        "output": ["検証済み変更内容"],
+        "next_step_ids": ["W6"]
+      },
+      {
+        "id": "W6",
+        "actor_id": "A2",
+        "action": "追加・オフでは対象agentの宣言配列を更新し、正本昇格ではagent固有Skillを./skillsへ移して元配置をsymlinkへ置き換える",
+        "input": ["検証済み変更内容"],
+        "output": ["更新済み可視性宣言"],
+        "next_step_ids": ["W7"]
+      },
+      {
+        "id": "W7",
+        "actor_id": "A3",
+        "action": "宣言からsymlinkを生成または除去し、driftを監査する",
+        "input": ["更新済み可視性宣言"],
+        "output": ["監査済み可視性状態"],
+        "next_step_ids": ["W8"]
+      },
+      {
+        "id": "W8",
+        "actor_id": "A2",
+        "action": "再棚卸しした更新済み一覧と監査結果をユーザーへ示す",
+        "input": ["監査済み可視性状態"],
+        "output": ["更新済みSkill棚卸し表", "可視性変更完了報告"],
+        "next_step_ids": []
+      }
+    ],
+    "start_step_id": "W1"
+  },
+  "decisions": [
+    {
+      "id": "D1",
+      "question": "追加・オフするSkillと対象agentをどう決めるか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "棚卸し一覧からユーザーが選ぶ",
+          "effects": {"control": "high", "mistake_risk": "low"}
+        },
+        {
+          "id": "O2",
+          "label": "管理ツールが自動で選ぶ",
+          "effects": {"control": "low", "mistake_risk": "high"}
+        }
+      ],
+      "selected_option_id": "O1",
+      "owner": "user",
+      "applies_when": "正本とagent別可視Skillの一覧が提示された後",
+      "reversible": true,
+      "cost_impact": "既存の一覧と選択入力だけで成立する",
+      "latency_impact": "ユーザーの選択待ちのみ",
+      "risk": "誤ったSkillまたはagentを選ぶと必要なSkillが見えないか不要なSkillが見える",
+      "rationale": "S1で承認された棚卸し先行フローを維持する",
+      "principle_ids": ["P3"],
+      "workflow_step_ids": ["W3", "W4", "W5"],
+      "tags": ["selection", "authority"],
+      "requirement_id": "DR1",
+      "disposition": "retain",
+      "evidence": ["F7", "Q2"],
+      "logic_type": "simple_rule",
+      "target_value_step_ids": ["V2"]
+    },
+    {
+      "id": "D2",
+      "question": "追加・オフ後の実効可視性を、速度を損なわずどう確認するか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "毎回agentの新規セッションで確認する",
+          "effects": {"confidence": "highest", "latency": "high"}
+        },
+        {
+          "id": "O2",
+          "label": "通常はローカル監査、初期設定・経路変更・不一致時だけ新規セッションで確認する",
+          "effects": {"confidence": "high", "latency": "low"}
+        },
+        {
+          "id": "O3",
+          "label": "常にローカル監査だけで確認する",
+          "effects": {"confidence": "medium", "latency": "lowest"}
+        }
+      ],
+      "selected_option_id": "O2",
+      "owner": "user",
+      "applies_when": "agent別Skillの追加・オフを反映した後",
+      "reversible": true,
+      "cost_impact": "実セッション確認の頻度に比例して実行コストが増える",
+      "latency_impact": "毎回の新規セッション確認は通常操作を遅くする",
+      "risk": "確認を省きすぎると別探索経路による見かけ上の成功を検出できず、確認しすぎると利用されなくなる",
+      "rationale": "通常操作をローカルI/Oだけで完了し、探索前提が変わった場合または不一致時だけ実セッションで誤差を検出する",
+      "principle_ids": ["P1", "P2"],
+      "workflow_step_ids": ["W7", "W8"],
+      "tags": ["verification", "latency"],
+      "requirement_id": "DR2",
+      "disposition": "retain",
+      "evidence": ["F6", "F9", "F10", "Q4"],
+      "logic_type": "simple_rule",
+      "target_value_step_ids": ["V4"]
+    },
+    {
+      "id": "D3",
+      "question": "同名agent固有Skillがある場合の正本昇格をどう処理するか",
+      "status": "confirmed",
+      "options": [
+        {
+          "id": "O1",
+          "label": "内容一致なら統合し、相違なら停止する",
+          "effects": {"data_loss_risk": "low", "manual_resolution": "conflicts_only"}
+        },
+        {
+          "id": "O2",
+          "label": "選択したagentの内容で常に昇格する",
+          "effects": {"data_loss_risk": "high", "manual_resolution": "none"}
+        }
+      ],
+      "selected_option_id": "O1",
+      "owner": "hybrid",
+      "applies_when": "正本にないagent固有Skillの昇格が選択されたとき",
+      "reversible": true,
+      "cost_impact": "同名Skillの内容比較と、相違時のユーザー判断が必要になる",
+      "latency_impact": "ローカル内容比較のみ。相違時はユーザー選択まで停止する",
+      "risk": "異なる内容を自動統合または上書きすると片方のSkill内容を失う",
+      "rationale": "同一内容の重複だけを自動統合し、Skill内容が相違する2件を含む競合では無言の内容消失を防ぐ",
+      "principle_ids": ["P3", "P4"],
+      "workflow_step_ids": ["W4", "W5", "W6", "W7", "W8"],
+      "tags": ["promotion", "conflict", "content-integrity"],
+      "requirement_id": "DR3",
+      "disposition": "retain",
+      "evidence": ["F11", "F12", "F13", "Q10", "Q11"],
+      "logic_type": "decision_table",
+      "target_value_step_ids": ["V2", "V3", "V4"]
+    },
+    {
+      "id": "D4",
+      "question": "Skill可視性管理の処理本体と会話入口をどう構成するか",
+      "status": "confirmed",
+      "options": [
+        {"id": "O1", "label": "Skillだけで処理する", "effects": {"conversation": "high", "reproducibility": "low"}},
+        {"id": "O2", "label": "CLIだけを提供する", "effects": {"conversation": "low", "reproducibility": "high"}},
+        {"id": "O3", "label": "CLIを本体、Skillを薄い会話入口にする", "effects": {"conversation": "high", "reproducibility": "high"}},
+        {"id": "O4", "label": "初版からTUIを作る", "effects": {"conversation": "none", "implementation_cost": "high"}}
+      ],
+      "selected_option_id": "O3",
+      "owner": "user",
+      "applies_when": "人またはCodex・Claude CodeがSkill可視性管理を利用するとき",
+      "reversible": true,
+      "cost_impact": "CLIと薄いSkill入口だけを実装し、TUI依存を追加しない",
+      "latency_impact": "通常処理をローカルCLIへ集約し、agentの都度推論を減らす",
+      "risk": "Skillだけでは処理がぶれ、CLIだけでは会話から使う期待を満たさない",
+      "rationale": "会話体験を保ちつつ、一覧・変更・監査を高速で再現可能な1つの処理本体へ集約する",
+      "principle_ids": ["P1", "P2", "P3"],
+      "workflow_step_ids": ["W1", "W2", "W8"],
+      "tags": ["cli", "skill", "interaction"],
+      "requirement_id": "DR4",
+      "disposition": "retain",
+      "evidence": ["F1", "F8", "F10", "Q16"],
+      "logic_type": "simple_rule",
+      "target_value_step_ids": ["V1", "V2", "V3", "V4"]
+    }
+  ],
+  "decision_table": {
+    "conditions": [
+      {"id": "C1", "statement": "同名の正本が既に存在する"},
+      {"id": "C2", "statement": "同名のagent固有Skillが複数agentに存在する"},
+      {"id": "C3", "statement": "複数のagent固有Skillの内容がすべて一致する"}
+    ],
+    "actions": [
+      {"id": "A1", "statement": "単一のagent固有Skillを正本へ昇格し、元配置をsymlink化する"},
+      {"id": "A2", "statement": "同一内容を1つの正本へ昇格し、既存の全agent配置をsymlink化する"},
+      {"id": "A3", "statement": "自動昇格を停止し、昇格元の選択または手動統合を求める"},
+      {"id": "A4", "statement": "正本昇格を実行せず、既存正本の追加・オフ操作を案内する"}
+    ],
+    "cases": [
+      {"id": "K1", "conditions": {"C1": "N", "C2": "N", "C3": "-"}, "actions": {"A1": "X", "A2": "-", "A3": "-", "A4": "-"}},
+      {"id": "K2", "conditions": {"C1": "N", "C2": "Y", "C3": "Y"}, "actions": {"A1": "-", "A2": "X", "A3": "-", "A4": "-"}},
+      {"id": "K3", "conditions": {"C1": "N", "C2": "Y", "C3": "N"}, "actions": {"A1": "-", "A2": "-", "A3": "X", "A4": "-"}},
+      {"id": "K4", "conditions": {"C1": "Y", "C2": "-", "C3": "-"}, "actions": {"A1": "-", "A2": "-", "A3": "-", "A4": "X"}}
+    ],
+    "applies_to_decision_ids": ["D3"]
+  },
+  "principles": [
+    {
+      "id": "P1",
+      "priority": 1,
+      "statement": "実効可視性に確信がない状態で、追加・オフの成功を報告しない",
+      "verification": "初期設定・探索経路変更・監査不一致では新規セッション確認が実行され、未確認状態を成功として扱わない",
+      "success_condition_ids": ["SC1", "SC4", "SC5"],
+      "status": "confirmed"
+    },
+    {
+      "id": "P2",
+      "priority": 3,
+      "statement": "探索前提が変わっていない通常操作ではagentを起動せず、ローカル監査だけで完了する",
+      "verification": "通常の一覧・追加・オフ操作の実行経路にCodexまたはClaude Codeの新規セッション起動が含まれない",
+      "success_condition_ids": ["SC2", "SC3", "SC5"],
+      "status": "confirmed"
+    },
+    {
+      "id": "P3",
+      "priority": 4,
+      "statement": "通常の可視性変更では./skillsを変更せず、正本昇格では内容を変えずに配置だけを一元化する",
+      "verification": "追加・オフの差分はagent別宣言とsymlinkに限定され、昇格前後のSkill内容ハッシュは一致する",
+      "success_condition_ids": ["SC2", "SC6"],
+      "status": "confirmed"
+    },
+    {
+      "id": "P4",
+      "priority": 2,
+      "statement": "異なるSkill内容を自動で上書き・統合・破棄しない",
+      "verification": "同名agent固有Skillの内容が異なる場合、正本作成と既存配置の変更前に処理が停止してユーザー判断を求める",
+      "success_condition_ids": ["SC6"],
+      "status": "confirmed"
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "X1",
+      "rule_id": "K2-K4",
+      "severity": "blocking",
+      "stage": "contradiction_check",
+      "evidence_refs": ["F6", "F9", "K2", "K4"],
+      "reason": "現行の~/.agents/skillsは正本全体をCodexへ公開し、~/.codex/skillsによる選択公開を無効にしている",
+      "status": "resolved",
+      "resolution": "~/.agents/skillsを正本全体への公開経路にせず、Codex公開を~/.codex/skillsへ一本化する",
+      "accepted_by": "user"
+    },
+    {
+      "id": "X2",
+      "rule_id": "P1-P2",
+      "severity": "warning",
+      "stage": "contradiction_check",
+      "evidence_refs": ["F10", "P1", "P2", "D2"],
+      "reason": "毎回の実セッション確認は確実性を上げる一方、通常操作を遅くして利用継続を妨げる",
+      "status": "resolved",
+      "resolution": "通常はローカル監査で完了し、初期設定・探索経路変更・不一致時だけ実セッション確認へ昇格する",
+      "accepted_by": "user"
+    },
+    {
+      "id": "X3",
+      "rule_id": "D3-P4",
+      "severity": "warning",
+      "stage": "contradiction_check",
+      "evidence_refs": ["F13", "D3", "P4"],
+      "reason": "raw directory比較では.DS_StoreなどSkill動作に無関係な生成物だけの差も内容競合と誤判定する",
+      "status": "resolved",
+      "resolution": "Skill内容の比較から.DS_Store、__pycache__、*.pycを除外し、それ以外の差だけを競合とする",
+      "accepted_by": "user"
+    }
+  ],
+  "state_machine": {
+    "initial_state_id": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "name": "未棚卸し",
+        "type": "initial",
+        "entry_condition": "管理ツールを開始した",
+        "visible": ["棚卸し開始"],
+        "exit_condition": "正本とagent別可視状態の読取を開始する"
+      },
+      {
+        "id": "S1",
+        "name": "選択待ち",
+        "type": "normal",
+        "entry_condition": "棚卸し一覧の生成に成功した",
+        "visible": ["正本一覧", "Claude Code可視一覧", "Codex可視一覧", "追加・オフ操作"],
+        "exit_condition": "ユーザーが変更内容を選ぶ"
+      },
+      {
+        "id": "S2",
+        "name": "反映中",
+        "type": "processing",
+        "entry_condition": "有効な変更内容が選択された",
+        "visible": ["反映中であること", "変更対象"],
+        "exit_condition": "宣言とsymlinkの更新が完了するか失敗する"
+      },
+      {
+        "id": "S3",
+        "name": "ローカル監査中",
+        "type": "processing",
+        "entry_condition": "宣言とsymlinkの更新が完了した",
+        "visible": ["監査中であること"],
+        "exit_condition": "監査結果と探索前提の変更有無が確定する"
+      },
+      {
+        "id": "S4",
+        "name": "実効可視性確認中",
+        "type": "processing",
+        "entry_condition": "初期設定・探索経路変更・監査不一致のいずれかを検出した",
+        "visible": ["追加確認が必要な理由", "実セッション確認中であること"],
+        "exit_condition": "新規セッションでの発見結果が確定する"
+      },
+      {
+        "id": "S5",
+        "name": "完了",
+        "type": "success",
+        "entry_condition": "選択どおりの可視状態を確認した",
+        "visible": ["更新済み一覧", "変更内容", "確認方式"],
+        "exit_condition": "ユーザーが終了するか、続けて変更する"
+      },
+      {
+        "id": "S6",
+        "name": "回復待ち",
+        "type": "failure",
+        "entry_condition": "反映・ローカル監査・実セッション確認のいずれかが失敗した",
+        "visible": ["失敗箇所", "現在状態", "回復操作"],
+        "exit_condition": "回復操作を実行するか、変更を中止する"
+      },
+      {
+        "id": "S7",
+        "name": "正本昇格競合",
+        "type": "normal",
+        "entry_condition": "同名agent固有Skillの実内容が異なる",
+        "visible": ["競合しているagent", "内容差分", "正本候補", "中止操作"],
+        "exit_condition": "ユーザーが正本候補を明示的に選ぶか昇格を中止する"
+      }
+    ],
+    "transitions": [
+      {
+        "id": "T1",
+        "from_state_id": "S0",
+        "to_state_id": "S1",
+        "event": "棚卸し完了",
+        "guard": "正本とagent別可視状態を読み取れた",
+        "decision_ids": [],
+        "workflow_step_ids": ["W2", "W3"],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T2",
+        "from_state_id": "S1",
+        "to_state_id": "S2",
+        "event": "変更確定",
+        "guard": "追加・オフの選択が有効、または正本昇格対象に内容競合がない",
+        "decision_ids": ["D1", "D3"],
+        "workflow_step_ids": ["W4", "W5", "W6"],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T3",
+        "from_state_id": "S2",
+        "to_state_id": "S3",
+        "event": "反映完了",
+        "guard": "宣言とsymlinkの更新処理が終了した",
+        "decision_ids": [],
+        "workflow_step_ids": ["W7"],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T4",
+        "from_state_id": "S3",
+        "to_state_id": "S5",
+        "event": "ローカル監査成功",
+        "guard": "監査一致かつ探索前提に変更がない",
+        "decision_ids": ["D2"],
+        "workflow_step_ids": ["W8"],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T5",
+        "from_state_id": "S3",
+        "to_state_id": "S4",
+        "event": "追加確認要求",
+        "guard": "初期設定・探索経路変更・監査不一致のいずれか",
+        "decision_ids": ["D2"],
+        "workflow_step_ids": ["W8"],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T6",
+        "from_state_id": "S4",
+        "to_state_id": "S5",
+        "event": "実効可視性確認成功",
+        "guard": "新規セッションの発見結果が選択内容と一致する",
+        "decision_ids": ["D2"],
+        "workflow_step_ids": ["W8"],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T7",
+        "from_state_id": "S2",
+        "to_state_id": "S6",
+        "event": "反映失敗",
+        "guard": "宣言またはsymlinkの更新に失敗した",
+        "decision_ids": [],
+        "workflow_step_ids": ["W7"],
+        "recovery": true,
+        "assumption": false
+      },
+      {
+        "id": "T8",
+        "from_state_id": "S3",
+        "to_state_id": "S6",
+        "event": "監査不能",
+        "guard": "ローカル状態を読み取れない",
+        "decision_ids": ["D2"],
+        "workflow_step_ids": ["W8"],
+        "recovery": true,
+        "assumption": false
+      },
+      {
+        "id": "T9",
+        "from_state_id": "S4",
+        "to_state_id": "S6",
+        "event": "実効可視性確認失敗",
+        "guard": "新規セッションの発見結果が選択内容と一致しない",
+        "decision_ids": ["D2"],
+        "workflow_step_ids": ["W8"],
+        "recovery": true,
+        "assumption": false
+      },
+      {
+        "id": "T10",
+        "from_state_id": "S6",
+        "to_state_id": "S1",
+        "event": "回復完了",
+        "guard": "操作前の宣言とsymlinkへ復元し、棚卸しを再実行できた",
+        "decision_ids": [],
+        "workflow_step_ids": ["W2", "W3"],
+        "recovery": true,
+        "assumption": false
+      },
+      {
+        "id": "T11",
+        "from_state_id": "S5",
+        "to_state_id": "S1",
+        "event": "続けて整理",
+        "guard": "ユーザーが追加の変更を始める",
+        "decision_ids": [],
+        "workflow_step_ids": ["W2", "W3"],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T12",
+        "from_state_id": "S1",
+        "to_state_id": "S7",
+        "event": "正本昇格競合検出",
+        "guard": "同名agent固有Skillが複数あり、除外対象以外の内容差がある",
+        "decision_ids": ["D3"],
+        "workflow_step_ids": ["W4", "W5"],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T13",
+        "from_state_id": "S7",
+        "to_state_id": "S2",
+        "event": "正本候補選択",
+        "guard": "ユーザーが一方を正本候補として選び、他方をagent固有のまま保持することを確認した",
+        "decision_ids": ["D3"],
+        "workflow_step_ids": ["W5", "W6"],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T14",
+        "from_state_id": "S7",
+        "to_state_id": "S1",
+        "event": "正本昇格中止",
+        "guard": "ユーザーが競合状態で中止を選ぶ",
+        "decision_ids": ["D3"],
+        "workflow_step_ids": ["W3"],
+        "recovery": true,
+        "assumption": false
+      }
+    ]
+  },
+  "information_architecture": {
+    "nodes": [
+      {
+        "id": "IA1",
+        "label": "Skill可視性管理",
+        "type": "workspace",
+        "parent_id": null,
+        "priority": "primary",
+        "state_ids": ["S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7"],
+        "decision_ids": ["D4"]
+      },
+      {
+        "id": "IA2",
+        "label": "Skill比較マトリクス",
+        "type": "section",
+        "parent_id": "IA1",
+        "priority": "primary",
+        "state_ids": ["S1", "S5"],
+        "decision_ids": ["D1", "D3"]
+      },
+      {
+        "id": "IA3",
+        "label": "正本に存在するか",
+        "type": "information",
+        "parent_id": "IA2",
+        "priority": "primary",
+        "state_ids": ["S1", "S5"],
+        "decision_ids": ["D1", "D3"]
+      },
+      {
+        "id": "IA4",
+        "label": "Claude Codeでのオフ・正本リンク・固有・正本相違状態と操作",
+        "type": "action",
+        "parent_id": "IA2",
+        "priority": "primary",
+        "state_ids": ["S1", "S5"],
+        "decision_ids": ["D1", "D3"]
+      },
+      {
+        "id": "IA5",
+        "label": "Codexでのオフ・正本リンク・固有・正本相違状態と操作",
+        "type": "action",
+        "parent_id": "IA2",
+        "priority": "primary",
+        "state_ids": ["S1", "S5"],
+        "decision_ids": ["D1", "D3"]
+      },
+      {
+        "id": "IA6",
+        "label": "反映・確認状況",
+        "type": "panel",
+        "parent_id": "IA1",
+        "priority": "secondary",
+        "state_ids": ["S2", "S3", "S4", "S5"],
+        "decision_ids": ["D2"]
+      },
+      {
+        "id": "IA7",
+        "label": "失敗内容と自動復元結果",
+        "type": "panel",
+        "parent_id": "IA1",
+        "priority": "primary",
+        "state_ids": ["S6"],
+        "decision_ids": ["D2"]
+      },
+      {
+        "id": "IA8",
+        "label": "正本昇格候補と内容競合差分",
+        "type": "panel",
+        "parent_id": "IA1",
+        "priority": "primary",
+        "state_ids": ["S1", "S7"],
+        "decision_ids": ["D3"]
+      }
+    ],
+    "relationships": []
+  },
+  "ui_behaviors": [
+    {
+      "id": "UI1",
+      "label": "Skillマトリクス表示",
+      "state_ids": ["S0", "S1", "S5"],
+      "display_condition": "管理開始時、変更完了時、または一覧更新時",
+      "user_action": "一覧表示または更新を実行する",
+      "system_result": "正本・Claude Code・Codexの状態をSkill単位の1表で表示する",
+      "feedback": "各agent列をオフ・正本リンク・固有・固有／正本相違で表示する",
+      "recovery": "読取不能時は変更せず、読めなかったpathを示す",
+      "decision_ids": ["D1", "D3", "D4"],
+      "principle_ids": ["P1", "P2", "P3", "P4"],
+      "ia_node_ids": ["IA2", "IA3", "IA4", "IA5"],
+      "status": "confirmed"
+    },
+    {
+      "id": "UI2",
+      "label": "正本Skillの追加・オフ",
+      "state_ids": ["S1", "S2", "S3", "S5"],
+      "display_condition": "正本が存在し、対象agentがオフまたは正本リンクである",
+      "user_action": "対象Skillとagentに対して追加またはオフを実行する",
+      "system_result": "対象agentの宣言とsymlinkだけを変更して監査する",
+      "feedback": "変更対象、ローカル監査結果、更新済みマトリクスを示す",
+      "recovery": "失敗時は操作前へ自動復元してエラー箇所を示す",
+      "decision_ids": ["D1", "D2"],
+      "principle_ids": ["P1", "P2", "P3"],
+      "ia_node_ids": ["IA4", "IA5", "IA6", "IA7"],
+      "status": "confirmed"
+    },
+    {
+      "id": "UI3",
+      "label": "agent固有Skillの正本昇格",
+      "state_ids": ["S1", "S2", "S3", "S5"],
+      "display_condition": "正本がなく、少なくとも1つのagent列が固有である",
+      "user_action": "昇格元のagent固有Skillを選ぶ",
+      "system_result": "内容競合がなければ内容を変えず正本化し、既存可視性をsymlinkで維持する",
+      "feedback": "昇格元、内容一致確認、置換したsymlink、更新済みマトリクスを示す",
+      "recovery": "失敗時は正本作成とsymlink置換を操作前へ戻す",
+      "decision_ids": ["D2", "D3"],
+      "principle_ids": ["P1", "P3", "P4"],
+      "ia_node_ids": ["IA2", "IA3", "IA4", "IA5", "IA6", "IA7"],
+      "status": "confirmed"
+    },
+    {
+      "id": "UI4",
+      "label": "正本昇格の内容競合",
+      "state_ids": ["S7"],
+      "display_condition": "同名agent固有Skillに除外対象以外の内容差がある",
+      "user_action": "一方を正本候補として選ぶか昇格を中止する",
+      "system_result": "選択側だけを正本化し、未選択側を固有・正本と相違として保持するか、無変更で中止する",
+      "feedback": "競合agent、差分ファイル、選択後も保持される配置を実行前に示す",
+      "recovery": "中止時は何も変更せずマトリクスへ戻る",
+      "decision_ids": ["D3"],
+      "principle_ids": ["P3", "P4"],
+      "ia_node_ids": ["IA8"],
+      "status": "confirmed"
+    },
+    {
+      "id": "UI5",
+      "label": "条件付き実セッション確認",
+      "state_ids": ["S3", "S4", "S5", "S6"],
+      "display_condition": "初期設定・探索経路変更・ローカル監査不一致のいずれか",
+      "user_action": "なし",
+      "system_result": "対象agentの新規セッションで実効可視性を確認する",
+      "feedback": "追加確認を行う理由と結果を示す",
+      "recovery": "不一致時は成功報告せず操作前へ自動復元する",
+      "decision_ids": ["D2"],
+      "principle_ids": ["P1", "P2"],
+      "ia_node_ids": ["IA6", "IA7"],
+      "status": "confirmed"
+    },
+    {
+      "id": "UI6",
+      "label": "会話からのSkill管理",
+      "state_ids": ["S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7"],
+      "display_condition": "ユーザーがCodexまたはClaude CodeへSkillの整理・追加・オフ・正本昇格を依頼する",
+      "user_action": "自然言語で管理意図または一覧上の選択を伝える",
+      "system_result": "skill-visibility-management Skillが同じCLIを呼び、結果を会話用のマトリクスとして返す",
+      "feedback": "CLIと同じ状態・監査結果・競合情報を省略せず示す",
+      "recovery": "CLIの失敗・自動復元結果をそのまま会話で説明し、次の有効な選択を示す",
+      "decision_ids": ["D1", "D2", "D3", "D4"],
+      "principle_ids": ["P1", "P2", "P3", "P4"],
+      "ia_node_ids": ["IA1", "IA2", "IA6", "IA7", "IA8"],
+      "status": "confirmed"
+    }
+  ],
+  "questions": [
+    {
+      "id": "Q1",
+      "stage": "business_understanding",
+      "question": "この管理Skillの正常系は、既存Skillについて『対象agent・Skill名・表示/非表示』を会話で伝えるとsymlink変更と監査まで完了し、Skill内容の作成・更新・ownership管理は対象外、と整理してよいですか？",
+      "priority": 100,
+      "reason": "旧ケースの広いSkillライフサイクル管理と、今回求める狭い可視性管理を分離してS1の対象を承認するため",
+      "status": "answered",
+      "answer": "n。対象Skillを先に指定するのではなく、最初に正本・Claude Code可視・Codex可視の一覧を示し、そこから追加またはオフを選びたい",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "ユーザーが明示した期待をそのまま最小の業務境界にすると、会話からsymlink操作までの価値を先に完成できるため",
+      "answer_guide": "y = この範囲でS1を承認する、n = Skill作成・更新・ownership管理など含めたい範囲を補足する"
+    },
+    {
+      "id": "Q2",
+      "stage": "business_understanding",
+      "question": "正常系を『管理を頼むと正本・Claude Code可視・Codex可視の一覧が示され、その一覧から追加またはオフを選ぶと反映・再一覧化される』と整理してよいですか？",
+      "priority": 110,
+      "reason": "Q1で判明した棚卸し先行の期待をS1の業務フローとして確定するため",
+      "status": "answered",
+      "answer": "y。このイメージに近い。入口は会話に限らずTUIまたはCLIでもよい",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "ユーザーが示した4段階の利用イメージを、そのまま最小の正常系として表しているため",
+      "answer_guide": "y = この正常系でS1を承認する、n = 足りない一覧・選択・反映手順を補足する"
+    },
+    {
+      "id": "Q3",
+      "stage": "decision_requirements",
+      "question": "一覧の『Claude Code／Codexから見える』は、symlinkの有無ではなく、新規セッションで実際に発見・読み込み可能な状態として扱ってよいですか？",
+      "priority": 120,
+      "reason": "Codexには~/.agents/skillsという追加探索経路があり、symlink一覧だけではオフの成否を判断できないため",
+      "status": "answered",
+      "answer": "y。~/.agents/skillsから正本全体を公開せず、Codexは~/.codex/skillsの選択済みSkillだけを見る形にする",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "ユーザーが管理したいのは設定上のsymlinkではなく、各agentが実際に読み込めるSkillだから",
+      "answer_guide": "y = 実効可視性を一覧・オフ判定の基準にする、n = symlink宣言だけを基準にする"
+    },
+    {
+      "id": "Q4",
+      "stage": "target_value_loop",
+      "question": "この管理の価値は、変更後の新規セッションで選択したSkillだけが対象agentから実際に見え、更新済み一覧でも確認できた時点で成立すると整理してよいですか？",
+      "priority": 130,
+      "reason": "symlink生成だけを完了条件にすると、別探索経路から見え続ける問題を見逃すため",
+      "status": "answered",
+      "answer": "y。ただし毎回の確認が遅く、使うのが億劫になる体験にはしない",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "ユーザーの目的はsymlink操作そのものではなく、各agentが実際に読み込むSkillを制御することだから",
+      "answer_guide": "y = 実効可視性の確認までを価値ループに含める、n = 別の完了条件を補足する"
+    },
+    {
+      "id": "Q5",
+      "stage": "decision_specification",
+      "question": "通常はローカルのsymlink監査だけで即時確認し、初期設定・探索経路変更・監査不一致のときだけagentの新規セッションで確認する方式にしますか？",
+      "priority": 140,
+      "reason": "実効可視性の保証と、日常的に使える応答速度を両立するため",
+      "status": "answered",
+      "answer": "2。yとして推奨案を承認。通常はローカル監査、必要時だけ新規セッション確認",
+      "answer_type": "single_choice",
+      "recommended_answer": "2",
+      "recommendation_reason": "通常操作をローカルI/Oだけで終えつつ、前提が変わった場合には実セッションで誤差を検出できるため",
+      "answer_guide": "1 = 毎回新規セッション、2 = 通常はローカル監査・必要時だけ新規セッション、3 = 常にローカル監査のみ"
+    },
+    {
+      "id": "Q6",
+      "stage": "design_principles",
+      "question": "設計原則を、1. 不確かな状態で成功報告しない、2. 通常操作ではagentを起動しない、3. 正本を変更しない、の優先順で確定してよいですか？",
+      "priority": 150,
+      "reason": "正しさと速度が衝突した場合の扱いを一意にし、後続の状態・UI設計を拘束するため",
+      "status": "answered",
+      "answer": "y。3原則と優先順を承認",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "通常時は速く、異常時だけ正しさを優先して追加確認し、正本への副作用も防げるため",
+      "answer_guide": "y = この優先順で確定する、n = 入れ替えたい原則または不足する原則を補足する"
+    },
+    {
+      "id": "Q7",
+      "stage": "contradiction_check",
+      "question": "全件公開との矛盾は~/.agents/skillsの公開廃止で、速度との矛盾は必要時だけの実セッション確認で解消済みとしてよいですか？",
+      "priority": 160,
+      "reason": "未解消の矛盾を残したまま状態設計へ進まないため",
+      "status": "answered",
+      "answer": "y。2件の矛盾を解消済みとして状態設計へ進む",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "これまで承認された公開経路と確認方式を変更せず、2つの衝突を解消できるため",
+      "answer_guide": "y = 矛盾解消を承認して状態設計へ進む、n = 残っている矛盾を補足する"
+    },
+    {
+      "id": "Q8",
+      "stage": "state_machine",
+      "question": "反映・監査に失敗した場合は、操作前の宣言とsymlinkへ自動で戻し、エラーを示して一覧選択へ戻る回復経路にしてよいですか？",
+      "priority": 170,
+      "reason": "途中状態を残さず、再実行可能な復帰先を一意にするため",
+      "status": "answered",
+      "answer": "y。操作前へ自動復元し、エラー表示後に一覧選択へ戻る",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "正本を触らず、可視性宣言とsymlinkだけを操作前へ戻せば安全に再選択できるため",
+      "answer_guide": "y = 自動復元して一覧選択へ戻る、n = 失敗時に残したい状態または別の復帰方法を補足する"
+    },
+    {
+      "id": "Q9",
+      "stage": "information_architecture",
+      "question": "正本・Claude Code・Codexを別々の一覧にせず、Skillごとに3列を横並びで比較・操作できる1つのマトリクスを主表示にしてよいですか？",
+      "priority": 180,
+      "reason": "3つの一覧を目視で突き合わせる負担をなくし、追加・オフ対象を同じ行で判断できるようにするため",
+      "status": "answered",
+      "answer": "y。1つの比較マトリクスを主表示にする。正本にないagent固有Skillと正本昇格も扱いたい",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "一覧・比較・選択を1か所で完結でき、CLI・TUI・会話のどの入口にも同じ情報モデルを使えるため",
+      "answer_guide": "y = 1つの比較マトリクスにする、n = 分けたい一覧または別の情報構造を補足する"
+    },
+    {
+      "id": "Q10",
+      "stage": "business_understanding",
+      "question": "agent固有Skillの正本昇格は、内容を変えず./skillsへ移し、元のagent側を正本へのsymlinkへ置き換え、他agentでは自動的にオンにしない形でよいですか？",
+      "priority": 190,
+      "reason": "昇格による正本化と、他agentへの公開を別の操作として保ち、意図しない可視性変更を防ぐため",
+      "status": "answered",
+      "answer": "y。内容を変えず正本へ移し、元agent側をsymlink化し、他agentは自動オンにしない",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "内容と現在の可視性を保ったまま正本だけを一元化し、他agentへの追加は一覧から別途選べるため",
+      "answer_guide": "y = 正本化だけ行い他agentはオフのまま、n = 昇格と同時に行いたい公開動作を補足する"
+    },
+    {
+      "id": "Q11",
+      "stage": "decision_requirements",
+      "question": "同名のagent固有Skillが両方にある場合、内容が同じなら1つの正本へ統合して両方の可視性を維持し、内容が違うなら自動昇格を止めて選択・統合を求める形でよいですか？",
+      "priority": 200,
+      "reason": "同一内容の重複は安全に解消しつつ、異なる内容の無言上書きを防ぐため",
+      "status": "answered",
+      "answer": "y。同一内容なら1つの正本へ統合して既存可視性を維持し、相違するなら自動昇格を停止する",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "同名14件中2件でSkill内容の差があり、一律昇格ではデータ損失の可能性があるため",
+      "answer_guide": "y = 同一なら統合・相違なら停止、n = 同名相違時の別ルールを補足する"
+    },
+    {
+      "id": "Q12",
+      "stage": "design_principles",
+      "question": "正本昇格の原則として『異なるSkill内容を自動で上書き・統合・破棄しない』を、通常操作の速度より上位に追加してよいですか？",
+      "priority": 210,
+      "reason": "昇格の自動化でagent固有の内容を失わないよう、競合時の停止を後続設計へ強制するため",
+      "status": "answered",
+      "answer": "y。異なるSkill内容を自動で上書き・統合・破棄しない原則を速度より優先する",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "内容相違が実在するため、競合時だけ停止する方が通常速度を保ちながらデータ損失を防げる",
+      "answer_guide": "y = 内容保護を速度より優先する、n = 競合時に許可したい自動処理を補足する"
+    },
+    {
+      "id": "Q13",
+      "stage": "contradiction_check",
+      "question": "同一内容の判定では.DS_Store、__pycache__、*.pycだけを除外し、それ以外のファイル差は競合として停止する形でよいですか？",
+      "priority": 220,
+      "reason": "OS・実行キャッシュによる誤停止を防ぎつつ、未知のSkillファイル差を無視しないため",
+      "status": "answered",
+      "answer": "y。.DS_Store、__pycache__、*.pycだけを除外し、それ以外の差は競合として停止する",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "実測でmanim-composerの差は.DS_Storeだけだった一方、他2件にはSKILL.mdとrulesの実差分があるため",
+      "answer_guide": "y = 既知の生成物だけ除外する、n = 追加で除外または比較したいファイルを補足する"
+    },
+    {
+      "id": "Q14",
+      "stage": "state_machine",
+      "question": "内容が異なる同名Skillで一方を正本に選んだ場合、もう一方は削除・置換せず『agent固有・正本と相違』のまま保持してよいですか？",
+      "priority": 230,
+      "reason": "明示選択による正本昇格を可能にしつつ、選ばれなかったagent固有内容を失わないため",
+      "status": "answered",
+      "answer": "y。一方を正本に選んでも、もう一方はagent固有・正本と相違として保持する",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "正本化を進めても未選択側を保存でき、後から比較・統合できるため",
+      "answer_guide": "y = 未選択側を固有のまま保持する、n = 競合時は昇格自体を禁止するなど別の扱いを補足する"
+    },
+    {
+      "id": "Q15",
+      "stage": "information_architecture",
+      "question": "agent列を『オフ／正本リンク／固有／固有・正本と相違』の4状態で表示し、正本がない固有Skillの行だけに『正本へ昇格』を出す形でよいですか？",
+      "priority": 240,
+      "reason": "可視性と配置元を同じセルで判別でき、無効な昇格操作を表示しないため",
+      "status": "answered",
+      "answer": "y。4状態を表示し、正本がない固有Skillだけに正本昇格を表示する",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "1つのマトリクスだけで追加・オフ・昇格・競合を判断できる最小の状態表現だから",
+      "answer_guide": "y = 4状態と条件付き昇格操作を採用する、n = 追加したい状態または別表示を補足する"
+    },
+    {
+      "id": "Q16",
+      "stage": "ui_behavior",
+      "question": "初版はCLIを一覧・追加・オフ・正本昇格の処理本体にし、skill-visibility-management SkillをCodex／Claude Codeとの会話からそのCLIを呼ぶ薄い入口として残す形でよいですか？",
+      "priority": 250,
+      "reason": "Codex・Claude Codeから呼べること、通常操作の速度、実装量の最小化を同時に満たすため",
+      "status": "answered",
+      "answer": "y。CLIを処理本体、skill-visibility-management Skillを会話からCLIを呼ぶ薄い入口として確定する",
+      "answer_type": "yes_no",
+      "recommended_answer": "y",
+      "recommendation_reason": "会話で使える期待を保ちながら、実処理は高速で再現可能な1つのCLIへ集約できるため",
+      "answer_guide": "y = CLI本体＋薄いSkill入口にする、n = Skillだけまたは別構成にしたい理由を補足する"
+    }
+  ],
+  "assumptions": [],
+  "traceability": [
+    {"from": "SC1", "to": ["F1", "F2", "F6", "W1", "W2", "W3"]},
+    {"from": "SC2", "to": ["F7", "A1", "A2", "W4", "W5", "W6", "W7"]},
+    {"from": "SC3", "to": ["F1", "A1", "A2", "W1", "W8"]},
+    {"from": "SC4", "to": ["F6", "K2", "W7", "W8"]},
+    {"from": "SC5", "to": ["W8", "Q2"]},
+    {"from": "SC6", "to": ["F11", "F12", "F13", "DR3", "D3", "P3", "P4", "Q10", "Q11"]}
+  ],
+  "business_understanding": {
+    "purpose": "ユーザーが設定ファイルやscriptを直接扱わず、正本とagent別の可視Skillを対話的に棚卸しし、その一覧から追加・オフ・agent固有Skillの正本昇格を選んで管理する",
+    "scope_in": [
+      "正本に存在するSkillの一覧化",
+      "Claude Codeから見えるSkillの一覧化",
+      "Codexから見えるSkillの一覧化",
+      "一覧から既存の共通SkillをClaude CodeまたはCodexへ追加する",
+      "一覧から現在見えるSkillをClaude CodeまたはCodexでオフにする",
+      "正本にないagent固有Skillを識別する",
+      "agent固有Skillを内容変更なしで正本へ昇格する",
+      "対象agentの宣言配列更新",
+      "symlinkの生成・除去・監査",
+      "変更結果の会話内報告"
+    ],
+    "scope_out": [
+      "Skill内容の新規作成・更新",
+      "user管理とagent管理のownership変更",
+      "version・競合・復元履歴の管理",
+      "Skillの自動共有・自動昇格",
+      "plugin提供Skillとsystem Skillの管理"
+    ],
+    "pain_points": [
+      "『skillを整理したい』という依頼に対して棚卸しを示さず、対象Skillの指定を先に求めると期待と一致しない",
+      "既存ケースがSkillライフサイクル全体を含み、単純な可視性変更の価値が埋もれている",
+      "Codexの追加探索経路により、宣言上の非表示と実効上の非表示が一致しない"
+    ],
+    "teach_back": "ユーザーが会話・CLI・TUIなどからSkillの整理・管理を開始すると、管理ツールは./skillsの正本と、Claude Code・Codexから見えるSkillを1つの比較マトリクスで示す。正本にないagent固有Skillは正本列が『なし』、agent列が『固有』となる。ユーザーは正本Skillの追加、可視Skillのオフ、agent固有Skillの正本昇格を選ぶ。通常の追加・オフは宣言とsymlinkだけを変更し、昇格は内容を変えず正本へ配置して元のagent側をsymlinkへ置き換え、監査後に更新済み一覧を返す。"
+  },
+  "decision_requirements": {
+    "confirmed_none": false,
+    "items": [
+      {
+        "id": "DR1",
+        "question": "どのSkillを、Claude CodeまたはCodexのどちらで追加・オフするか",
+        "business_reason": "ユーザーがagent別の作業内容に合わせて、読み込ませるSkillを選ぶ必要があるため",
+        "trigger": "正本とagent別可視Skillの棚卸し一覧が提示された後",
+        "evidence": ["正本一覧", "Claude Code実効可視一覧", "Codex実効可視一覧", "ユーザーの選択"],
+        "failure_impact": "誤ったagentで不要なSkillが読み込まれるか、必要なSkillが利用できなくなる",
+        "workflow_step_ids": ["W3", "W4", "W5"],
+        "status": "confirmed"
+      },
+      {
+        "id": "DR2",
+        "question": "agent別一覧とオフの成否を、宣言上のsymlinkと実際の発見可能性のどちらで判定するか",
+        "business_reason": "宣言と実効可視性が一致しない探索経路があり、一覧と操作結果の意味を一意にする必要があるため",
+        "trigger": "agent別の可視Skillを棚卸しするとき、およびオフ後の状態を確認するとき",
+        "evidence": ["agent別Skill root", "link-skills.shの宣言配列", "新規セッションのSkill発見結果", "F6"],
+        "failure_impact": "一覧ではオフでもagentから実際には見え続け、ユーザーが誤った管理状態を信頼する",
+        "workflow_step_ids": ["W2", "W5", "W7", "W8"],
+        "status": "confirmed"
+      },
+      {
+        "id": "DR3",
+        "question": "正本昇格対象と同名のagent固有Skillが複数agentにある場合、どの内容を正本にするか",
+        "business_reason": "同一内容なら重複を安全に統合できるが、異なる内容を自動選択すると片方の変更を失うため",
+        "trigger": "正本にないagent固有Skillの昇格を選んだとき",
+        "evidence": ["agent別Skillディレクトリ", "同名Skill間の内容差分", "F11", "F13", "ユーザーの選択"],
+        "failure_impact": "異なるSkill内容を上書きまたは消失させ、agent固有の動作を壊す",
+        "workflow_step_ids": ["W4", "W5", "W6"],
+        "status": "confirmed"
+      },
+      {
+        "id": "DR4",
+        "question": "人とCodex・Claude Codeの両方が同じSkill管理機能を、速く再現可能に利用する入口をどう構成するか",
+        "business_reason": "会話だけの実装では処理がぶれやすく、CLIだけではユーザーが期待する会話体験を失うため",
+        "trigger": "Skill可視性管理を人またはagentが開始するとき",
+        "evidence": ["F1", "F8", "F10", "Q16"],
+        "failure_impact": "操作が遅い・再現不能・会話から使えないのいずれかが発生し、管理機能が利用されなくなる",
+        "workflow_step_ids": ["W1", "W2", "W8"],
+        "status": "confirmed"
+      }
+    ]
+  },
+  "target_value_loop": {
+    "start_event": "ユーザーがSkill可視性の管理を開始する",
+    "value_outcome": "追加・オフでは選択どおりの実効可視性を確認でき、正本昇格では内容と既存可視性を保ったまま正本化された状態を更新済み一覧から確認できる",
+    "steps": [
+      {
+        "id": "V1",
+        "actor_id": "A2",
+        "action": "正本とClaude Code・Codexの実効可視Skillを棚卸しして一覧化する",
+        "input": ["管理開始依頼"],
+        "output": ["Skill棚卸し表"],
+        "next_step_ids": ["V2"],
+        "decision_requirement_ids": ["DR1", "DR2", "DR3", "DR4"]
+      },
+      {
+        "id": "V2",
+        "actor_id": "A1",
+        "action": "一覧からagent別の追加・オフ対象または正本昇格対象を選ぶ",
+        "input": ["Skill棚卸し表"],
+        "output": ["Skill管理選択"],
+        "next_step_ids": ["V3"],
+        "decision_requirement_ids": ["DR1", "DR3", "DR4"]
+      },
+      {
+        "id": "V3",
+        "actor_id": "A3",
+        "action": "追加・オフをagent別symlinkへ反映するか、競合判定後にagent固有Skillを正本へ昇格して監査する",
+        "input": ["Skill管理選択"],
+        "output": ["監査済み可視性状態"],
+        "next_step_ids": ["V4"],
+        "decision_requirement_ids": ["DR1", "DR2", "DR3", "DR4"]
+      },
+      {
+        "id": "V4",
+        "actor_id": "A2",
+        "action": "通常はローカル監査で可視性と昇格前後の内容一致を確認し、初期設定・探索経路変更・不一致時だけ新規セッションで実効可視性を確認して更新済み一覧を示す",
+        "input": ["監査済み可視性状態"],
+        "output": ["更新済みSkill棚卸し表", "実効可視性確認結果"],
+        "next_step_ids": [],
+        "decision_requirement_ids": ["DR2", "DR3", "DR4"]
+      }
+    ],
+    "start_step_id": "V1"
+  }
+}

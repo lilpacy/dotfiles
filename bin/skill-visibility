@@ -1,0 +1,332 @@
+#!/usr/bin/env python3
+"""Claude/Codex から見える Skill を正本と symlink 宣言で管理する。"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import re
+import shutil
+import subprocess
+import sys
+import tempfile
+from pathlib import Path
+from typing import NamedTuple
+
+
+AGENT_ARRAYS = {"claude": "CLAUDE_SKILLS", "codex": "CODEX_SKILLS"}
+IGNORED_DIRS = {"__pycache__"}
+IGNORED_FILES = {".DS_Store"}
+NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+
+class SkillVisibilityError(RuntimeError):
+    pass
+
+
+class PromotionConflict(SkillVisibilityError):
+    pass
+
+
+class MatrixRow(NamedTuple):
+    name: str
+    canonical: bool
+    claude: str
+    codex: str
+
+
+def _array_pattern(name: str) -> re.Pattern[str]:
+    return re.compile(rf"(^[ \t]*{re.escape(name)}=\(\n)(.*?)(^\))", re.M | re.S)
+
+
+def read_declarations(script: Path) -> dict[str, list[str]]:
+    text = script.read_text(encoding="utf-8")
+    result = {}
+    for array_name in AGENT_ARRAYS.values():
+        match = _array_pattern(array_name).search(text)
+        if not match:
+            raise SkillVisibilityError(f"宣言配列が見つかりません: {array_name}")
+        result[array_name] = [
+            line.strip()
+            for line in match.group(2).splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+    return result
+
+
+def _write_declaration(script: Path, array_name: str, names: list[str]) -> None:
+    text = script.read_text(encoding="utf-8")
+    pattern = _array_pattern(array_name)
+    match = pattern.search(text)
+    if not match:
+        raise SkillVisibilityError(f"宣言配列が見つかりません: {array_name}")
+    body = "".join(f"  {name}\n" for name in sorted(set(names)))
+    script.write_text(
+        text[: match.start()] + match.group(1) + body + match.group(3) + text[match.end() :],
+        encoding="utf-8",
+    )
+
+
+def _validate(root: Path, agent: str, name: str) -> None:
+    if agent not in AGENT_ARRAYS:
+        raise SkillVisibilityError(f"未対応の agent です: {agent}")
+    if not NAME_PATTERN.fullmatch(name):
+        raise SkillVisibilityError(f"不正な Skill 名です: {name}")
+    if not (root / "link-skills.sh").is_file():
+        raise SkillVisibilityError(f"dotfiles root ではありません: {root}")
+
+
+def _skill_files(path: Path) -> dict[str, bytes | str]:
+    files: dict[str, bytes | str] = {}
+    for current, directories, filenames in os.walk(path, followlinks=False):
+        directories[:] = sorted(name for name in directories if name not in IGNORED_DIRS)
+        current_path = Path(current)
+        for filename in sorted(filenames):
+            if filename in IGNORED_FILES or filename.endswith(".pyc"):
+                continue
+            item = current_path / filename
+            relative = item.relative_to(path).as_posix()
+            files[relative] = f"symlink:{os.readlink(item)}" if item.is_symlink() else item.read_bytes()
+    return files
+
+
+def same_skill_contents(left: Path, right: Path) -> bool:
+    return _skill_files(left) == _skill_files(right)
+
+
+def differing_skill_files(left: Path, right: Path) -> list[str]:
+    left_files = _skill_files(left)
+    right_files = _skill_files(right)
+    return sorted(
+        name
+        for name in left_files.keys() | right_files.keys()
+        if left_files.get(name) != right_files.get(name)
+    )
+
+
+def _children(path: Path) -> set[str]:
+    if not path.is_dir():
+        return set()
+    return {
+        child.name
+        for child in path.iterdir()
+        if not child.name.startswith(".")
+        and (child.is_symlink() or (child.is_dir() and (child / "SKILL.md").is_file()))
+    }
+
+
+def _agent_status(root: Path, agent: str, name: str, canonical: Path) -> str:
+    target = root / agent / "skills" / name
+    if not target.exists() and not target.is_symlink():
+        return "off"
+    if target.is_symlink():
+        try:
+            if target.resolve(strict=True) == canonical.resolve(strict=True):
+                return "canonical-link"
+        except FileNotFoundError:
+            pass
+        raise SkillVisibilityError(f"正本を指さない symlink です: {target}")
+    if not (target / "SKILL.md").is_file():
+        raise SkillVisibilityError(f"SKILL.md がありません: {target}")
+    if canonical.is_dir() and not same_skill_contents(target, canonical):
+        return "agent-specific-divergent"
+    return "agent-specific"
+
+
+def build_matrix(root: Path) -> list[MatrixRow]:
+    canonical_root = root / "skills"
+    names = _children(canonical_root)
+    for agent in AGENT_ARRAYS:
+        names |= _children(root / agent / "skills")
+    rows = []
+    for name in sorted(names):
+        canonical = canonical_root / name
+        has_canonical = canonical.is_dir() and (canonical / "SKILL.md").is_file()
+        rows.append(
+            MatrixRow(
+                name,
+                has_canonical,
+                _agent_status(root, "claude", name, canonical),
+                _agent_status(root, "codex", name, canonical),
+            )
+        )
+    return rows
+
+
+def _default_synchronize(root: Path) -> None:
+    env = os.environ.copy()
+    env["DOTFILES"] = str(root)
+    for arguments in ([str(root / "link-skills.sh")], [str(root / "link-skills.sh"), "--audit"]):
+        result = subprocess.run(arguments, cwd=root, env=env, text=True, capture_output=True)
+        if result.returncode:
+            detail = result.stderr.strip() or result.stdout.strip()
+            raise SkillVisibilityError(detail or "link-skills.sh に失敗しました")
+
+
+def _restore_link(path: Path, old_target: str | None) -> None:
+    if path.is_symlink():
+        path.unlink()
+    if old_target is not None:
+        path.symlink_to(old_target)
+
+
+def enable(root: Path, agent: str, name: str, synchronize=_default_synchronize) -> None:
+    _validate(root, agent, name)
+    canonical = root / "skills" / name
+    target = root / agent / "skills" / name
+    if not (canonical / "SKILL.md").is_file():
+        raise SkillVisibilityError(f"正本に Skill がありません: {name}")
+    if target.exists() and not target.is_symlink():
+        raise SkillVisibilityError(f"agent 固有 Skill が存在します。先に promote してください: {target}")
+    script = root / "link-skills.sh"
+    old_script = script.read_text(encoding="utf-8")
+    old_target = os.readlink(target) if target.is_symlink() else None
+    declarations = read_declarations(script)[AGENT_ARRAYS[agent]]
+    _write_declaration(script, AGENT_ARRAYS[agent], declarations + [name])
+    try:
+        synchronize(root)
+    except Exception:
+        script.write_text(old_script, encoding="utf-8")
+        _restore_link(target, old_target)
+        raise
+
+
+def disable(root: Path, agent: str, name: str, synchronize=_default_synchronize) -> None:
+    _validate(root, agent, name)
+    target = root / agent / "skills" / name
+    if target.exists() and not target.is_symlink():
+        raise SkillVisibilityError(f"agent 固有 Skill は直接オフにできません。先に promote してください: {target}")
+    script = root / "link-skills.sh"
+    old_script = script.read_text(encoding="utf-8")
+    old_target = os.readlink(target) if target.is_symlink() else None
+    declarations = read_declarations(script)[AGENT_ARRAYS[agent]]
+    _write_declaration(script, AGENT_ARRAYS[agent], [item for item in declarations if item != name])
+    if target.is_symlink():
+        target.unlink()
+    try:
+        synchronize(root)
+    except Exception:
+        script.write_text(old_script, encoding="utf-8")
+        _restore_link(target, old_target)
+        raise
+
+
+def promote(
+    root: Path,
+    agent: str,
+    name: str,
+    keep_divergent: bool,
+    synchronize=_default_synchronize,
+) -> None:
+    _validate(root, agent, name)
+    canonical = root / "skills" / name
+    source = root / agent / "skills" / name
+    other_agent = next(item for item in AGENT_ARRAYS if item != agent)
+    other = root / other_agent / "skills" / name
+    if canonical.exists() or canonical.is_symlink():
+        raise SkillVisibilityError(f"正本がすでに存在します: {canonical}")
+    if source.is_symlink() or not (source / "SKILL.md").is_file():
+        raise SkillVisibilityError(f"昇格できる agent 固有 Skill がありません: {source}")
+    other_is_real = other.exists() and not other.is_symlink()
+    differences = differing_skill_files(source, other) if other_is_real else []
+    identical_other = other_is_real and not differences
+    if other_is_real and not identical_other and not keep_divergent:
+        raise PromotionConflict(
+            f"{other_agent} に同名で内容の異なる Skill があります。"
+            f"差分: {', '.join(differences)}。"
+            "選択元を確認し、保持するなら --keep-divergent を付けてください"
+        )
+
+    script = root / "link-skills.sh"
+    old_script = script.read_text(encoding="utf-8")
+    backup_root = Path(tempfile.mkdtemp(prefix=".skill-visibility-", dir=root))
+    backup_other = backup_root / "other"
+    moved_other = False
+    try:
+        source.rename(canonical)
+        agents_to_link = [agent]
+        if identical_other:
+            other.rename(backup_other)
+            moved_other = True
+            agents_to_link.append(other_agent)
+        for linked_agent in agents_to_link:
+            array_name = AGENT_ARRAYS[linked_agent]
+            declarations = read_declarations(script)[array_name]
+            _write_declaration(script, array_name, declarations + [name])
+        synchronize(root)
+    except Exception:
+        script.write_text(old_script, encoding="utf-8")
+        for linked_agent in AGENT_ARRAYS:
+            path = root / linked_agent / "skills" / name
+            if path.is_symlink():
+                path.unlink()
+        if canonical.exists():
+            canonical.rename(source)
+        if moved_other and backup_other.exists():
+            backup_other.rename(other)
+        raise
+    finally:
+        shutil.rmtree(backup_root, ignore_errors=True)
+
+
+def _print_matrix(root: Path) -> None:
+    rows = build_matrix(root)
+    headers = ("SKILL", "CANONICAL", "CLAUDE", "CODEX")
+    values = [headers] + [
+        (row.name, "yes" if row.canonical else "no", row.claude, row.codex) for row in rows
+    ]
+    widths = [max(len(row[index]) for row in values) for index in range(4)]
+    for index, row in enumerate(values):
+        print("  ".join(value.ljust(widths[column]) for column, value in enumerate(row)).rstrip())
+        if index == 0:
+            print("  ".join("-" * width for width in widths))
+
+
+def _parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--dotfiles",
+        type=Path,
+        default=Path(os.environ.get("DOTFILES", Path.home() / "dotfiles")),
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers.add_parser("list", help="正本と agent ごとの可視性を一覧表示")
+    subparsers.add_parser("audit", help="宣言と symlink の一致を監査")
+    for command in ("enable", "disable"):
+        action = subparsers.add_parser(command)
+        action.add_argument("agent", choices=AGENT_ARRAYS)
+        action.add_argument("skill")
+    action = subparsers.add_parser("promote")
+    action.add_argument("agent", choices=AGENT_ARRAYS, help="正本として採用する側")
+    action.add_argument("skill")
+    action.add_argument("--keep-divergent", action="store_true")
+    return parser
+
+
+def main() -> int:
+    arguments = _parser().parse_args()
+    root = arguments.dotfiles.expanduser().resolve()
+    try:
+        if arguments.command == "list":
+            _print_matrix(root)
+        elif arguments.command == "audit":
+            env = os.environ.copy()
+            env["DOTFILES"] = str(root)
+            subprocess.run([str(root / "link-skills.sh"), "--audit"], cwd=root, env=env, check=True)
+        elif arguments.command == "enable":
+            enable(root, arguments.agent, arguments.skill)
+            _print_matrix(root)
+        elif arguments.command == "disable":
+            disable(root, arguments.agent, arguments.skill)
+            _print_matrix(root)
+        else:
+            promote(root, arguments.agent, arguments.skill, arguments.keep_divergent)
+            _print_matrix(root)
+    except (SkillVisibilityError, subprocess.CalledProcessError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

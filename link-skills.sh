@@ -19,7 +19,9 @@ CLAUDE_SKILLS=(
   codex-spark-delegation
   credential-redaction
   cursor-composer-delegation
+  defuddle
   development-workflow
+  diagram-design
   emil-design-eng
   find-skills
   frontend-design
@@ -29,10 +31,13 @@ CLAUDE_SKILLS=(
   hallmark
   improve-animations
   japanese-test-conventions
+  json-canvas
   linear-bulk-issue-triage
   linear-cli
   linear-work-planning
+  obsidian-bases
   obsidian-cli
+  obsidian-markdown
   playwright-cli
   playwright-interactive
   review-animations
