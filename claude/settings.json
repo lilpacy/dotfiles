@@ -112,7 +112,16 @@
     "frontend-design@claude-plugins-official": false,
     "linear-cli@linear-cli": true,
     "skill-creator@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": true,
+    "ponytail@ponytail": true
+  },
+  "extraKnownMarketplaces": {
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    }
   },
   "outputStyle": "verbose",
   "sandbox": {
