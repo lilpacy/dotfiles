@@ -792,12 +792,14 @@ def _draw_tui(
         _tui_text(screen, 0, 0, "画面が小さすぎます (54x9以上にしてください)", width - 1)
         screen.refresh()
         return
+    state = "Agentに相談中（一覧操作は継続可能）" if agent_running else message
+    state_rows = bool(state)
     title = f"Skill Visibility  操作対象={selected_agent}  相談先={backend}  絞込={query or '-'}"
     _tui_text(screen, 0, 0, title, width - 1, color(1) | curses.A_BOLD)
     skill_width = max(12, width - 44)
     header = f"{'SKILL':<{skill_width}}  {'CANONICAL':<9}  {'CLAUDE':<14}  {'CODEX':<14}"
     _tui_text(screen, 1, 0, header, width - 1, color(1) | curses.A_UNDERLINE)
-    body_height = height - 7
+    body_height = height - 6 - state_rows
     start = max(0, selected - body_height + 1)
     for screen_row, (index, row) in enumerate(enumerate(rows[start : start + body_height], start), 2):
         line = (
@@ -822,10 +824,10 @@ def _draw_tui(
             pair = status_color_pair(status)
             status_attribute = (color(pair) if pair else curses.A_DIM) | attribute
             _tui_text(screen, screen_row, column, f"{status:<14.14}", 14, status_attribute)
-    _tui_text(screen, height - 5, 0, "説明:", 5, color(1) | curses.A_BOLD)
+    description_row = height - 4 - state_rows
+    _tui_text(screen, description_row, 0, "説明:", 5, color(1) | curses.A_BOLD)
     for offset, line in enumerate(description_lines(description, width - 7, 2)):
-        _tui_text(screen, height - 5 + offset, 6, line, width - 7)
-    state = "Agentに相談中（一覧操作は継続可能）" if agent_running else message
+        _tui_text(screen, description_row + offset, 6, line, width - 7)
     state_pair = 3 if agent_running else 4 if "失敗" in state or "開けません" in state else 2 if state.startswith(("完了", "Finderで開きました")) else 0
     _tui_text(screen, height - 3, 0, state, width - 1, color(state_pair))
     if pending:
