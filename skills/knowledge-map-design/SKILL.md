@@ -96,8 +96,11 @@ Do not validate a human view by requiring a rendering syntax. Validate the seman
 5. Incorporate an external curriculum when one exists: reuse its teaching order, exercises, and outcomes only after checking them against both base maps. If none exists, synthesize from at least two independent external sources and label the synthesis explicitly.
 6. Apply constraints and pedagogy, then record every derivation input and rationale so the curriculum can be regenerated.
 7. Apply Learning State only when producing a personal learning path from the purpose curriculum.
+8. Make every stage runnable: state the task, observable passing evidence, and the next unlocked stage. When delivering it interactively, ask one focused question at a time and judge the learner's reasoning rather than accepting a correct label without its required rationale.
 
 Keep Learning State separate from domain truth and from the reusable purpose curriculum. A learner asking about a concept proves exposure, not mastery.
+
+Read [references/interactive-curriculum-delivery.md](references/interactive-curriculum-delivery.md) when turning a curriculum into a guided session with stage gates, concise learner replies, or a real goal that must be narrowed into measurable outcomes.
 
 ## Validate
 
