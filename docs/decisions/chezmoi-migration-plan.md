@@ -2,6 +2,11 @@
 
 > **Status: 見送り（2026-07-21）** — 移行しない判断とその理由は [chezmoi-migration-decision.md](./chezmoi-migration-decision.md) を参照。本計画は再検討時の参考として残す。
 
+> **2026-08-17 追記:** 以下の `~/.agents/skills -> ~/dotfiles/skills`
+> 全公開案は採用しない。現在は agent 別 root で Skill を選択公開し、
+> `~/.agents/skills/agmsg` には `SKILL.md` を含まない runtime 部品だけを
+> `links.conf` から配置する。
+
 ## レビュー状態
 
 | 項目 | 結果 |
@@ -142,7 +147,7 @@ flowchart TD
 |---|---|
 | `chezmoi apply` 後に hook が壊れた | `cp ~/.codex/hooks.json.bak.<timestamp> ~/.codex/hooks.json` |
 | `~/.codex/AGENTS.md` / `~/.codex/skills` が壊れた | `./link.sh` を再実行し、`~/.codex/skills -> ~/dotfiles/codex/skills` を戻す |
-| `~/.agents/skills` が壊れた | `./link.sh` を再実行し、`~/.agents/skills -> ~/dotfiles/skills` を戻す |
+| `~/.agents/skills/agmsg` runtime が壊れた | `./link.sh` を再実行し、`SKILL.md` を含まない runtime symlink 群を戻す |
 | `skills` submodule が問題を起こした | submodule entry を消し、`skills.bak.<timestamp>` または git branch から旧 `skills/` directory を戻す |
 | chezmoi source state が不要になった | `chezmoi/` と chezmoi 関連差分を revert |
 | グローバルに chezmoi をやめる | chezmoi は apply 済みファイルを消さない前提で、backup 復元と `link.sh` 再実行 |

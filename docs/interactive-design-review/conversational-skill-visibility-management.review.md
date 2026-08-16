@@ -37,6 +37,9 @@ flowchart LR
 
 管理対象セルは`オフ`、`正本リンク`、`固有`、`固有・正本と相違`の4状態を持つ。`~/.agents/skills`から正本全体を公開せず、Codexは`~/.codex/skills`、Claude Codeはagent専用rootから選択Skillを読む。
 
+既存の`agmsg` command/hook互換性のため、`~/.agents/skills/agmsg`には
+`SKILL.md`を含まないruntime部品だけを配置する。これはSkill探索経路ではない。
+
 ## 3. Decision Requirements
 
 | ID | 必要な判断 | 発生条件 | 誤判断の影響 |

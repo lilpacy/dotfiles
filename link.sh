@@ -5,6 +5,12 @@ set -euo pipefail
 DOTFILES="${DOTFILES:-$HOME/dotfiles}"
 LINKS_CONF="$DOTFILES/links.conf"
 
+# 旧構成の全 Skill 公開 symlink だけを外す。実体は削除しない。
+LEGACY_SKILLS="$HOME/.agents/skills"
+if [[ -L "$LEGACY_SKILLS" && "$(readlink "$LEGACY_SKILLS")" == "$DOTFILES/skills" ]]; then
+  unlink "$LEGACY_SKILLS"
+fi
+
 while IFS=$'\t' read -r src dst; do
   [[ -z "$src" || "$src" == \#* || -z "$dst" ]] && continue
   dst="${dst/#\~/$HOME}"
