@@ -1027,6 +1027,8 @@ def main() -> int:
         else:
             promote(root, arguments.agent, arguments.skill, arguments.keep_divergent)
             _print_matrix(root)
+    except KeyboardInterrupt:
+        return 130
     except (SkillVisibilityError, subprocess.CalledProcessError) as error:
         print(f"error: {error}", file=sys.stderr)
         return 1

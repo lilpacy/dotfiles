@@ -4,9 +4,11 @@ import importlib.util
 from importlib.machinery import SourceFileLoader
 import os
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).parents[1] / "skill-visibility"
@@ -388,6 +390,14 @@ CODEX_SKILLS=(
         self.assertEqual(self.module.status_color_pair("canonical-link"), 2)
         self.assertEqual(self.module.status_color_pair("agent-specific"), 3)
         self.assertEqual(self.module.status_color_pair("agent-specific-divergent"), 4)
+
+    def test_29_準正常系_Ctrl_Cでトレースバックを出さず終了できる(self):
+        arguments = [str(SCRIPT), "--dotfiles", str(self.root), "tui"]
+
+        with patch.object(self.module, "_run_tui", side_effect=KeyboardInterrupt), patch.object(
+            sys, "argv", arguments
+        ):
+            self.assertEqual(self.module.main(), 130)
 
 
 if __name__ == "__main__":
