@@ -40,6 +40,11 @@ only when the full Skill folder needs inspection. Press `x` to delete the
 selected agent's real agent-specific directory, or `X` to delete the canonical
 Skill and every symlink that points to it. Both actions require confirmation.
 
+The matrix also shows ownership and local filesystem dates. Canonical Skills
+use the Hermes registry's `agent` or `user` owner. Agent-specific Skills without
+a canonical source are user-managed. `CREATED` is the source directory's local
+creation date, and `MODIFIED` is the latest local change date within that source.
+
 ## CLI Operations
 
 ```bash

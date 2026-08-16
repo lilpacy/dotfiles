@@ -603,6 +603,33 @@ CODEX_SKILLS=(
                 self.root, "private", self.synchronize
             )
 
+    def test_47_準正常系_正本がないSkillはユーザー管理として実体の日付を表示できる(self):
+        self.write_skill("claude/skills/private", "private")
+
+        row = next(row for row in self.module.build_matrix(self.root) if row.name == "private")
+
+        self.assertEqual(row.owner, "user")
+        self.assertRegex(row.created, r"^\d{4}-\d{2}-\d{2}$")
+        self.assertRegex(row.modified, r"^\d{4}-\d{2}-\d{2}$")
+
+    def test_48_正常系_正本Skillはregistryの管理者と日付を一覧に含める(self):
+        self.write_skill("skills/shared", "shared")
+
+        with patch.object(self.module, "skill_owners", return_value={"shared": "agent"}):
+            row = next(row for row in self.module.build_matrix(self.root) if row.name == "shared")
+
+        self.assertEqual(row.owner, "agent")
+        self.assertRegex(row.created, r"^\d{4}-\d{2}-\d{2}$")
+        self.assertRegex(row.modified, r"^\d{4}-\d{2}-\d{2}$")
+
+    def test_49_異常系_registryを読めない場合は管理者を不明として表示する(self):
+        self.write_skill("skills/shared", "shared")
+
+        with patch.object(self.module, "skill_owners", return_value=None):
+            row = next(row for row in self.module.build_matrix(self.root) if row.name == "shared")
+
+        self.assertEqual(row.owner, "unknown")
+
 
 if __name__ == "__main__":
     unittest.main()

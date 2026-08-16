@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import unicodedata
+from datetime import datetime
 from pathlib import Path
 from typing import NamedTuple
 
@@ -21,6 +22,7 @@ AGENT_ARRAYS = {"claude": "CLAUDE_SKILLS", "codex": "CODEX_SKILLS"}
 IGNORED_DIRS = {"__pycache__"}
 IGNORED_FILES = {".DS_Store"}
 NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+SKILL_MANAGER = Path.home() / ".local/bin/hermes-codex-skill"
 ALLOWED_ACTIONS = {"enable", "disable", "promote", "delete", "delete-canonical", "audit"}
 STATUS_COLOR_PAIRS = {
     "canonical-link": 2,
@@ -64,6 +66,9 @@ class MatrixRow(NamedTuple):
     canonical: bool
     claude: str
     codex: str
+    owner: str = "user"
+    created: str = "-"
+    modified: str = "-"
 
 
 def _array_pattern(name: str) -> re.Pattern[str]:
@@ -168,8 +173,51 @@ def _agent_status(root: Path, agent: str, name: str, canonical: Path) -> str:
     return "agent-specific"
 
 
+def skill_owners(root: Path) -> dict[str, str] | None:
+    configured_root = Path(os.environ.get("DOTFILES", Path.home() / "dotfiles")).expanduser().resolve()
+    if root.resolve() != configured_root:
+        return {}
+    try:
+        result = subprocess.run(
+            [str(SKILL_MANAGER), "list", "--json"],
+            text=True,
+            capture_output=True,
+            timeout=2,
+        )
+        rows = json.loads(result.stdout) if result.returncode == 0 else None
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+        return None
+    if not isinstance(rows, list):
+        return None
+    return {
+        str(row["name"]): "agent" if row.get("owner") == "agent" else "user"
+        for row in rows
+        if isinstance(row, dict) and isinstance(row.get("name"), str)
+    }
+
+
+def _skill_dates(paths: list[Path]) -> tuple[str, str]:
+    created = []
+    modified = []
+    for path in paths:
+        items = [path, *(item for item in path.rglob("*") if not item.is_symlink())]
+        for index, item in enumerate(items):
+            try:
+                stat = item.stat()
+            except OSError:
+                continue
+            if index == 0:
+                created.append(getattr(stat, "st_birthtime", stat.st_ctime))
+            modified.append(stat.st_mtime)
+    if not created or not modified:
+        return "-", "-"
+    date = lambda timestamp: datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
+    return date(min(created)), date(max(modified))
+
+
 def build_matrix(root: Path) -> list[MatrixRow]:
     canonical_root = root / "skills"
+    owners = skill_owners(root)
     names = _children(canonical_root)
     for agent in AGENT_ARRAYS:
         names |= _children(root / agent / "skills")
@@ -177,12 +225,22 @@ def build_matrix(root: Path) -> list[MatrixRow]:
     for name in sorted(names):
         canonical = canonical_root / name
         has_canonical = canonical.is_dir() and (canonical / "SKILL.md").is_file()
+        sources = [canonical] if has_canonical else [
+            root / agent / "skills" / name
+            for agent in AGENT_ARRAYS
+            if (root / agent / "skills" / name).is_dir()
+            and not (root / agent / "skills" / name).is_symlink()
+        ]
+        created, modified = _skill_dates(sources)
         rows.append(
             MatrixRow(
                 name,
                 has_canonical,
                 _agent_status(root, "claude", name, canonical),
                 _agent_status(root, "codex", name, canonical),
+                "user" if not has_canonical else "unknown" if owners is None else owners.get(name, "user"),
+                created,
+                modified,
             )
         )
     return rows
@@ -195,6 +253,9 @@ def matrix_to_json(rows: list[MatrixRow]) -> list[dict[str, object]]:
             "canonical": row.canonical,
             "claude": row.claude,
             "codex": row.codex,
+            "owner": row.owner,
+            "created": row.created,
+            "modified": row.modified,
         }
         for row in rows
     ]
@@ -779,11 +840,20 @@ def promote(
 
 def _print_matrix(root: Path) -> None:
     rows = build_matrix(root)
-    headers = ("SKILL", "CANONICAL", "CLAUDE", "CODEX")
+    headers = ("SKILL", "CANONICAL", "CLAUDE", "CODEX", "OWNER", "CREATED", "MODIFIED")
     values = [headers] + [
-        (row.name, "yes" if row.canonical else "no", row.claude, row.codex) for row in rows
+        (
+            row.name,
+            "yes" if row.canonical else "no",
+            row.claude,
+            row.codex,
+            row.owner,
+            row.created,
+            row.modified,
+        )
+        for row in rows
     ]
-    widths = [max(len(row[index]) for row in values) for index in range(4)]
+    widths = [max(len(row[index]) for row in values) for index in range(len(headers))]
     for index, row in enumerate(values):
         print("  ".join(value.ljust(widths[column]) for column, value in enumerate(row)).rstrip())
         if index == 0:
@@ -890,29 +960,34 @@ def _draw_tui(
     screen.erase()
     height, width = screen.getmaxyx()
     color = curses.color_pair if curses.has_colors() else lambda _pair: 0
-    if height < 9 or width < 54:
-        _tui_text(screen, 0, 0, "画面が小さすぎます (54x9以上にしてください)", width - 1)
+    if height < 9 or width < 89:
+        _tui_text(screen, 0, 0, "画面が小さすぎます (89x9以上にしてください)", width - 1)
         screen.refresh()
         return
     state = "Agentに相談中（一覧操作は継続可能）" if agent_running else message
     state_rows = bool(state)
     title = f"Skill Visibility  操作対象={selected_agent}  相談先={backend}  絞込={query or '-'}"
     _tui_text(screen, 0, 0, title, width - 1, color(1) | curses.A_BOLD)
-    skill_width = max(12, width - 44)
-    header = f"{'SKILL':<{skill_width}}  {'CANONICAL':<9}  {'CLAUDE':<14}  {'CODEX':<14}"
+    skill_width = max(12, width - 77)
+    header = (
+        f"{'SKILL':<{skill_width}}  {'CANONICAL':<9}  {'CLAUDE':<14}  {'CODEX':<14}  "
+        f"{'OWNER':<7}  {'CREATED':<10}  {'MODIFIED':<10}"
+    )
     _tui_text(screen, 1, 0, header, width - 1, color(1) | curses.A_UNDERLINE)
     body_height = height - 6 - state_rows
     start = max(0, selected - body_height + 1)
     for screen_row, (index, row) in enumerate(enumerate(rows[start : start + body_height], start), 2):
         line = (
             f"{row.name:<{skill_width}.{skill_width}}  "
-            f"{('yes' if row.canonical else 'no'):<9}  {row.claude:<14.14}  {row.codex:<14.14}"
+            f"{('yes' if row.canonical else 'no'):<9}  {row.claude:<14.14}  {row.codex:<14.14}  "
+            f"{row.owner:<7.7}  {row.created:<10.10}  {row.modified:<10.10}"
         )
         attribute = curses.A_REVERSE if index == selected else 0
         _tui_text(screen, screen_row, 0, line, width - 1, attribute)
         canonical_column = skill_width + 2
         claude_column = canonical_column + 11
         codex_column = claude_column + 16
+        owner_column = codex_column + 16
         canonical_attribute = (color(2) if row.canonical else curses.A_DIM) | attribute
         _tui_text(
             screen,
@@ -926,6 +1001,15 @@ def _draw_tui(
             pair = status_color_pair(status)
             status_attribute = (color(pair) if pair else curses.A_DIM) | attribute
             _tui_text(screen, screen_row, column, f"{status:<14.14}", 14, status_attribute)
+        owner_pair = 3 if row.owner == "agent" else 1 if row.owner == "user" else 0
+        _tui_text(
+            screen,
+            screen_row,
+            owner_column,
+            f"{row.owner:<7.7}",
+            7,
+            (color(owner_pair) if owner_pair else curses.A_DIM) | attribute,
+        )
     description_row = height - 4 - state_rows
     _tui_text(screen, description_row, 0, "説明:", 5, color(1) | curses.A_BOLD)
     for offset, line in enumerate(description_lines(description, width - 7, 2)):
