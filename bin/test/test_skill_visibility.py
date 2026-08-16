@@ -378,6 +378,17 @@ CODEX_SKILLS=(
         self.assertFalse((self.root / "claude/skills/first").exists())
         self.assertFalse((self.root / "codex/skills/second").exists())
 
+    def test_27_準正常系_Escapeで検索入力を取り消せる(self):
+        self.assertEqual(self.module.prompt_action("\x1b"), "cancel")
+        self.assertEqual(self.module.prompt_action("\n"), "submit")
+        self.assertEqual(self.module.prompt_action("x"), "append")
+
+    def test_28_正常系_可視状態ごとに区別できる色が割り当てられる(self):
+        self.assertEqual(self.module.status_color_pair("off"), 0)
+        self.assertEqual(self.module.status_color_pair("canonical-link"), 2)
+        self.assertEqual(self.module.status_color_pair("agent-specific"), 3)
+        self.assertEqual(self.module.status_color_pair("agent-specific-divergent"), 4)
+
 
 if __name__ == "__main__":
     unittest.main()

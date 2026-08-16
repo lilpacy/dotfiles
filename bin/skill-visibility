@@ -21,6 +21,11 @@ IGNORED_DIRS = {"__pycache__"}
 IGNORED_FILES = {".DS_Store"}
 NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 ALLOWED_ACTIONS = {"enable", "disable", "promote", "audit"}
+STATUS_COLOR_PAIRS = {
+    "canonical-link": 2,
+    "agent-specific": 3,
+    "agent-specific-divergent": 4,
+}
 PLAN_SCHEMA = {
     "type": "object",
     "properties": {
@@ -628,22 +633,67 @@ def _tui_text(screen, row: int, column: int, text: str, width: int, attribute=0)
         pass
 
 
-def _tui_prompt(screen, label: str) -> str:
+def prompt_action(key: object) -> str:
+    if key in (27, "\x1b"):
+        return "cancel"
+    if key in (10, 13, "\n", "\r"):
+        return "submit"
+    if key in (8, 127, "\b", "\x7f"):
+        return "backspace"
+    return "append"
+
+
+def status_color_pair(status: str) -> int:
+    return STATUS_COLOR_PAIRS.get(status, 0)
+
+
+def _init_tui_colors(curses) -> None:
+    if not curses.has_colors():
+        return
+    curses.start_color()
+    try:
+        curses.use_default_colors()
+        background = -1
+    except curses.error:
+        background = curses.COLOR_BLACK
+    for pair, foreground in (
+        (1, curses.COLOR_CYAN),
+        (2, curses.COLOR_GREEN),
+        (3, curses.COLOR_YELLOW),
+        (4, curses.COLOR_RED),
+    ):
+        curses.init_pair(pair, foreground, background)
+
+
+def _tui_prompt(screen, label: str) -> str | None:
     import curses
 
     height, width = screen.getmaxyx()
     screen.timeout(-1)
-    curses.echo()
+    value = ""
     try:
         curses.curs_set(1)
-        screen.move(height - 1, 0)
-        screen.clrtoeol()
-        _tui_text(screen, height - 1, 0, label, width - 1)
-        return screen.getstr(height - 1, min(len(label), width - 1), max(1, width - len(label) - 2)).decode(
-            "utf-8", errors="replace"
-        )
+        while True:
+            screen.move(height - 1, 0)
+            screen.clrtoeol()
+            _tui_text(screen, height - 1, 0, f"{label}{value}", width - 1)
+            key = screen.get_wch()
+            action = (
+                "submit"
+                if key == curses.KEY_ENTER
+                else "backspace"
+                if key == curses.KEY_BACKSPACE
+                else prompt_action(key)
+            )
+            if action == "cancel":
+                return None
+            if action == "submit":
+                return value
+            if action == "backspace":
+                value = value[:-1]
+            elif isinstance(key, str) and key.isprintable():
+                value += key
     finally:
-        curses.noecho()
         curses.curs_set(0)
         screen.timeout(100)
 
@@ -672,15 +722,16 @@ def _draw_tui(
 
     screen.erase()
     height, width = screen.getmaxyx()
+    color = curses.color_pair if curses.has_colors() else lambda _pair: 0
     if height < 7 or width < 54:
         _tui_text(screen, 0, 0, "画面が小さすぎます (54x7以上にしてください)", width - 1)
         screen.refresh()
         return
     title = f"Skill Visibility  操作対象={selected_agent}  相談先={backend}  絞込={query or '-'}"
-    _tui_text(screen, 0, 0, title, width - 1, curses.A_BOLD)
+    _tui_text(screen, 0, 0, title, width - 1, color(1) | curses.A_BOLD)
     skill_width = max(12, width - 44)
     header = f"{'SKILL':<{skill_width}}  {'CANONICAL':<9}  {'CLAUDE':<14}  {'CODEX':<14}"
-    _tui_text(screen, 1, 0, header, width - 1, curses.A_UNDERLINE)
+    _tui_text(screen, 1, 0, header, width - 1, color(1) | curses.A_UNDERLINE)
     body_height = height - 5
     start = max(0, selected - body_height + 1)
     for screen_row, (index, row) in enumerate(enumerate(rows[start : start + body_height], start), 2):
@@ -690,14 +741,38 @@ def _draw_tui(
         )
         attribute = curses.A_REVERSE if index == selected else 0
         _tui_text(screen, screen_row, 0, line, width - 1, attribute)
+        canonical_column = skill_width + 2
+        claude_column = canonical_column + 11
+        codex_column = claude_column + 16
+        canonical_attribute = (color(2) if row.canonical else curses.A_DIM) | attribute
+        _tui_text(
+            screen,
+            screen_row,
+            canonical_column,
+            f"{'yes' if row.canonical else 'no':<9}",
+            9,
+            canonical_attribute,
+        )
+        for column, status in ((claude_column, row.claude), (codex_column, row.codex)):
+            pair = status_color_pair(status)
+            status_attribute = (color(pair) if pair else curses.A_DIM) | attribute
+            _tui_text(screen, screen_row, column, f"{status:<14.14}", 14, status_attribute)
     state = "Agentに相談中（一覧操作は継続可能）" if agent_running else message
-    _tui_text(screen, height - 3, 0, state, width - 1)
+    state_pair = 3 if agent_running else 4 if "失敗" in state or "開けません" in state else 2 if state.startswith(("完了", "Finderで開きました")) else 0
+    _tui_text(screen, height - 3, 0, state, width - 1, color(state_pair))
     if pending:
         operations = ", ".join(
             f"{item['action']}:{item.get('agent', '-')}:{item.get('skill', '-')}"
             for item in pending["operations"]
         )
-        _tui_text(screen, height - 2, 0, f"計画: {operations or '変更なし'}  Enter=実行 Esc=取消", width - 1)
+        _tui_text(
+            screen,
+            height - 2,
+            0,
+            f"計画: {operations or '変更なし'}  Enter=実行 Esc=取消",
+            width - 1,
+            color(3),
+        )
     else:
         _tui_text(
             screen,
@@ -705,6 +780,7 @@ def _draw_tui(
             0,
             "j/k=行 Ctrl-d/u=半頁 gg=先頭 G=末尾 Tab=対象 /=検索 e/d=追加/オフ p=昇格 o=開く",
             width - 1,
+            curses.A_DIM,
         )
     _tui_text(
         screen,
@@ -712,6 +788,7 @@ def _draw_tui(
         0,
         "P=差分保持昇格 a=監査 :=Agentに相談 b=相談先切替 r=更新 c=絞込解除 q=終了",
         width - 1,
+        curses.A_DIM,
     )
     screen.refresh()
 
@@ -723,6 +800,7 @@ def _run_tui(root: Path, backend: str) -> None:
     def application(screen) -> None:
         nonlocal backend
         curses.curs_set(0)
+        _init_tui_colors(curses)
         screen.keypad(True)
         screen.timeout(100)
         rows = build_matrix(root)
@@ -802,8 +880,12 @@ def _run_tui(root: Path, backend: str) -> None:
                         message = f"フォルダを開けませんでした: {error}"
                     continue
                 if key == ord("/"):
-                    query = _tui_prompt(screen, "検索: ").strip()
-                    selected = 0
+                    entered = _tui_prompt(screen, "検索: ")
+                    if entered is None:
+                        message = "検索を取り消しました"
+                    else:
+                        query = entered.strip()
+                        selected = 0
                     continue
                 if key == ord("c"):
                     query = ""
@@ -824,7 +906,11 @@ def _run_tui(root: Path, backend: str) -> None:
                     if future:
                         message = "Agentに相談中です"
                         continue
-                    request = _tui_prompt(screen, "Agentに相談: ").strip()
+                    entered = _tui_prompt(screen, "Agentに相談: ")
+                    if entered is None:
+                        message = "Agent相談を取り消しました"
+                        continue
+                    request = entered.strip()
                     if request:
                         future = executor.submit(propose_operations, root, backend, request)
                         message = "Agentに相談しました"
