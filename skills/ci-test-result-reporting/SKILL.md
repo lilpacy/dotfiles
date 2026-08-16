@@ -100,9 +100,11 @@ Before claiming an end-to-end validation, determine:
 - which ref supplied the parser and renderer;
 - which version wrote the published artifact and PR comment.
 
-If the run used an older reporter, describe the new reporter as contract-tested, not workflow-validated. Re-run after the new implementation is reachable only when that evidence is required; do not repeat an expensive full suite for a wording-only documentation change.
+If the run used an older reporter, describe the new reporter as contract-tested, not workflow-validated. Re-run after the new implementation is reachable only when that evidence is required.
 
-Read [references/e2e-run-outcomes-and-provenance.md](references/e2e-run-outcomes-and-provenance.md) for the session-derived failure patterns behind these rules.
+A newer pull-request head does not automatically invalidate a prior E2E result. Compare the previously validated tree with the candidate tree and classify the semantic change. Re-run expensive E2E only when runtime code, build inputs, dependencies, schemas, fixtures, tests, or relevant integration configuration changed, or when repository policy explicitly requires it. A docs-only conflict resolution does not require full E2E when those documents are not executable inputs; run only the applicable documentation and policy checks.
+
+Read [references/e2e-run-outcomes-and-provenance.md](references/e2e-run-outcomes-and-provenance.md) for the session-derived failure patterns behind these rules, and [references/post-validation-change-impact.md](references/post-validation-change-impact.md) for the post-validation rerun decision.
 
 ## Pull-request diff-range integrity
 
