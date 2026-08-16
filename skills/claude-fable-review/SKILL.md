@@ -23,7 +23,7 @@ description: Use only when the user explicitly asks for Fable/Claude review. Run
 - Use `env claude -p` to avoid shell aliases such as `claude --dangerously-skip-permissions`.
 - Pass `--model global.anthropic.claude-fable-5` explicitly. Do not rely on the root `"model"` setting (it defaults to sonnet).
 - Pass `--effort high` explicitly. Do not leave effort at the CLI default.
-- Pass `--disallowedTools "Edit,Write,NotebookEdit"` so the reviewer cannot modify files. Everything else (normal settings, CLAUDE.md, skills, MCP, permissions) loads as usual.
+- Pass `--disallowedTools "Edit,Write,NotebookEdit,Bash(claude:*),Bash(codex exec:*),Bash(git checkout:*),Bash(git clean:*),Bash(git reset:*),Bash(git push:*),Bash(mv:*),Bash(rm:*),Bash(rmdir:*),Bash(cp:*),Bash(mkdir:*),Bash(touch:*),Bash(chmod:*),Bash(chown:*),Bash(sudo:*),Bash(npx:*),Bash(pnpx:*),Bash(bunx:*),Bash(brew install:*),Bash(brew upgrade:*),Bash(brew uninstall:*),Bash(npm install:*),Bash(npm i:*),Bash(npm ci:*),Bash(pnpm install:*),Bash(yarn install:*),Bash(bun install:*),Bash(pip install:*),Bash(pip3 install:*),Bash(python -c:*),Bash(python3 -c:*),Bash(ruby -e:*),mcp__ais__*"` so the reviewer cannot modify files, install software, or launch another reviewer. Everything else (normal settings, CLAUDE.md, skills, MCP, permissions) loads as usual.
 - Do not use `--safe-mode`, `--bare`, custom `--settings` JSON, or `--tools`/`--allowedTools` lists. The normal `claude/settings.json` permissions (including its deny rules) apply.
 - In the prompt, separate depth from output: investigate thoroughly, but report only critical issues.
 - Instruct the reviewer not to run tests, build, format, install, generation, mutation, or deployment commands, and not to start another `claude -p`, `codex exec`, or `mcp__ais` call.
@@ -42,7 +42,7 @@ REVIEW_LOG=${REVIEW_LOG:-review-result.jsonl}
 env claude -p \
   --model global.anthropic.claude-fable-5 \
   --effort "${CLAUDE_REVIEW_EFFORT:-high}" \
-  --disallowedTools "Edit,Write,NotebookEdit" \
+  --disallowedTools "Edit,Write,NotebookEdit,Bash(claude:*),Bash(codex exec:*),Bash(git checkout:*),Bash(git clean:*),Bash(git reset:*),Bash(git push:*),Bash(mv:*),Bash(rm:*),Bash(rmdir:*),Bash(cp:*),Bash(mkdir:*),Bash(touch:*),Bash(chmod:*),Bash(chown:*),Bash(sudo:*),Bash(npx:*),Bash(pnpx:*),Bash(bunx:*),Bash(brew install:*),Bash(brew upgrade:*),Bash(brew uninstall:*),Bash(npm install:*),Bash(npm i:*),Bash(npm ci:*),Bash(pnpm install:*),Bash(yarn install:*),Bash(bun install:*),Bash(pip install:*),Bash(pip3 install:*),Bash(python -c:*),Bash(python3 -c:*),Bash(ruby -e:*),mcp__ais__*" \
   --output-format json \
   "このプランまたは差分をレビューして。調査・検証は徹底的に行い、報告は致命的な点だけに絞って。テスト・build・format・install・生成・編集・mutation・deploy コマンドは実行せず、差分・設定・既存ログの読取を主材料に判断して。現行仕様確認には WebSearch/WebFetch を使ってよいが、private code・secret・env 値・customer data・大きな local diff を検索クエリや取得 URL に貼らないで。別の claude -p、codex exec、mcp__ais、外部レビューコマンドは絶対に起動しないで。回答内容が現時点で out of date / deprecated になっていないかにも気をつけて。Web を使った場合は参照 URL と判断への使い方を短く添えて。
 
@@ -70,7 +70,7 @@ REVIEW_LOG=${REVIEW_LOG:-review-result.jsonl}
 env claude -p \
   --model global.anthropic.claude-fable-5 \
   --effort "${CLAUDE_REVIEW_EFFORT:-high}" \
-  --disallowedTools "Edit,Write,NotebookEdit" \
+  --disallowedTools "Edit,Write,NotebookEdit,Bash(claude:*),Bash(codex exec:*),Bash(git checkout:*),Bash(git clean:*),Bash(git reset:*),Bash(git push:*),Bash(mv:*),Bash(rm:*),Bash(rmdir:*),Bash(cp:*),Bash(mkdir:*),Bash(touch:*),Bash(chmod:*),Bash(chown:*),Bash(sudo:*),Bash(npx:*),Bash(pnpx:*),Bash(bunx:*),Bash(brew install:*),Bash(brew upgrade:*),Bash(brew uninstall:*),Bash(npm install:*),Bash(npm i:*),Bash(npm ci:*),Bash(pnpm install:*),Bash(yarn install:*),Bash(bun install:*),Bash(pip install:*),Bash(pip3 install:*),Bash(python -c:*),Bash(python3 -c:*),Bash(ruby -e:*),mcp__ais__*" \
   --output-format json \
   --resume "$SESSION_ID" \
   "前回の指摘を反映してプランまたは差分を更新した。もう一度レビューして。前回と同じ制約で、調査は徹底、報告は致命的な点だけ。新しく追加された問題がなければ、その旨を明示して: $PLAN_OR_DIFF_REF" \
@@ -81,8 +81,8 @@ For progress visibility on long reviews, `--output-format stream-json --include-
 
 ## Safety Caveats
 
-- This mode is intentionally lighter than the old `--safe-mode` + settings-injection setup. Edit/Write/NotebookEdit are hard-blocked; everything else is governed by the normal `claude/settings.json` permissions (its deny list already blocks `sudo`, `rm -rf`, `git reset`, force push) plus prompt constraints.
-- Destructive Bash beyond the settings deny list (e.g. `git checkout`, `mv`) is not hard-blocked. Run reviews from a clean worktree, or add specific `Bash(...)` patterns to `--disallowedTools` if a repo warrants it.
+- This mode is intentionally lighter than the old `--safe-mode` + settings-injection setup. Editing, listed mutation/install commands, and nested reviewers are hard-blocked; remaining commands are governed by the normal `claude/settings.json` permissions plus prompt constraints.
+- The Bash denylist is not an OS sandbox. Run reviews from a clean worktree and extend `--disallowedTools` when a repository exposes another mutation command.
 - If the reviewer needs command output that it should not produce itself (test runs, builds), provide existing logs or run the command yourself outside the review.
 
 ## Timeout Semantics
