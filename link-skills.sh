@@ -27,7 +27,6 @@ CLAUDE_SKILLS=(
   frontend-design
   git-commit-workflow
   github-review
-  gof-functional-patterns
   hallmark
   improve-animations
   japanese-test-conventions
@@ -46,7 +45,11 @@ CLAUDE_SKILLS=(
   skill-visibility-management
   structured-answer
   view-x-post
+  vocab-coach-claude-code-skill
   web-doc-reading
+  web-perf
+  workers-best-practices
+  wrangler
 )
 
 # --- Codex から参照させる skill ---------------------------------------------
@@ -71,6 +74,9 @@ CODEX_SKILLS=(
   structured-answer
   view-x-post
   web-doc-reading
+  web-perf
+  workers-best-practices
+  wrangler
 )
 
 # link_skills <target_dir> <skill名...>
