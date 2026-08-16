@@ -2,6 +2,7 @@
 
 import importlib.util
 from importlib.machinery import SourceFileLoader
+import io
 import os
 import subprocess
 import sys
@@ -243,7 +244,7 @@ CODEX_SKILLS=(
 
         self.assertEqual(self.module.actions_for(canonical, "claude"), ["enable"])
         self.assertEqual(self.module.actions_for(canonical, "codex"), ["disable"])
-        self.assertEqual(self.module.actions_for(private, "claude"), ["promote"])
+        self.assertEqual(self.module.actions_for(private, "claude"), ["promote", "delete"])
         self.assertEqual(self.module.actions_for(private, "codex"), [])
 
     def test_14_正常系_CLI操作とAgent計画を同じ結果形式で返せる(self):
@@ -332,7 +333,7 @@ CODEX_SKILLS=(
     def test_24_異常系_許可されていないAgent操作は実行前に拒否される(self):
         with self.assertRaisesRegex(self.module.SkillVisibilityError, "未対応の操作"):
             self.module.validate_operations(
-                [{"action": "delete", "agent": "codex", "skill": "shared"}]
+                [{"action": "remove", "agent": "codex", "skill": "shared"}]
             )
 
     def test_25_異常系_agent実行中にSkill状態が変わると計画を破棄する(self):
@@ -431,6 +432,75 @@ CODEX_SKILLS=(
             self.module.description_lines("alpha beta gamma delta", 10, 2),
             ["alpha beta", "gamma…"],
         )
+
+    def test_34_準正常系_正本との差分がある固有Skillも削除を選べる(self):
+        row = self.module.MatrixRow(
+            "private", True, "agent-specific-divergent", "canonical-link"
+        )
+
+        self.assertEqual(self.module.actions_for(row, "claude"), ["delete"])
+
+    def test_35_正常系_agent固有Skillを選択したagentから削除できる(self):
+        source = self.write_skill("claude/skills/private", "private")
+
+        result = self.module.run_operations(
+            self.root,
+            [{"action": "delete", "agent": "claude", "skill": "private"}],
+            synchronize=self.synchronize,
+        )
+
+        self.assertEqual(result["status"], "succeeded")
+        self.assertFalse(source.exists())
+
+    def test_36_正常系_CLIでyesを明示するとagent固有Skillを削除できる(self):
+        source = self.write_skill("claude/skills/private", "private")
+        (self.root / "link-skills.sh").chmod(0o755)
+        arguments = [
+            str(SCRIPT),
+            "--dotfiles",
+            str(self.root),
+            "delete",
+            "claude",
+            "private",
+            "--yes",
+        ]
+
+        with patch.object(sys, "argv", arguments), patch.object(sys, "stdout", io.StringIO()):
+            self.assertEqual(self.module.main(), 0)
+
+        self.assertFalse(source.exists())
+
+    def test_37_異常系_正本を指すsymlinkは削除できない(self):
+        self.write_skill("skills/shared", "shared")
+        target = self.root / "claude/skills/shared"
+        target.symlink_to("../../skills/shared")
+
+        with self.assertRaisesRegex(self.module.SkillVisibilityError, "agent 固有"):
+            self.module.delete_agent_skill(
+                self.root, "claude", "shared", self.synchronize
+            )
+
+        self.assertTrue(target.is_symlink())
+
+    def test_38_異常系_削除後の監査に失敗すると固有Skillが元へ戻る(self):
+        source = self.write_skill("codex/skills/private", "private")
+
+        def fail(_root):
+            raise self.module.SkillVisibilityError("forced")
+
+        with self.assertRaises(self.module.SkillVisibilityError):
+            self.module.delete_agent_skill(self.root, "codex", "private", fail)
+
+        self.assertEqual((source / "SKILL.md").read_text(encoding="utf-8"), "private")
+
+    def test_39_異常系_CLIからの削除はyesの明示を必須とする(self):
+        parser = self.module._parser()
+
+        with patch.object(sys, "stderr", io.StringIO()), self.assertRaises(SystemExit):
+            parser.parse_args(["delete", "claude", "private"])
+
+        arguments = parser.parse_args(["delete", "claude", "private", "--yes"])
+        self.assertTrue(arguments.yes)
 
 
 if __name__ == "__main__":

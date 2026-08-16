@@ -21,7 +21,7 @@ AGENT_ARRAYS = {"claude": "CLAUDE_SKILLS", "codex": "CODEX_SKILLS"}
 IGNORED_DIRS = {"__pycache__"}
 IGNORED_FILES = {".DS_Store"}
 NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
-ALLOWED_ACTIONS = {"enable", "disable", "promote", "audit"}
+ALLOWED_ACTIONS = {"enable", "disable", "promote", "delete", "audit"}
 STATUS_COLOR_PAIRS = {
     "canonical-link": 2,
     "agent-specific": 3,
@@ -295,8 +295,8 @@ def actions_for(row: MatrixRow, agent: str) -> list[str]:
         return ["enable"]
     if status == "canonical-link":
         return ["disable"]
-    if not row.canonical and status == "agent-specific":
-        return ["promote"]
+    if status.startswith("agent-specific"):
+        return ([] if row.canonical else ["promote"]) + ["delete"]
     return []
 
 
@@ -431,6 +431,10 @@ def run_operations(
                     enable(root, str(operation["agent"]), str(operation["skill"]), synchronize)
                 elif action == "disable":
                     disable(root, str(operation["agent"]), str(operation["skill"]), synchronize)
+                elif action == "delete":
+                    delete_agent_skill(
+                        root, str(operation["agent"]), str(operation["skill"]), synchronize
+                    )
                 elif action == "promote":
                     promote(
                         root,
@@ -537,7 +541,7 @@ def propose_operations(
     prompt = (
         "次のSkill可視性matrixと依頼から、変更計画だけをJSONで返してください。"
         "ファイルや外部サービスへアクセスせず、推測でSkill名を作らないでください。"
-        "形式は operations と explanation。actionはenable/disable/promote/auditのみです。\n"
+        "形式は operations と explanation。actionはenable/disable/promote/delete/auditのみです。\n"
         f"matrix: {matrix}\n依頼: {request}"
     )
     with tempfile.TemporaryDirectory(prefix="skill-visibility-agent-") as directory:
@@ -615,6 +619,38 @@ def disable(root: Path, agent: str, name: str, synchronize=_default_synchronize)
         script.write_text(old_script, encoding="utf-8")
         _restore_link(target, old_target)
         raise
+
+
+def delete_agent_skill(
+    root: Path,
+    agent: str,
+    name: str,
+    synchronize=_default_synchronize,
+) -> None:
+    _validate(root, agent, name)
+    target = root / agent / "skills" / name
+    if target.is_symlink() or not (target / "SKILL.md").is_file():
+        raise SkillVisibilityError(f"削除できる agent 固有 Skill がありません: {target}")
+    script = root / "link-skills.sh"
+    old_script = script.read_text(encoding="utf-8")
+    declarations = read_declarations(script)[AGENT_ARRAYS[agent]]
+    backup_root = Path(tempfile.mkdtemp(prefix=".skill-visibility-delete-", dir=root))
+    backup = backup_root / name
+    try:
+        _write_declaration(script, AGENT_ARRAYS[agent], [item for item in declarations if item != name])
+        target.rename(backup)
+        synchronize(root)
+    except Exception:
+        script.write_text(old_script, encoding="utf-8")
+        if target.is_symlink() or target.is_file():
+            target.unlink()
+        elif target.is_dir():
+            shutil.rmtree(target)
+        if backup.exists():
+            backup.rename(target)
+        raise
+    finally:
+        shutil.rmtree(backup_root, ignore_errors=True)
 
 
 def promote(
@@ -848,7 +884,7 @@ def _draw_tui(
             screen,
             height - 2,
             0,
-            "j/k=行 Ctrl-d/u=半頁 gg=先頭 G=末尾 Tab=対象 /=検索 e/d=追加/オフ p=昇格 o=開く",
+            "j/k=行 Ctrl-d/u=半頁 gg/G=先頭/末尾 Tab=対象 /=検索 o=開く",
             width - 1,
             curses.A_DIM,
         )
@@ -856,7 +892,7 @@ def _draw_tui(
         screen,
         height - 1,
         0,
-        "P=差分保持昇格 a=監査 :=Agentに相談 b=相談先切替 r=更新 c=絞込解除 q=終了",
+        "e/d=追加/オフ p/P=昇格/差分 x=削除 a=監査 :=相談 b=切替 r=更新 c=解除 q=終了",
         width - 1,
         curses.A_DIM,
     )
@@ -1018,9 +1054,15 @@ def _run_tui(root: Path, backend: str) -> None:
                     }
                     message = "監査を実行します"
                     continue
-                if key not in (ord("e"), ord("d"), ord("p"), ord("P")) or not visible:
+                if key not in (ord("e"), ord("d"), ord("p"), ord("P"), ord("x")) or not visible:
                     continue
-                action = {ord("e"): "enable", ord("d"): "disable", ord("p"): "promote", ord("P"): "promote"}[key]
+                action = {
+                    ord("e"): "enable",
+                    ord("d"): "disable",
+                    ord("p"): "promote",
+                    ord("P"): "promote",
+                    ord("x"): "delete",
+                }[key]
                 row = visible[selected]
                 if action not in actions_for(row, selected_agent):
                     message = f"{row.name} は {selected_agent} で {action} できません"
@@ -1037,7 +1079,11 @@ def _run_tui(root: Path, backend: str) -> None:
                     "source": "cli",
                     "fingerprint": _state_fingerprint(root),
                 }
-                message = f"{row.name} の {action} を確認してください"
+                message = (
+                    f"{row.name} を {selected_agent} から完全に削除します"
+                    if action == "delete"
+                    else f"{row.name} の {action} を確認してください"
+                )
 
     curses.wrapper(application)
 
@@ -1059,6 +1105,11 @@ def _parser() -> argparse.ArgumentParser:
         action.add_argument("agent", choices=AGENT_ARRAYS)
         action.add_argument("skill")
         action.add_argument("--json", action="store_true")
+    action = subparsers.add_parser("delete", help="agent 固有 Skill を削除")
+    action.add_argument("agent", choices=AGENT_ARRAYS)
+    action.add_argument("skill")
+    action.add_argument("--yes", action="store_true", required=True)
+    action.add_argument("--json", action="store_true")
     action = subparsers.add_parser("promote")
     action.add_argument("agent", choices=AGENT_ARRAYS, help="正本として採用する側")
     action.add_argument("skill")
@@ -1104,8 +1155,11 @@ def main() -> int:
         elif arguments.command == "disable":
             disable(root, arguments.agent, arguments.skill)
             _print_matrix(root)
-        else:
+        elif arguments.command == "promote":
             promote(root, arguments.agent, arguments.skill, arguments.keep_divergent)
+            _print_matrix(root)
+        else:
+            delete_agent_skill(root, arguments.agent, arguments.skill)
             _print_matrix(root)
     except KeyboardInterrupt:
         return 130

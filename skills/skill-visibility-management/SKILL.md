@@ -1,6 +1,6 @@
 ---
 name: skill-visibility-management
-description: Use when listing or changing which skills Claude Code or Codex can see, opening the interactive Skill visibility TUI, enabling or disabling a skill for either agent, promoting an agent-specific skill into the canonical dotfiles/skills store, or checking visibility drift. Also use after creating a canonical skill when the user wants to expose it to an agent.
+description: Use when listing or changing which skills Claude Code or Codex can see, opening the interactive Skill visibility TUI, enabling, disabling, or deleting a skill for either agent, promoting an agent-specific skill into the canonical dotfiles/skills store, or checking visibility drift. Also use after creating a canonical skill when the user wants to expose it to an agent.
 ---
 
 # Skill Visibility Management
@@ -28,7 +28,7 @@ skill-visibility tui
 skill-visibility tui --agent claude
 ```
 
-The TUI sends deterministic list, search, enable, disable, promote, and audit
+The TUI sends deterministic list, search, enable, disable, delete, promote, and audit
 operations directly through the existing CLI logic. `:` sends only an
 ambiguous natural-language request to a background read-only Agent. The Agent
 returns a plan; it cannot apply changes. The user must approve the plan, and
@@ -47,17 +47,20 @@ skill-visibility enable claude <skill>
 skill-visibility enable codex <skill>
 skill-visibility disable claude <skill>
 skill-visibility disable codex <skill>
+skill-visibility delete claude <skill> --yes
+skill-visibility delete codex <skill> --yes
 skill-visibility promote claude <skill>
 skill-visibility promote codex <skill>
 skill-visibility audit
 ```
 
-`enable`, `disable`, and `promote` update declarations, regenerate links, audit,
-and preserve the pre-operation state on failure. Report the resulting state.
+`enable`, `disable`, `delete`, and `promote` update declarations, regenerate
+links, audit, and preserve the pre-operation state on failure. Report the
+resulting state.
 
-An agent-specific real directory cannot be deleted by `disable`. To turn it off
-without losing it, run `promote <agent> <skill>` and then `disable <agent>
-<skill>`.
+An agent-specific real directory cannot be turned off by `disable`. Delete it
+with `delete <agent> <skill> --yes`, or preserve it by running `promote <agent>
+<skill>` and then `disable <agent> <skill>`.
 
 ## Promotion Conflicts
 
