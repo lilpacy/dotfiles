@@ -119,12 +119,26 @@ twitter search "query" -n 10
 twitter likes
 ```
 
-### search 失败时的重试链（按序执行，成功即停）
+### search 失败时按状态处理
 
-1. 直接重试一次（偶发失败常见）：`twitter search "query" -n 10`
-2. 升级后再试：`pipx upgrade twitter-cli && twitter search "query" -n 10`
-3. 换 OpenCLI 备选（桌面，复用浏览器登录态）：`opencli twitter search "query" -f yaml`
-4. 都不行就改用 `twitter feed` / `twitter user-posts @somebody` 等稳定命令绕路
+| 状态 | 处理 |
+|---|---|
+| `429` | 立即停止该登录会话的 X 搜索，不要直接重试、升级或重新登录。若响应提供 `Retry-After` / rate-limit reset，严格遵守；否则等待 15–30 分钟后只探测一次。冷却期间改用 Exa / Web / 其他平台。 |
+| `404`、queryId / schema 错误 | 直接重试一次；仍失败则升级 `twitter-cli` 后再试一次，再切换 OpenCLI。 |
+| `401` | 停止重试，检查 Cookie 是否过期；需要重新登录时让用户处理。 |
+| `403` | 停止重试；按权限不足、资源私有或平台限制处理。 |
+| 其他瞬时错误 / `5xx` | 间隔后重试一次；仍失败则切换后端或稳定命令。 |
+
+执行多个 X 搜索时，先用 `OR` 合并相近查询；同一登录会话内串行执行，不要并行。
+不同查询之间加入 10–20 秒随机间隔（本地保守初始值，不是 X 官方保证）。一旦出现
+`429`，短随机等待不能代替上述冷却。不要通过轮换 Cookie、账号、IP 或代理规避限制。
+
+非 `429` 的回退顺序：
+
+1. `twitter search "query" -n 10`
+2. `pipx upgrade twitter-cli && twitter search "query" -n 10`
+3. `opencli twitter search "query" -f yaml`
+4. `twitter feed` / `twitter user-posts @somebody` 等稳定命令
 
 ### 重要注意事项
 
