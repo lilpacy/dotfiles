@@ -139,7 +139,8 @@
           "初版は既存link-skills.shを反映・監査エンジンとして再利用するCLIを処理本体にする",
           "既存skill-visibility-management Skillはユーザーの会話をCLI操作へ変換する薄い入口として残す",
           "TUIはCLIの一覧選択が実測で負担になった場合に追加する",
-          "2026-08-17にユーザーがCLI本体＋薄いSkill入口を承認した"
+          "2026-08-17にユーザーがCLI本体＋薄いSkill入口を承認した",
+          "2026-08-17に一覧選択の負担が実際の試用で確認され、D4をsupersededとしてTUI主画面・CLI実行・read-only Agent計画のD5へ改訂した"
         ]
       }
     ]
@@ -222,6 +223,24 @@
       "statement": "Claude CodeとCodexの両方に正本なしの同名agent固有Skillが14件あり、.DS_Storeを除くと12件は同一内容、2件はSKILL.mdまたはrulesの内容が異なる",
       "source": "local diff inspection",
       "confidence": "confirmed"
+    },
+    {
+      "id": "F14",
+      "statement": "一覧を会話へ展開して対象を選ぶ試用で認知負荷が確認され、ユーザーはTUIを主画面にすることを選んだ",
+      "source": "user, 2026-08-17",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F15",
+      "statement": "決定論的操作はTUIからCLIロジックへ直接渡し、曖昧な依頼だけをread-onlyかつツール無効のAgentへ計画として委譲する",
+      "source": "user, 2026-08-17",
+      "confidence": "confirmed"
+    },
+    {
+      "id": "F16",
+      "statement": "CLI経路とAgent経路は同じ操作検証・rollback・監査を通り、共通結果形式でTUIへ返る",
+      "source": "user, 2026-08-17",
+      "confidence": "confirmed"
     }
   ],
   "actors": [
@@ -231,7 +250,7 @@
       "role": "Skill可視性の依頼者・決定者",
       "authority": ["一覧から対象agentを選ぶ", "一覧から対象Skillを選ぶ", "追加・オフを決める", "agent固有Skillの正本昇格を決める"],
       "responsibilities": ["提示された棚卸し結果を確認し、変更対象を選ぶ"],
-      "goal": "設定ファイルを直接触らず、会話だけで各agentが読むSkillを管理する"
+      "goal": "設定ファイルを直接触らず、TUIまたは会話から各agentが読むSkillを管理する"
     },
     {
       "id": "A2",
@@ -286,6 +305,18 @@
       "type": "quality",
       "statement": "agent固有Skillの内容比較では.DS_Store、__pycache__、*.pycだけを除外し、それ以外の差は競合とする",
       "status": "confirmed"
+    },
+    {
+      "id": "K7",
+      "type": "security",
+      "statement": "Agentはrepo外の一時directoryでread-only sandboxまたはツール無効化を用いて起動し、Skill状態の実行前後fingerprintが不一致なら計画を破棄する",
+      "status": "confirmed"
+    },
+    {
+      "id": "K8",
+      "type": "technical",
+      "statement": "TUIからの直接操作とAgentが返した計画は、同じCLIロジックと共通結果契約を使用する",
+      "status": "confirmed"
     }
   ],
   "business_workflow": {
@@ -319,16 +350,16 @@
       {
         "id": "W4",
         "actor_id": "A1",
-        "action": "一覧から、正本にあるSkillの追加先、現在見えるSkillのオフ対象、または正本にないagent固有Skillの正本昇格を選ぶ",
+        "action": "TUI一覧から変更対象を直接選ぶか、曖昧な整理意図をread-only Agentへ渡して計画候補を得る",
         "input": ["Skill棚卸し表"],
-        "output": ["可視性変更選択"],
+        "output": ["可視性変更選択または承認済みAgent計画"],
         "next_step_ids": ["W5"]
       },
       {
         "id": "W5",
         "actor_id": "A2",
-        "action": "追加・オフ・正本昇格の選択が現在状態に対して有効か検証する",
-        "input": ["可視性変更選択"],
+        "action": "追加・オフ・正本昇格の直接選択またはユーザーが承認したAgent計画を同じ操作契約で検証する",
+        "input": ["可視性変更選択または承認済みAgent計画"],
         "output": ["検証済み変更内容"],
         "next_step_ids": ["W6"]
       },
@@ -467,7 +498,7 @@
     {
       "id": "D4",
       "question": "Skill可視性管理の処理本体と会話入口をどう構成するか",
-      "status": "confirmed",
+      "status": "rejected",
       "options": [
         {"id": "O1", "label": "Skillだけで処理する", "effects": {"conversation": "high", "reproducibility": "low"}},
         {"id": "O2", "label": "CLIだけを提供する", "effects": {"conversation": "low", "reproducibility": "high"}},
@@ -486,8 +517,36 @@
       "workflow_step_ids": ["W1", "W2", "W8"],
       "tags": ["cli", "skill", "interaction"],
       "requirement_id": "DR4",
-      "disposition": "retain",
+      "disposition": "superseded",
+      "superseded_by": "D5",
+      "superseded_on": "2026-08-17",
       "evidence": ["F1", "F8", "F10", "Q16"],
+      "logic_type": "simple_rule",
+      "target_value_step_ids": ["V1", "V2", "V3", "V4"]
+    },
+    {
+      "id": "D5",
+      "question": "TUI・CLI・Agentの責務と結果の返却経路をどう構成するか",
+      "status": "confirmed",
+      "options": [
+        {"id": "O1", "label": "TUIから全操作をAgentへ委譲する", "effects": {"latency": "high", "determinism": "low"}},
+        {"id": "O2", "label": "TUIから全操作をCLIへ限定する", "effects": {"latency": "low", "ambiguity_support": "none"}},
+        {"id": "O3", "label": "決定論的操作はCLI、曖昧な依頼はread-only Agentが計画し、結果をTUIへ統合する", "effects": {"latency": "low_on_normal_path", "ambiguity_support": "high"}}
+      ],
+      "selected_option_id": "O3",
+      "owner": "user",
+      "applies_when": "ユーザーがTUIまたは会話からSkill可視性管理を利用するとき",
+      "reversible": true,
+      "cost_impact": "stdlib TUIと既存CLIロジックを再利用し、Agentは曖昧な依頼時だけ起動する",
+      "latency_impact": "一覧・検索・追加・オフ・昇格・監査はローカル処理だけで完了し、Agent待ちは自然言語依頼に限定する",
+      "risk": "Agentへ変更権限を与えると不定な副作用が生じ、すべてをCLIへ限定すると曖昧な整理依頼を扱えない",
+      "rationale": "TUIを操作の中心、CLIロジックを唯一の変更経路、Agentを計画専任にし、両経路を共通結果で再結合する",
+      "principle_ids": ["P1", "P2", "P3", "P4"],
+      "workflow_step_ids": ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"],
+      "tags": ["tui", "cli", "agent", "result-contract"],
+      "requirement_id": "DR4",
+      "disposition": "retain",
+      "evidence": ["D4", "F14", "F15", "F16", "Q16"],
       "logic_type": "simple_rule",
       "target_value_step_ids": ["V1", "V2", "V3", "V4"]
     }
@@ -647,6 +706,14 @@
         "entry_condition": "同名agent固有Skillの実内容が異なる",
         "visible": ["競合しているagent", "内容差分", "正本候補", "中止操作"],
         "exit_condition": "ユーザーが正本候補を明示的に選ぶか昇格を中止する"
+      },
+      {
+        "id": "S8",
+        "name": "Agent計画確認中",
+        "type": "normal",
+        "entry_condition": "曖昧な整理依頼に対するread-only Agentの計画生成が完了し、実行前後のSkill状態fingerprintが一致した",
+        "visible": ["Agent backend", "提案操作", "説明", "実行または取消操作"],
+        "exit_condition": "ユーザーが計画を承認または取消するか、外部状態変更を検出する"
       }
     ],
     "transitions": [
@@ -803,6 +870,50 @@
         "workflow_step_ids": ["W3"],
         "recovery": true,
         "assumption": false
+      },
+      {
+        "id": "T15",
+        "from_state_id": "S1",
+        "to_state_id": "S8",
+        "event": "Agent計画生成完了",
+        "guard": "曖昧な依頼をread-only Agentが許可済み操作だけの計画へ変換し、Skill状態fingerprintが一致する",
+        "decision_ids": ["D5"],
+        "workflow_step_ids": ["W4", "W5"],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T16",
+        "from_state_id": "S8",
+        "to_state_id": "S2",
+        "event": "Agent計画承認",
+        "guard": "ユーザーが表示された計画を明示的に承認し、実行直前のSkill状態が変わっていない",
+        "decision_ids": ["D5"],
+        "workflow_step_ids": ["W5", "W6"],
+        "recovery": false,
+        "assumption": false
+      },
+      {
+        "id": "T17",
+        "from_state_id": "S8",
+        "to_state_id": "S1",
+        "event": "Agent計画取消",
+        "guard": "ユーザーが計画を取り消す",
+        "decision_ids": ["D5"],
+        "workflow_step_ids": ["W3"],
+        "recovery": true,
+        "assumption": false
+      },
+      {
+        "id": "T18",
+        "from_state_id": "S8",
+        "to_state_id": "S1",
+        "event": "外部状態変更検出",
+        "guard": "Agent実行前後または計画承認直前のSkill状態fingerprintが一致しない",
+        "decision_ids": ["D5"],
+        "workflow_step_ids": ["W2", "W3"],
+        "recovery": true,
+        "assumption": false
       }
     ]
   },
@@ -814,8 +925,8 @@
         "type": "workspace",
         "parent_id": null,
         "priority": "primary",
-        "state_ids": ["S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7"],
-        "decision_ids": ["D4"]
+        "state_ids": ["S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"],
+        "decision_ids": ["D5"]
       },
       {
         "id": "IA2",
@@ -879,6 +990,15 @@
         "priority": "primary",
         "state_ids": ["S1", "S7"],
         "decision_ids": ["D3"]
+      },
+      {
+        "id": "IA9",
+        "label": "Agent計画・説明・承認操作",
+        "type": "panel",
+        "parent_id": "IA1",
+        "priority": "primary",
+        "state_ids": ["S8"],
+        "decision_ids": ["D5"]
       }
     ],
     "relationships": []
@@ -893,7 +1013,7 @@
       "system_result": "正本・Claude Code・Codexの状態をSkill単位の1表で表示する",
       "feedback": "各agent列をオフ・正本リンク・固有・固有／正本相違で表示する",
       "recovery": "読取不能時は変更せず、読めなかったpathを示す",
-      "decision_ids": ["D1", "D3", "D4"],
+      "decision_ids": ["D1", "D3", "D5"],
       "principle_ids": ["P1", "P2", "P3", "P4"],
       "ia_node_ids": ["IA2", "IA3", "IA4", "IA5"],
       "status": "confirmed"
@@ -957,15 +1077,43 @@
     {
       "id": "UI6",
       "label": "会話からのSkill管理",
-      "state_ids": ["S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7"],
+      "state_ids": ["S0", "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"],
       "display_condition": "ユーザーがCodexまたはClaude CodeへSkillの整理・追加・オフ・正本昇格を依頼する",
       "user_action": "自然言語で管理意図または一覧上の選択を伝える",
       "system_result": "skill-visibility-management Skillが同じCLIを呼び、結果を会話用のマトリクスとして返す",
       "feedback": "CLIと同じ状態・監査結果・競合情報を省略せず示す",
       "recovery": "CLIの失敗・自動復元結果をそのまま会話で説明し、次の有効な選択を示す",
-      "decision_ids": ["D1", "D2", "D3", "D4"],
+      "decision_ids": ["D1", "D2", "D3", "D5"],
       "principle_ids": ["P1", "P2", "P3", "P4"],
       "ia_node_ids": ["IA1", "IA2", "IA6", "IA7", "IA8"],
+      "status": "confirmed"
+    },
+    {
+      "id": "UI7",
+      "label": "TUI主画面",
+      "state_ids": ["S0", "S1", "S2", "S3", "S5", "S6", "S7", "S8"],
+      "display_condition": "ユーザーがskill-visibility tuiを起動する",
+      "user_action": "一覧を検索し、対象agentとSkillを選んで追加・オフ・昇格・監査を確認実行する",
+      "system_result": "Agentを起動せず既存CLIロジックで処理し、共通結果と更新済みマトリクスを同じ画面へ返す",
+      "feedback": "選択中agent、操作計画、成功・失敗・監査結果を常時表示する",
+      "recovery": "実行直前にSkill状態が変わっていれば計画を取消して一覧を再読込する",
+      "decision_ids": ["D1", "D2", "D3", "D5"],
+      "principle_ids": ["P1", "P2", "P3", "P4"],
+      "ia_node_ids": ["IA1", "IA2", "IA4", "IA5", "IA6", "IA7", "IA8"],
+      "status": "confirmed"
+    },
+    {
+      "id": "UI8",
+      "label": "Agent計画のバックグラウンド生成",
+      "state_ids": ["S1", "S8"],
+      "display_condition": "ユーザーがTUIで自然言語の整理依頼を入力する",
+      "user_action": "CodexまたはClaudeをplannerとして選び、返された計画を承認または取消する",
+      "system_result": "repo外の一時directoryでread-only・ツール無効のAgentをバックグラウンド実行し、許可済み操作だけの計画を返す",
+      "feedback": "Agent実行中も一覧操作を可能にし、完了後は説明・操作候補・Skill状態fingerprint確認結果を表示する",
+      "recovery": "Agent失敗・不正計画・外部状態変更では何も実行せず一覧へ戻る",
+      "decision_ids": ["D5"],
+      "principle_ids": ["P1", "P2", "P3", "P4"],
+      "ia_node_ids": ["IA2", "IA7", "IA9"],
       "status": "confirmed"
     }
   ],
@@ -1186,7 +1334,8 @@
     {"from": "SC3", "to": ["F1", "A1", "A2", "W1", "W8"]},
     {"from": "SC4", "to": ["F6", "K2", "W7", "W8"]},
     {"from": "SC5", "to": ["W8", "Q2"]},
-    {"from": "SC6", "to": ["F11", "F12", "F13", "DR3", "D3", "P3", "P4", "Q10", "Q11"]}
+    {"from": "SC6", "to": ["F11", "F12", "F13", "DR3", "D3", "P3", "P4", "Q10", "Q11"]},
+    {"from": "D5", "to": ["D4", "F14", "F15", "F16", "K7", "K8", "S8", "UI7", "UI8", "Q16"]}
   ],
   "business_understanding": {
     "purpose": "ユーザーが設定ファイルやscriptを直接扱わず、正本とagent別の可視Skillを対話的に棚卸しし、その一覧から追加・オフ・agent固有Skillの正本昇格を選んで管理する",
@@ -1200,7 +1349,10 @@
       "agent固有Skillを内容変更なしで正本へ昇格する",
       "対象agentの宣言配列更新",
       "symlinkの生成・除去・監査",
-      "変更結果の会話内報告"
+      "変更結果の会話内報告",
+      "TUIでの一覧・検索・選択・結果表示",
+      "read-only Agentによる曖昧な整理依頼の計画生成",
+      "CLI経路とAgent経路の共通結果契約"
     ],
     "scope_out": [
       "Skill内容の新規作成・更新",

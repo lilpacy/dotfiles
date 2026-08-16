@@ -3,6 +3,7 @@
 import importlib.util
 from importlib.machinery import SourceFileLoader
 import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -214,6 +215,139 @@ CODEX_SKILLS=(
             self.module.disable(self.root, "codex", "private", self.synchronize)
 
         self.assertTrue(source.is_dir())
+
+    def test_11_準正常系_agentの回答に説明が混ざっても計画JSONを取り出せる(self):
+        text = '候補です。\n```json\n{"operations":[{"action":"audit"}],"explanation":"確認"}\n```'
+
+        plan = self.module.parse_plan(text)
+
+        self.assertEqual(plan["operations"], [{"action": "audit"}])
+        self.assertEqual(plan["explanation"], "確認")
+
+    def test_12_正常系_一覧の検索語に一致するSkillだけを表示できる(self):
+        rows = [
+            self.module.MatrixRow("alpha", True, "off", "off"),
+            self.module.MatrixRow("beta-tool", True, "canonical-link", "off"),
+        ]
+
+        self.assertEqual(
+            [row.name for row in self.module.filter_rows(rows, "TOOL")],
+            ["beta-tool"],
+        )
+
+    def test_13_正常系_行と対象agentから実行可能な操作だけが得られる(self):
+        canonical = self.module.MatrixRow("shared", True, "off", "canonical-link")
+        private = self.module.MatrixRow("private", False, "agent-specific", "off")
+
+        self.assertEqual(self.module.actions_for(canonical, "claude"), ["enable"])
+        self.assertEqual(self.module.actions_for(canonical, "codex"), ["disable"])
+        self.assertEqual(self.module.actions_for(private, "claude"), ["promote"])
+        self.assertEqual(self.module.actions_for(private, "codex"), [])
+
+    def test_14_正常系_CLI操作とAgent計画を同じ結果形式で返せる(self):
+        self.write_skill("skills/shared")
+
+        result = self.module.run_operations(
+            self.root,
+            [{"action": "enable", "agent": "codex", "skill": "shared"}],
+            source="agent",
+            synchronize=self.synchronize,
+        )
+
+        self.assertEqual(result["source"], "agent")
+        self.assertEqual(result["status"], "succeeded")
+        self.assertTrue(result["operations"][0]["ok"])
+        row = next(row for row in result["matrix"] if row["name"] == "shared")
+        self.assertEqual(row["codex"], "canonical-link")
+
+    def test_15_準正常系_一覧だけでは監査済みと報告しない(self):
+        result = self.module.run_operations(self.root, [])
+
+        self.assertEqual(result["status"], "succeeded")
+        self.assertEqual(result["audit"], {"ok": None, "detail": "not run"})
+
+    def test_16_正常系_agentは書込不能な一時領域でツールなしに起動される(self):
+        temporary = Path("/tmp/skill-visibility-agent")
+        schema = temporary / "schema.json"
+
+        codex = self.module.agent_command("codex", temporary, schema)
+        claude = self.module.agent_command("claude", temporary, schema)
+
+        self.assertIn("read-only", codex)
+        self.assertIn("--ignore-user-config", codex)
+        self.assertIn("--ephemeral", codex)
+        self.assertIn("--safe-mode", claude)
+        self.assertEqual(claude[claude.index("--tools") + 1], "")
+
+    def test_17_正常系_Codex用計画schemaは全fieldをrequiredとして扱う(self):
+        item = self.module.PLAN_SCHEMA["properties"]["operations"]["items"]
+
+        self.assertEqual(set(item["properties"]), set(item["required"]))
+
+    def test_18_正常系_TUIで利用するAgentを起動時に選べる(self):
+        arguments = self.module._parser().parse_args(["tui", "--agent", "claude"])
+
+        self.assertEqual(arguments.command, "tui")
+        self.assertEqual(arguments.agent, "claude")
+
+    def test_19_準正常系_半画面移動は一覧の先頭と末尾で止まる(self):
+        self.assertEqual(self.module.page_target(1, -1, 20, 24), 0)
+        self.assertEqual(self.module.page_target(18, 1, 20, 24), 19)
+
+    def test_20_正常系_Ctrl_dとCtrl_uで半画面分移動できる(self):
+        self.assertEqual(self.module.page_target(2, 1, 20, 24), 11)
+        self.assertEqual(self.module.page_target(11, -1, 20, 24), 2)
+
+    def test_21_準正常系_単独のgに続く別操作を妨げない(self):
+        self.assertEqual(self.module.vim_jump(ord("g"), False, 20), (None, True))
+        self.assertEqual(self.module.vim_jump(ord("j"), True, 20), (None, False))
+
+    def test_22_正常系_ggで先頭へGで末尾へ移動できる(self):
+        self.assertEqual(self.module.vim_jump(ord("g"), True, 20), (0, False))
+        self.assertEqual(self.module.vim_jump(ord("G"), False, 20), (19, False))
+
+    def test_23_正常系_選択したSkillの実体フォルダを開ける(self):
+        canonical = self.write_skill("skills/shared")
+        private = self.write_skill("claude/skills/private")
+
+        self.assertEqual(
+            self.module.skill_folder(
+                self.root,
+                self.module.MatrixRow("shared", True, "off", "off"),
+                "claude",
+            ),
+            canonical,
+        )
+        self.assertEqual(
+            self.module.skill_folder(
+                self.root,
+                self.module.MatrixRow("private", False, "agent-specific", "off"),
+                "claude",
+            ),
+            private,
+        )
+
+    def test_24_異常系_許可されていないAgent操作は実行前に拒否される(self):
+        with self.assertRaisesRegex(self.module.SkillVisibilityError, "未対応の操作"):
+            self.module.validate_operations(
+                [{"action": "delete", "agent": "codex", "skill": "shared"}]
+            )
+
+    def test_25_異常系_agent実行中にSkill状態が変わると計画を破棄する(self):
+        self.write_skill("skills/shared")
+
+        def mutate(*_args, **_kwargs):
+            script = self.root / "link-skills.sh"
+            script.write_text(script.read_text(encoding="utf-8") + "# changed\n")
+            return subprocess.CompletedProcess([], 0, '{"operations":[],"explanation":""}', "")
+
+        with self.assertRaisesRegex(self.module.SkillVisibilityError, "状態が変更"):
+            self.module.propose_operations(
+                self.root,
+                "codex",
+                "整理して",
+                runner=mutate,
+            )
 
 
 if __name__ == "__main__":

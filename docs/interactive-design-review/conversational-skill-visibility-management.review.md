@@ -7,7 +7,7 @@
 
 ## 1. 設計概要・成功条件
 
-`./skills`を正本とし、Claude CodeとCodexへSkill単位のsymlinkで選択公開する。処理本体はCLI、`skill-visibility-management` Skillは会話からCLIを呼ぶ薄い入口とする。
+`./skills`を正本とし、Claude CodeとCodexへSkill単位のsymlinkで選択公開する。TUIを主画面、既存CLIロジックを唯一の変更経路、read-only Agentを曖昧な依頼の計画役とし、両経路の結果をTUIへ統合する。`skill-visibility-management` Skillは会話入口として残す。
 
 | ID | 成功条件 |
 |---|---|
@@ -24,12 +24,17 @@
 flowchart LR
   A[管理開始] --> B[正本・Claude・Codexを棚卸し]
   B --> C[比較マトリクスを表示]
-  C --> D{ユーザー選択}
-  D -->|追加・オフ| E[agent別宣言を更新]
-  D -->|正本昇格| F[内容競合を判定]
+  C --> D{入力}
+  D -->|直接選択| E[CLIロジックで検証]
+  D -->|曖昧な依頼| K[read-only Agentが計画]
+  K --> L{ユーザー確認}
+  L -->|承認| E
+  L -->|取消| C
+  E -->|追加・オフ| M[agent別宣言を更新]
+  E -->|正本昇格| F[内容競合を判定]
   F -->|競合なし| G[正本化してsymlink化]
   F -->|競合あり| H[選択または中止]
-  E --> I[監査]
+  M --> I[監査]
   G --> I
   H -->|選択| G
   I --> J[更新済み一覧]
@@ -67,7 +72,8 @@ flowchart LR
 | D1 | ユーザーが比較マトリクスから対象Skillとagentを選ぶ |
 | D2 | 通常はローカル監査、必要時だけ新規セッション確認 |
 | D3 | 同一内容は統合、異なる内容は停止して明示選択 |
-| D4 | CLIを処理本体、Skillを薄い会話入口にする。TUIは延期 |
+| D4 | CLI本体＋薄いSkill入口。実測後にD5でsuperseded |
+| D5 | TUIを主画面、CLIロジックを唯一の変更経路、read-only Agentを計画専任にする |
 
 ### 正本昇格 Decision Table
 
@@ -105,6 +111,9 @@ Open Blockingは0件。
 stateDiagram-v2
   [*] --> 選択待ち: 棚卸し完了
   選択待ち --> 反映中: 有効な追加・オフ・昇格
+  選択待ち --> Agent計画確認中: 曖昧な依頼の計画生成
+  Agent計画確認中 --> 反映中: 計画を承認
+  Agent計画確認中 --> 選択待ち: 取消・外部状態変更
   選択待ち --> 昇格競合: 内容相違
   昇格競合 --> 反映中: 正本候補を選択
   昇格競合 --> 選択待ち: 中止
@@ -130,6 +139,7 @@ Skill可視性管理
 │   ├── Claude Code状態・操作
 │   └── Codex状態・操作
 ├── 反映・確認状況
+├── Agent計画・説明・承認操作
 ├── 正本昇格候補・内容競合差分
 └── 失敗内容・自動復元結果
 ```
@@ -146,8 +156,10 @@ Skill可視性管理
 | UI4 | 昇格競合 | 差分・候補・保持先を表示 | 中止時は無変更 |
 | UI5 | 条件付き実セッション確認 | 必要理由と実効可視性を表示 | 不一致なら成功報告せず復元 |
 | UI6 | 会話からの管理 | Skillが同じCLIを呼びマトリクスを返す | CLIのエラー・復元結果を返す |
+| UI7 | TUI主画面 | 検索・選択・共通結果を1画面へ表示 | stale状態なら取消して再読込 |
+| UI8 | Agent計画 | バックグラウンドで計画だけ生成 | 不正計画・状態変更なら無変更 |
 
-初版はCLIを提供する。TUIはCLIの選択操作が実測で不便になった場合だけ追加する。
+CLIの選択操作が実測で不便だったためTUIを追加した。通常操作はAgentを起動せず、自然言語依頼だけCodexまたはClaudeへ計画を委譲する。
 
 ## 11. Decision Log
 
@@ -159,21 +171,22 @@ Skill可視性管理
 | agent固有Skillを正本へ昇格可能 | 実在する固有Skillを整理対象に含める |
 | 競合内容は無言で統合しない | 実内容が異なる同名Skillが存在する |
 | CLI本体＋薄いSkill入口 | 会話体験、速度、再現性を両立する |
+| TUI主画面＋CLI実行＋Agent計画 | 一覧操作の認知負荷を下げつつ、曖昧な依頼だけagenticに扱う |
 
 ## 12. Assumptions / Open Questions
 
 - Assumptions: 0
 - Open Questions: 0
-- Deferred: TUI。CLIの利用負担が実測された場合だけ検討する。
+- Deferred: なし。
 - Scope out: Skill内容の編集、plugin/system Skillの管理、履歴・version管理、自動マージ。
 
 ## 13. Traceability Matrix
 
 | 成功条件 | 判断 | 原則 | 状態・UI |
 |---|---|---|---|
-| SC1 | D1, D4 | P1, P2 | S1 / UI1, UI6 |
+| SC1 | D1, D5 | P1, P2 | S1 / UI1, UI6, UI7 |
 | SC2 | D1 | P2, P3 | S1-S5 / UI2 |
-| SC3 | D4 | P2 | 全状態 / UI6 |
+| SC3 | D5 | P2 | 全状態 / UI6, UI7, UI8 |
 | SC4 | D2 | P1 | S3-S6 / UI5 |
 | SC5 | D1, D2 | P1, P2 | S5 / UI1, UI2 |
 | SC6 | D3 | P3, P4 | S1-S3, S7 / UI3, UI4 |
