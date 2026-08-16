@@ -5,6 +5,7 @@ description: Use when searching the web or reading online documentation. Prefer 
 
 # Web Doc Reading
 
+- For research and information gathering, use WebSearch / WebFetch (or the tools below). Never drive a browser via Chrome DevTools MCP (CDP) for research — CDP is for debugging only; browsing docs through it is inefficient and risks bot detection.
 - Prefer DuckDuckGo for search because Google often blocks bots.
 - When reading documents, do not read raw HTML directly.
 - Use `npx curl.md` to fetch pages as markdown:
