@@ -875,7 +875,7 @@ def _run_tui(root: Path, backend: str) -> None:
         query = ""
         selected = 0
         selected_agent = "claude"
-        message = "一覧を読み込みました"
+        message = ""
         pending = None
         future = None
         waiting_for_g = False
