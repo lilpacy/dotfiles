@@ -10,73 +10,133 @@ COMMON="$DOTFILES/skills"
 # --- Claude から参照させる skill --------------------------------------------
 CLAUDE_SKILLS=(
   agent-browser
+  agent-reach
   agents-md
   animation-vocabulary
   apple-design
   baseline-ui
   claude-fable-review
+  cloudflare
+  cloudflare-email-service
   codex-exec-review
-  codex-spark-delegation
   credential-redaction
-  cursor-composer-delegation
   defuddle
   development-workflow
   diagram-design
+  durable-objects
   emil-design-eng
   find-skills
   frontend-design
   git-commit-workflow
-  github-review
   hallmark
   improve-animations
+  interaction-design-review-agent
   japanese-test-conventions
   json-canvas
   linear-bulk-issue-triage
   linear-cli
   linear-work-planning
+  modern-web-guidance
+  nextjs-app-router-guide
   obsidian-bases
   obsidian-cli
   obsidian-markdown
   playwright-cli
   playwright-interactive
+  react-best-practices
   review-animations
+  sandbox-sdk
   self-improvement
   shell-quoting-pitfalls
+  skill-creator
   skill-visibility-management
   structured-answer
+  supabase-postgres-best-practices
+  test-layer-classification
+  understand
   view-x-post
-  vocab-coach-claude-code-skill
   web-doc-reading
   web-perf
   workers-best-practices
   wrangler
+  write-tech-article
+  x-media-resizer
 )
 
 # --- Codex から参照させる skill ---------------------------------------------
 CODEX_SKILLS=(
+  agent-browser
+  agent-reach
+  agents-md
+  animation-vocabulary
+  apple-design
+  application-error-contracts
+  backport-installed-package-drift
+  baseline-ui
+  bounded-context-ci-recovery
+  browser-generation-completion-alert
+  canonical-documentation-maintenance
+  ci-test-result-reporting
+  claude-fable-review
+  cloudflare
   codex-exec-review
-  codex-spark-delegation
+  codex-session-history-recovery
+  codex-thread-branch-diagnostics
   credential-redaction
-  cursor-composer-delegation
+  defuddle
   development-workflow
+  diagnose-site-migration-seo
+  diagram-design
+  established-product-ui-integration
+  external-auth-local-development
   frontend-design
   git-commit-workflow
-  github-review
+  git-pull-with-live-file-watchers
+  github-actions-runtime-falsification
+  github-actions-secret-probe
+  hallmark
+  improve-animations
+  ingest-llm-wiki-query
+  install-cli-without-system-changes
+  interaction-design-review-agent
   japanese-test-conventions
+  json-canvas
+  knowledge-map-design
   linear-bulk-issue-triage
   linear-cli
   linear-work-planning
+  macos-app-uninstall
+  modern-web-guidance
+  nextjs-app-router-guide
+  obsidian-bases
   obsidian-cli
+  omi-insight-audit
+  playwright-cli
   playwright-interactive
+  playwright-lazy-fixture-lifecycle
+  react-best-practices
+  review-animations
+  review-generation-workflow-contracts
+  sandbox-sdk
+  secure-private-repo-publish
   self-improvement
   shell-quoting-pitfalls
+  skill-creator
   skill-visibility-management
   structured-answer
+  supabase-postgres-best-practices
+  test-layer-classification
+  test-suite-pruning
+  tooltip-latency-verification
+  ui-visual-critic
+  understand
   view-x-post
   web-doc-reading
   web-perf
   workers-best-practices
   wrangler
+  write-tech-article
+  x-media-resizer
 )
 
 # link_skills <target_dir> <skill名...>
