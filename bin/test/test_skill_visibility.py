@@ -338,6 +338,20 @@ CODEX_SKILLS=(
                 [{"action": "remove", "agent": "codex", "skill": "shared"}]
             )
 
+    def test_25_準正常系_Codexの管理用Skill更新中もAgentの計画を破棄しない(self):
+        def update_managed_skill(*_args, **_kwargs):
+            self.write_skill("codex/skills/.system/internal")
+            return subprocess.CompletedProcess([], 0, '{"operations":[],"explanation":""}', "")
+
+        plan = self.module.propose_operations(
+            self.root,
+            "codex",
+            "整理して",
+            runner=update_managed_skill,
+        )
+
+        self.assertEqual(plan["operations"], [])
+
     def test_25_異常系_agent実行中にSkill状態が変わると計画を破棄する(self):
         self.write_skill("skills/shared")
 

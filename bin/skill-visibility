@@ -439,7 +439,14 @@ def _state_fingerprint(root: Path) -> str:
         if not base.exists() and not base.is_symlink():
             digest.update(f"missing:{base.relative_to(root)}".encode())
             continue
-        items = [base] if not base.is_dir() else [base, *sorted(base.rglob("*"))]
+        items = [base] if not base.is_dir() else [
+            base,
+            *(
+                item
+                for item in sorted(base.rglob("*"))
+                if not item.relative_to(base).parts[0].startswith(".")
+            ),
+        ]
         for item in items:
             relative = item.relative_to(root).as_posix()
             if item.is_symlink():
