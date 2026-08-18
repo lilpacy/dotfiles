@@ -27,6 +27,10 @@ Reply in just the same language as the user used.
 - 回答作成・出力では `structured-answer` skill を使う。See `skills/structured-answer/SKILL.md`
 - 実装・修正・リファクタ・テスト追加では `development-workflow` skill を使う。See `skills/development-workflow/SKILL.md`
 - テスト作成・修正では `japanese-test-conventions` skill を使う。See `skills/japanese-test-conventions/SKILL.md`
+- テストを追加する前には `test-addition-gate` skill を使う。See `skills/test-addition-gate/SKILL.md`
+- テストの重複判定（keep / consolidate / remove）では `test-redundancy-judgment` skill を使う。See `skills/test-redundancy-judgment/SKILL.md`
+- 既存テストスイートの削減・CI短縮の明示依頼では `test-suite-pruning` skill を使う。See `skills/test-suite-pruning/SKILL.md`
+- テストレイヤー選定・事前分類・実績再分類では `test-layer-classification` skill を使う。See `skills/test-layer-classification/SKILL.md`
 - 実装計画をユーザーに提示する前、および非自明な commit 後レビューでは `codex-exec-review` skill を使う。See `skills/codex-exec-review/SKILL.md`
 - `claude-fable-review` skill は `codex-exec-review` の代替ではなく、ユーザー明示指定時の opt-in review としてのみ使う。See `skills/claude-fable-review/SKILL.md`
 - commit・push・PR 作成では `git-commit-workflow` skill を使う。See `skills/git-commit-workflow/SKILL.md`

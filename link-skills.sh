@@ -15,6 +15,7 @@ CLAUDE_SKILLS=(
   animation-vocabulary
   apple-design
   baseline-ui
+  ci-test-result-reporting
   claude-fable-review
   cloudflare
   cloudflare-email-service
@@ -52,7 +53,10 @@ CLAUDE_SKILLS=(
   skill-visibility-management
   structured-answer
   supabase-postgres-best-practices
+  test-addition-gate
   test-layer-classification
+  test-redundancy-judgment
+  test-suite-pruning
   understand
   view-x-post
   web-doc-reading
@@ -125,7 +129,9 @@ CODEX_SKILLS=(
   skill-visibility-management
   structured-answer
   supabase-postgres-best-practices
+  test-addition-gate
   test-layer-classification
+  test-redundancy-judgment
   test-suite-pruning
   tooltip-latency-verification
   ui-visual-critic

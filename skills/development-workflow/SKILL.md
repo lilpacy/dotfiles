@@ -9,7 +9,7 @@ description: "Use for code implementation, bug fixes, refactors, and test additi
 
 - Apply YAGNI strictly. Do not plan, implement, or output work outside the requirement.
 - Use TDD: explore -> Red -> Green -> Refactor.
-- If KPI or coverage targets are given, keep iterating until they are met.
+- Gate every test addition with the `test-addition-gate` skill. Coverage numbers are diagnostic only; follow explicit user-set targets, but surface that policy once first.
 - Ask when instructions are unclear.
 - Do not add fallback implementations or backward-compatibility helpers unless the user explicitly asks for them.
 

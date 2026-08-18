@@ -1,11 +1,11 @@
 ---
 name: test-suite-pruning
-description: Audit and reduce an existing automated test suite by removing redundant verification only when equivalent confidence remains, then measure whether the change improves CI runtime. Use when the user explicitly asks to audit for redundant tests or to prune, reduce, deduplicate, consolidate, or rationalize existing tests to shorten CI. Do not use for ordinary feature work, adding tests, flaky-test diagnosis, or generic CI performance investigation.
+description: Orchestrate a measured campaign to reduce an existing automated test suite — baseline CI cost, prune in small batches using redundancy judgment, and verify the cost actually improved. Use when the user explicitly asks to audit for redundant tests or to prune, reduce, deduplicate, consolidate, or rationalize existing tests to shorten CI. Do not use for ordinary feature work, adding tests, flaky-test diagnosis, or generic CI performance investigation.
 ---
 
 # Test Suite Pruning
 
-Reduce verification cost, not confidence. Treat fewer tests as a means; require distinct behavior and failure modes to remain covered, and do not claim success until CI cost is measured.
+Reduce verification cost, not confidence. Fewer tests are a means; do not claim success until CI cost is measured. Whether any individual test is redundant is decided by the `test-redundancy-judgment` skill — this skill only orchestrates the campaign around that judgment.
 
 ## Establish authority and scope
 
@@ -37,40 +37,18 @@ Do not compare unlike commands, environments, cache states, or test selections. 
 
 Derive expected behavior from specifications, requirements, incident records, API schemas, or other independent sources of truth. Treat implementation and existing tests as evidence, not as the sole specification when an independent source exists.
 
-Assign stable IDs to atomic verification points. Map every candidate test to:
+Assign stable IDs to atomic verification points, then map each candidate test to the evidence dimensions defined in `test-redundancy-judgment` (behavior/partition, boundary, oracle, unique failure mode), plus historical regression provenance and measured execution cost.
 
-- observable behavior and input partition;
-- public boundary or test layer;
-- assertion or oracle;
-- failure mode uniquely detectable at that boundary;
-- historical regression or critical-risk provenance;
-- measured execution cost.
+## Judge candidates
 
-If no independent expectation exists, classify the test as characterization coverage and preserve it unless the user resolves the intended behavior.
+Apply the `test-redundancy-judgment` skill to each candidate. Its judgment table, protected categories, and invalid-deletion-evidence rules are the sole authority for keep / consolidate / remove — do not redefine or weaken them here.
 
-## Apply the deletion gate
-
-Classify each candidate with this table:
-
-| Evidence | Action |
-|---|---|
-| Same behavior, partition, boundary, oracle, and failure mode as another test | Remove the more expensive or less diagnostic duplicate |
-| Exhaustive partitions repeat at a higher layer while a smaller reliable boundary proves them | Keep exhaustive checks below; retain at most the minimal representative higher-layer wiring scenario |
-| Same behavior but a different boundary exposes a distinct failure mode | Keep both |
-| Obsolete behavior is confirmed by the current source of truth | Remove its tests |
-| Test protects authorization, security, money, migration, concurrency, data integrity, data loss, or a recorded production incident | Keep unless inspectable equivalent evidence covers the same risk |
-| Expected behavior, equivalence, or provenance is uncertain | Keep and report the uncertainty |
-
-Never use line or branch coverage alone as deletion evidence. Never delete a failing or flaky test merely to make CI pass. Do not replace deterministic assertions with weaker snapshots, mocks, or broader end-to-end checks.
-
-## Produce the candidate ledger
-
-Before editing, report:
+Before editing, report the candidate ledger:
 
 | ID | Test path and name | Verification point | Unique failure mode | Cost evidence | Proposed action | Confidence |
 |---|---|---|---|---|---|---|
 
-Use `remove`, `consolidate`, `move detailed partitions lower`, or `retain`. Cite exact files, test names, and evidence. Do not count textual similarity as behavioral duplication.
+Use `remove`, `consolidate`, `move detailed partitions lower`, or `retain`. Cite exact files, test names, and evidence.
 
 ## Prune in small batches
 
