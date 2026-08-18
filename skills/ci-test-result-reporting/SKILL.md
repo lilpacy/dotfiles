@@ -122,6 +122,10 @@ Read [references/e2e-run-outcomes-and-provenance.md](references/e2e-run-outcomes
 
 ## Pull-request diff-range integrity
 
+Before diagnosing current mergeability, establish freshness independently. A pull request's `baseRefOid` is the base snapshot represented by that PR, while the named base branch may already have advanced. Query both values, inspect commits or merged pull requests in the gap, and only then interpret current rulesets, required-check configuration, and the PR's existing check runs. Otherwise a correct explanation of the stale snapshot can still miss a newer base-branch change that alters the relevant workflow or policy.
+
+Read [references/pr-mergeability-freshness.md](references/pr-mergeability-freshness.md) for the validated GitHub CLI sequence and reporting boundary.
+
 Keep the diff base and head in the same semantic domain. On a `pull_request` `synchronize` event, comparing the previous PR branch head (`github.event.before`) with GitHub's synthetic merge commit (`github.sha`) mixes new base-branch changes into the PR's incremental diff. This can falsely activate policy checks or demand documentation for files the PR did not change.
 
 When a changed-file policy fails unexpectedly:
