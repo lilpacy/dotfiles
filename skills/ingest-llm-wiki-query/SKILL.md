@@ -19,18 +19,29 @@ description: Ingest a completed agent conversation into an LLM Wiki repository t
 3. Save the emitted Markdown without hand-editing its content. Freeze the transcript at that extraction point even if the live session later continues.
 4. Preserve intentional Markdown trailing spaces in the generated transcript; exclude that immutable file from whitespace-only checks instead of rewriting it.
 
+## Preserve source structure before projecting Deltas
+
+Delta `evidence` is an exact single-line grounding fragment. It cannot preserve a multi-line table, Mermaid diagram, or a relationship spread across several paragraphs. Therefore, never build the Summary from Delta sentences alone; read the immutable transcript directly for the Summary's source-level structure.
+
+1. Inventory the transcript's major theses, relationships, flows, comparisons, hierarchies, timelines, tables, and Mermaid diagrams before drafting the Summary.
+2. Keep a working-only coverage matrix from each major source topic or structure to its Summary section and representation. Omit conversational noise, but do not omit reusable knowledge merely because it is not novel to the vault.
+3. Preserve or redraw source tables and Mermaid diagrams when they carry a major argument. Matching the original count is unnecessary; flattening their structure into bullets is not acceptable.
+4. Convert relational or sequential prose into Mermaid, comparisons into Markdown tables, branches into decision tables, and ranges into boundary tables. Do not force Mermaid when the source has no meaningful structure to diagram.
+5. Treat every exact `summary_text` as a grounding anchor, not as the Summary's layout template. The Summary may and usually should contain additional source-grounded explanation and structural views.
+6. Mark any relationship not stated by the source as `※推測`; do not present a derived diagram as verbatim evidence.
+
 ## Build grounded wiki projections
 
 1. Compute the transcript SHA-256. Name the Delta with the first 12 hex characters and record the full hash as `source_snapshot`.
 2. Compare the transcript with the existing vault and record only new, refining, reinforcing, contradicting, or uncertain claims.
 3. Copy every Delta `evidence` value as an exact contiguous transcript fragment.
-4. Project every Delta `summary_text` verbatim into its declared required Summary section.
+4. Project every Delta `summary_text` verbatim into its declared required Summary section without reducing the Summary to those sentences.
 5. Update an Entity only for reusable facts or relations about an identifiable target. Point every Fact or Relation to the exact Delta block.
 6. Register the Delta and Summary in `index.md`, keep the existing Entity catalog entry unless its description truly changed, and append a `query` entry to `log.md`.
 
 Use the repository's deterministic ID algorithms when available. In the current pipeline:
 
-- Delta ID: SHA-256 of the repository `source_link` path without `.md` or wikilink brackets, classification, claim, and evidence joined by NUL; use the first 12 hex characters. For query ingest, this is `queries/YYYY-MM-DD Title`, matching `target_filename.delete_suffix(".md")` in `scripts/pi_ingest_apply.rb`, not the frontmatter value `[[queries/...]]`.
+- Delta ID: SHA-256 of `source_link`, classification, claim, and evidence joined by NUL; use the first 12 hex characters. For query ingest, `source_link` is the repository path without `.md` or wikilink brackets, such as `queries/YYYY-MM-DD Title`, matching `target_filename.delete_suffix(".md")` in `scripts/pi_ingest_apply.rb`.
 - Fact ID: SHA-256 of entity path, attribute, value, and Delta ID joined by NUL; use the first 12 hex characters.
 
 ## Verify before committing
@@ -52,6 +63,14 @@ Also verify programmatically that:
 - every Delta evidence fragment occurs exactly in the transcript;
 - every `summary_text` occurs in its declared Summary section;
 - every Entity evidence link resolves to an existing Delta block;
+- transcript and Summary table/Mermaid counts have been measured so a structural collapse is visible;
 - only intended files are staged.
+
+Then perform the separate semantic completion gate by comparing Raw → Summary, not only Delta → Summary:
+
+- every major reusable source topic appears in the coverage matrix and Summary;
+- major relationships, flows, comparisons, hierarchies, and timelines retain an appropriate structural representation;
+- significant source tables or Mermaid diagrams are preserved or intentionally recomposed;
+- a transcript with several significant Mermaid diagrams does not produce a zero-Mermaid Summary without an explicit, source-specific reason.
 
 When the user requests commit or PR creation, follow the repository's commit and review skills, run the required post-commit read-only review, push only the task branch, and open the PR with verification results.
