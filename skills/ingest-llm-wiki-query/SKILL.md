@@ -71,6 +71,6 @@ Then perform the separate semantic completion gate by comparing Raw → Summary,
 - every major reusable source topic appears in the coverage matrix and Summary;
 - major relationships, flows, comparisons, hierarchies, and timelines retain an appropriate structural representation;
 - significant source tables or Mermaid diagrams are preserved or intentionally recomposed;
-- a transcript with several significant Mermaid diagrams does not produce a zero-Mermaid Summary without an explicit, source-specific reason.
+- a transcript containing Mermaid diagrams or Markdown tables does not produce a Summary with zero instances of the same format; applier-backed paths reject this structural collapse.
 
 When the user requests commit or PR creation, follow the repository's commit and review skills, run the required post-commit read-only review, push only the task branch, and open the PR with verification results.
