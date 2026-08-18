@@ -102,6 +102,20 @@ Before claiming an end-to-end validation, determine:
 
 If the run used an older reporter, describe the new reporter as contract-tested, not workflow-validated. Re-run after the new implementation is reachable only when that evidence is required.
 
+## Required-check identity and workflow source
+
+A red check run and a required check are different facts. A job's displayed name comes from the workflow source GitHub executed; enforcement comes from the applicable ruleset or branch-protection context. Never infer requiredness from the check color or a label such as `/ required`.
+
+When a workflow uses `pull_request_target`, GitHub loads the workflow definition from the base branch. A pull request that renames or removes a job can therefore still show the old base-branch job on that same pull request. Checkout refs inside the job select code to inspect; they do not change which workflow definition GitHub loaded.
+
+Diagnose three layers independently:
+
+1. **Policy:** query effective branch rules and every applicable ruleset; record the required-status context, integration binding, ref condition, and enforcement state.
+2. **Execution:** inspect the pull request's check rollup, workflow event, details URL, base/head SHAs, and the workflow file at both refs.
+3. **Merge verdict:** inspect mergeability, merge state, reviews, unresolved threads, in-progress checks, and every required aggregate. A red optional job can coexist with a different real blocker.
+
+Report the displayed check result, actual required context and policy source, current blocker, and the event after which a head-side workflow change will take effect. Read [references/github-required-check-source-and-identity.md](references/github-required-check-source-and-identity.md) for the verified command sequence and decision table.
+
 A newer pull-request head does not automatically invalidate a prior E2E result. Compare the previously validated tree with the candidate tree and classify the semantic change. Re-run expensive E2E only when runtime code, build inputs, dependencies, schemas, fixtures, tests, or relevant integration configuration changed, or when repository policy explicitly requires it. A docs-only conflict resolution does not require full E2E when those documents are not executable inputs; run only the applicable documentation and policy checks.
 
 Read [references/e2e-run-outcomes-and-provenance.md](references/e2e-run-outcomes-and-provenance.md) for the session-derived failure patterns behind these rules, and [references/post-validation-change-impact.md](references/post-validation-change-impact.md) for the post-validation rerun decision.
