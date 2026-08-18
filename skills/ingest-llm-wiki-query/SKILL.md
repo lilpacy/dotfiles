@@ -25,8 +25,8 @@ Delta `evidence` is an exact single-line grounding fragment. It cannot preserve 
 
 1. Inventory the transcript's major theses, relationships, flows, comparisons, hierarchies, timelines, tables, and Mermaid diagrams before drafting the Summary.
 2. Keep a working-only coverage matrix from each major source topic or structure to its Summary section and representation. Omit conversational noise, but do not omit reusable knowledge merely because it is not novel to the vault.
-3. On applier-backed paths, preserve or redraw at least one table or Mermaid diagram whenever the transcript contains that format; this is a conservative deterministic floor even when an instance seems incidental. Separately preserve every source table or Mermaid diagram that carries a major argument. Matching the original count is unnecessary; flattening significant structure into bullets is not acceptable.
-4. Convert relational or sequential prose into Mermaid, comparisons into Markdown tables, branches into decision tables, and ranges into boundary tables. When the source contains no Mermaid and its prose has no meaningful structure to diagram, do not force one.
+3. Treat the transcript's existing table or Mermaid format as evidence of possible structure, not as an obligation to repeat that format. Preserve the meaning of every significant structure using whichever of prose, a table, or Mermaid is smallest and clearest; matching the original format or count is unnecessary.
+4. Convert relational or sequential prose into Mermaid, comparisons into Markdown tables, branches into decision tables, and ranges into boundary tables only when that representation is clearer than prose. Do not force a diagram merely because the source contains one.
 5. Treat every exact `summary_text` as a grounding anchor, not as the Summary's layout template. The Summary may and usually should contain additional source-grounded explanation and structural views.
 6. Mark any relationship not stated by the source as `※推測`; do not present a derived diagram as verbatim evidence.
 
@@ -63,14 +63,14 @@ Also verify programmatically that:
 - every Delta evidence fragment occurs exactly in the transcript;
 - every `summary_text` occurs in its declared Summary section;
 - every Entity evidence link resolves to an existing Delta block;
-- transcript and Summary table/Mermaid counts have been measured so a structural collapse is visible;
+- transcript and Summary table/Mermaid counts have been measured as diagnostic evidence, not as a completion threshold;
 - only intended files are staged.
 
 Then perform the separate semantic completion gate by comparing Raw → Summary, not only Delta → Summary:
 
 - every major reusable source topic appears in the coverage matrix and Summary;
-- major relationships, flows, comparisons, hierarchies, and timelines retain an appropriate structural representation;
-- significant source tables or Mermaid diagrams are preserved or intentionally recomposed;
-- a transcript containing Mermaid diagrams or Markdown tables does not produce a Summary with zero instances of the same format; applier-backed paths reject this structural collapse.
+- major relationships, flows, comparisons, hierarchies, and timelines retain the clearest appropriate representation;
+- significant source structures are preserved or intentionally recomposed, while incidental source formatting may be omitted;
+- every table or diagram is smaller and clearer than the equivalent prose and introduces no unsupported relationship.
 
 When the user requests commit or PR creation, follow the repository's commit and review skills, run the required post-commit read-only review, push only the task branch, and open the PR with verification results.
