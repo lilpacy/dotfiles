@@ -25,8 +25,8 @@ Delta `evidence` is an exact single-line grounding fragment. It cannot preserve 
 
 1. Inventory the transcript's major theses, relationships, flows, comparisons, hierarchies, timelines, tables, and Mermaid diagrams before drafting the Summary.
 2. Keep a working-only coverage matrix from each major source topic or structure to its Summary section and representation. Omit conversational noise, but do not omit reusable knowledge merely because it is not novel to the vault.
-3. Preserve or redraw source tables and Mermaid diagrams when they carry a major argument. Matching the original count is unnecessary; flattening their structure into bullets is not acceptable.
-4. Convert relational or sequential prose into Mermaid, comparisons into Markdown tables, branches into decision tables, and ranges into boundary tables. Do not force Mermaid when the source has no meaningful structure to diagram.
+3. On applier-backed paths, preserve or redraw at least one table or Mermaid diagram whenever the transcript contains that format; this is a conservative deterministic floor even when an instance seems incidental. Separately preserve every source table or Mermaid diagram that carries a major argument. Matching the original count is unnecessary; flattening significant structure into bullets is not acceptable.
+4. Convert relational or sequential prose into Mermaid, comparisons into Markdown tables, branches into decision tables, and ranges into boundary tables. When the source contains no Mermaid and its prose has no meaningful structure to diagram, do not force one.
 5. Treat every exact `summary_text` as a grounding anchor, not as the Summary's layout template. The Summary may and usually should contain additional source-grounded explanation and structural views.
 6. Mark any relationship not stated by the source as `※推測`; do not present a derived diagram as verbatim evidence.
 
