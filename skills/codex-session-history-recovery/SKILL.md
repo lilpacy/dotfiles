@@ -18,13 +18,16 @@ Do not use this skill when the current thread already contains the needed exchan
 ## Workflow
 
 1. State the boundary: do not claim personal memory of another thread before locating evidence.
-2. Search the local session store broadly for distinctive, non-secret anchors such as repository names, URLs, feature names, or command names.
-3. Treat raw text matches only as candidates. The same anchor can occur in injected `AGENTS.md`, tool output, quoted history, or a later summary.
-4. Parse candidate JSONL and isolate `response_item` messages whose role is `user` or `assistant`.
-5. Treat role filtering as noise reduction, not proof of user intent. A `user` record can still contain injected `AGENTS.md`, `<environment_context>`, or other harness context; classify these separately from the user's natural-language request.
-6. Compare the genuine user requests, timestamps, ordinals, session ID, and assistant completion messages to identify the relevant session.
-7. Report the smallest useful result: session identity, approximate time, request, outcome, and a local source link when helpful.
-8. Warn before exposing a full transcript if it contains credentials, incident details, personal data, or other sensitive material.
+2. Resolve the target from the current thread first. Capture stable identifiers such as repository, PR or issue number, branch, URL, file, and phrases like “this PR.” Search the current session before considering other sessions.
+3. Search the local session store broadly only when the current thread does not contain the artifact, using distinctive, non-secret anchors such as repository names, URLs, feature names, or command names.
+4. Treat raw text matches only as candidates. The same anchor can occur in injected `AGENTS.md`, tool output, quoted history, or a later summary.
+5. Parse candidate JSONL and isolate `response_item` messages whose role is `user` or `assistant`.
+6. Treat role filtering as noise reduction, not proof of user intent. A `user` record can still contain injected `AGENTS.md`, `<environment_context>`, or other harness context; classify these separately from the user's natural-language request.
+7. Bind each recovered artifact to the requested target object. Require a stable target identifier plus a corroborating user request, assistant completion, command result, or repository-state record.
+8. Rank candidates by target identity and semantic match. Use timestamps only as a tie-breaker between candidates already known to describe the same target; a newer different-session artifact must not outrank the current thread.
+9. If candidates identify different target objects, stop and ask rather than choosing by recency. Before any external write, preview the destination and artifact together and re-read the created content from that destination.
+10. Report the smallest useful result: session identity, approximate time, request, outcome, and a local source link when helpful.
+11. Warn before exposing a full transcript if it contains credentials, incident details, personal data, or other sensitive material.
 
 ## Evidence Standard
 
@@ -47,6 +50,7 @@ Separate confirmed facts from reconstruction. If only a candidate match exists, 
 - Never include secrets in the response, even when they are expired.
 
 See [JSONL search recipes](references/jsonl-search-recipes.md) for compact extraction commands and false-positive checks.
+When recovering an artifact for reuse or publication, apply [thread and object correlation](references/thread-object-correlation.md) before ranking candidates.
 When implementing or debugging transcript readers, see [JSONL record boundaries](references/jsonl-record-boundaries.md) before choosing a line-splitting API.
 
 ## Output
