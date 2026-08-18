@@ -100,7 +100,7 @@ Do not validate a human view by requiring a rendering syntax. Validate the seman
 
 Keep Learning State separate from domain truth and from the reusable purpose curriculum. A learner asking about a concept proves exposure, not mastery.
 
-Read [references/interactive-curriculum-delivery.md](references/interactive-curriculum-delivery.md) when turning a curriculum into a guided session with stage gates, concise learner replies, or a real goal that must be narrowed into measurable outcomes.
+Read [references/interactive-curriculum-delivery.md](references/interactive-curriculum-delivery.md) when turning a curriculum into a guided session with stage gates, concise learner replies, learner-controlled advancement, live product UI evidence, or a real goal that must be narrowed into measurable outcomes.
 
 ## Validate
 
