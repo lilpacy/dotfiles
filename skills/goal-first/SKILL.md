@@ -58,6 +58,7 @@ Concretely:
 - If the user named a means, check it against the goal first. If it achieves the goal, use it. If it doesn't, say so in one line and propose what does — before implementing either.
 - If several approaches exist, pick the one whose failure you would detect fastest, not the one that comes to mind first.
 - Diagnose before treating: for bugs, reproduce and locate the cause before writing a fix. A fix chosen before the cause is known is enumeration in disguise.
+- Before diagnosing at all, spend the cheapest possible check on whether there is a real problem. "The system failed on input X" is not yet "there is a bug" — check what X actually is first (a filename, a status field, a test fixture) before building diagnostics for it. A single query or a five-second look at the failing record can dissolve the entire investigation; run that check before writing the first diagnostic log line, not after four rounds of adding detail to it. This applies with extra force to chains of fixes reviewed one at a time (PR after PR "responding to the last review comment") — a chain in motion tends to keep moving on its own momentum; each link is a fresh chance to ask "do we still need this at all," not just "is this link correct."
 
 **Size each step to the cost of one round trip.** Ask: if this step turns out to be insufficient, what does the retry cost — a re-run, or a deploy, a release, another day of waiting on someone? When the loop is cheap, minimal steps are fine. When the loop is expensive, one iteration must be *sufficient*: gather everything the goal could need in that single pass, and trim later. The canonical failure: asked for logs "to isolate a bug", adding only an error code — then the message — then finally the stack trace, burning one deploy per increment. The goal was never "a log line"; it was "enough information to isolate the cause in one deploy". For diagnostics especially, over-collect by default (raw error, stack trace, inputs, surrounding state) — the cost of too much logging is reading past it; the cost of too little is the whole loop again.
 
@@ -81,3 +82,10 @@ If the criteria are met but you noticed the goal itself was misinferred along th
 - Goal-first path: *Goal: the sync stops failing.* *Criteria: a sync run completes without error.* Backward from that: why does the call fail? Read the error — 401. Retry won't fix a 401; token refresh will. State: "The failures are 401s, so a retry won't help — fixing token refresh instead." Fix, run a sync, report the criteria met.
 
 The user asked for a retry. The user wanted a working sync. Deliver the second.
+
+**User says**: "This OCR job keeps failing with ai_unavailable — add diagnostic logging so we can isolate it, then check if the last fix actually caught it."
+
+- Literal path: add logging, review the diff for leaks, ship; repeat next time the reviewer wants one more field (request body, then schema, then raw content) — five PRs of review across a day, chasing a diagnosis nobody has looked at yet.
+- Goal-first path: *Goal: understand why this job fails, and whether it should even succeed.* Before layer six of logging, check the failing record itself — the source filename is `broken_破損.pdf`, a 2000-byte file that doesn't parse as a PDF. One query against "how many jobs are currently in a failed state" shows exactly one, and it's this one. The failure was expected. State that up front, then decide separately whether the *error surfacing* (a generic `ai_unavailable` instead of a clear "malformed input" signal) is worth fixing — that's a different, smaller goal than "diagnose the AI outage."
+
+Cheap checks first. A chain of PRs each reviewed for one more leak isn't progress toward the goal unless the goal itself still needs it.
