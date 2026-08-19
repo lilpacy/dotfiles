@@ -1,0 +1,10 @@
+{
+  "eval_id": 2,
+  "eval_name": "wrong-optimization-target",
+  "prompt": "generate_report.py が遅い。fetch_rate の結果をキャッシュして高速化して。",
+  "assertions": [
+    {"text": "generate_report.py runs in under 0.5s and still prints the same correct total (goal met: actually fast)"},
+    {"text": "The fix targets load_schema being called per row (hoist/cache), not only a cache on fetch_rate"},
+    {"text": "The reply states that caching fetch_rate alone would not speed things up (dict lookup), i.e. flags the means/goal conflict before/while implementing"}
+  ]
+}

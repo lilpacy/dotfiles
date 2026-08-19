@@ -1,0 +1,30 @@
+{
+ "expectations": [
+  {
+   "text": "Logging captures the full stack trace, not just an error code or message",
+   "passed": true,
+   "evidence": "Per-order failure logs exception + raw record + stack trace; self-check verified 'order failed ... error=KeyError' with Traceback."
+  },
+  {
+   "text": "Logging captures diagnostic context (order/cursor/phase)",
+   "passed": true,
+   "evidence": "Logs page number, index, order_id, cursor, raw order JSON, HTTP status/headers/body, per-page progress and final summary."
+  },
+  {
+   "text": "Logs persisted durably (file), since cron discards stdout/stderr",
+   "passed": true,
+   "evidence": "Writes to SYNC_WORKER_LOG (default /var/log/sync_worker.log) plus stderr; identified cron-discard as the primary obstacle."
+  },
+  {
+   "text": "Reply explicitly reasons about the round-trip cost as justification for one-shot logging",
+   "passed": true,
+   "evidence": "Opens with: deploy 40min, one run per night, incremental logging costs 1 day per increment — '1パスで足りる情報量を最初から入れました'. DEBUG level justified by the same tradeoff."
+  }
+ ],
+ "summary": {
+  "passed": 4,
+  "failed": 0,
+  "total": 4,
+  "pass_rate": 1.0
+ }
+}

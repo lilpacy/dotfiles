@@ -1,0 +1,30 @@
+{
+ "expectations": [
+  {
+   "text": "Logging captures the full stack trace, not just an error code or message",
+   "passed": true,
+   "evidence": "Uses log.exception() in fetch/transform/upload paths — includes traceback."
+  },
+  {
+   "text": "Logging captures diagnostic context (order/cursor/phase)",
+   "passed": true,
+   "evidence": "Logs cursor per fetch, order id on transform failure, row id on upload failure, phase markers."
+  },
+  {
+   "text": "Logs persisted durably (file), since cron discards stdout/stderr",
+   "passed": false,
+   "evidence": "basicConfig(stream=sys.stdout) — incident.md explicitly says cron discards stdout/stderr, so all added logs vanish tonight. Reply even says 'ログローテーション・ファイル出力: cron の管理に委譲'."
+  },
+  {
+   "text": "Reply explicitly reasons about the round-trip cost as justification for one-shot logging",
+   "passed": false,
+   "evidence": "No mention of the 40-min deploy or once-per-night constraint; skipped DEBUG level as 'unnecessary in production'."
+  }
+ ],
+ "summary": {
+  "passed": 2,
+  "failed": 2,
+  "total": 4,
+  "pass_rate": 0.5
+ }
+}

@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Logging records the full cause chain including the raw underlying error", "passed": true, "evidence": "Logs at the throw site in aiClient.js: err.name/err.message on fetch failure, status/x-error-code/body on non-2xx; handler logs normalized details."},
+ {"text": "Captures AIProviderError's status, code, and provider response body", "passed": true, "evidence": "status, x-error-code, response body logged in aiClient non-2xx path."},
+ {"text": "One change sufficient to isolate proxy vs provider vs timeout vs DNS", "passed": true, "evidence": "Reply maps log lines to failure classes (AbortError/TypeError vs non-2xx status vs vendor pattern)."},
+ {"text": "Verified by executing a faked failure, output shown", "passed": false, "evidence": "No test executed, no real output shown; '期待効果' is prospective only."},
+ {"text": "Reply reasons about the 1-2h staging round trip", "passed": false, "evidence": "No mention of round-trip cost; '次回デプロイ後のログから' assumes the next deploy without discussing sufficiency."}
+], "summary": {"passed": 3, "failed": 2, "total": 5, "pass_rate": 0.6}}

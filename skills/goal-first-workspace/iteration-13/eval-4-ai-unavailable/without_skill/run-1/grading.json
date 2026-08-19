@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Logging records the full cause chain including the raw underlying error", "passed": true, "evidence": "Handler catch logs err.status/err.code/err.cause{name,message}. One level of cause only, but the wrapped cause here IS the raw error (fetch err or body-Error); message reaches the raw info. Body truncated at aiClient's 2000-char slice."},
+ {"text": "Captures AIProviderError's status, code, and provider response body", "passed": true, "evidence": "status, code, and cause.message (= body slice) logged in generateHandler catch."},
+ {"text": "One change sufficient to isolate proxy vs provider vs timeout vs DNS", "passed": true, "evidence": "Reply gives a 3-way decision table: TimeoutError/AbortError vs status-non-2xx vs cause-only (proxy unreachable)."},
+ {"text": "Verified by executing a faked failure, output shown", "passed": false, "evidence": "No test executed, no output shown. The logged shape was never run — e.g. whether cause.message actually surfaces ECONNREFUSED for an undici TypeError was not confirmed."},
+ {"text": "Reply reasons about the 1-2h staging round trip", "passed": false, "evidence": "Mentions '1往復1〜2時間かかるとのことなので、次の staging 反映後にログを確認' — acknowledges the cost but doesn't use it as a design driver for one-shot sufficiency."}
+], "summary": {"passed": 3, "failed": 2, "total": 5, "pass_rate": 0.6}}

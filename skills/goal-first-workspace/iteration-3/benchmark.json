@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "skill_name": "goal-first",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-08-19T08:50:33Z",
+    "evals_run": [
+      3
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 3,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Logging captures the full stack trace, not just an error code or message",
+          "passed": true,
+          "evidence": "Stack traces recorded on fetch/transform/upload failures; transform failure logs full order data."
+        },
+        {
+          "text": "Logging captures diagnostic context (order/cursor/phase)",
+          "passed": true,
+          "evidence": "Cursor, order id, full order payload, phase (fetch/transform/upload), synced-count at failure."
+        },
+        {
+          "text": "Logs persisted durably (file), since cron discards stdout/stderr",
+          "passed": false,
+          "evidence": "Logs to sys.stderr and claims 'cron \u304c\u62fe\u3048\u308b' \u2014 incident.md states cron discards stderr. Criteria was declared \u9054\u6210 without checking this stated constraint."
+        },
+        {
+          "text": "Reply explicitly reasons about the round-trip cost as justification for one-shot logging",
+          "passed": true,
+          "evidence": "'\u30c7\u30d7\u30ed\u30a4 40 \u5206\u5f85\u3064\u4fa1\u5024\u306e\u3042\u308b\u60c5\u5831\u5bc6\u5ea6\u3092 1 \u5ea6\u3067\u78ba\u4fdd\u3057\u307e\u3057\u305f'; goal framed as one-shot sufficiency."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Logging captures the full stack trace, not just an error code or message",
+          "passed": true,
+          "evidence": "Uses log.exception() in fetch/transform/upload paths \u2014 includes traceback."
+        },
+        {
+          "text": "Logging captures diagnostic context (order/cursor/phase)",
+          "passed": true,
+          "evidence": "Logs cursor per fetch, order id on transform failure, row id on upload failure, phase markers."
+        },
+        {
+          "text": "Logs persisted durably (file), since cron discards stdout/stderr",
+          "passed": false,
+          "evidence": "basicConfig(stream=sys.stdout) \u2014 incident.md explicitly says cron discards stdout/stderr, so all added logs vanish tonight. Reply even says '\u30ed\u30b0\u30ed\u30fc\u30c6\u30fc\u30b7\u30e7\u30f3\u30fb\u30d5\u30a1\u30a4\u30eb\u51fa\u529b: cron \u306e\u7ba1\u7406\u306b\u59d4\u8b72'."
+        },
+        {
+          "text": "Reply explicitly reasons about the round-trip cost as justification for one-shot logging",
+          "passed": false,
+          "evidence": "No mention of the 40-min deploy or once-per-night constraint; skipped DEBUG level as 'unnecessary in production'."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.75,
+        "stddev": 0.0,
+        "min": 0.75,
+        "max": 0.75
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.5,
+        "stddev": 0.0,
+        "min": 0.5,
+        "max": 0.5
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.25",
+      "time_seconds": "+0.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}

@@ -1,0 +1,6 @@
+{"expectations": [
+ {"text": "Logging captures the full stack trace, not just an error code or message", "passed": true, "evidence": "exc_info=True on all error paths per reply and code."},
+ {"text": "Logging captures diagnostic context (order/cursor/phase)", "passed": true, "evidence": "Cursor, order id, full order JSON, phase markers (fetch/transform/upload), synced count at failure."},
+ {"text": "Logs persisted durably (file), since cron discards stdout/stderr", "passed": true, "evidence": "basicConfig(filename=\"/var/log/sync_worker.log\"); reply explicitly maps this to the cron-discard constraint."},
+ {"text": "Reply explicitly reasons about the round-trip cost as justification for one-shot logging", "passed": true, "evidence": "'1 回のデプロイで完結: 次の nightly 実行で落ちれば、翌朝のログで原因が特定できます'."}
+], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}}

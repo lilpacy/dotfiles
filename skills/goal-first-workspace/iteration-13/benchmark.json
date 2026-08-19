@@ -1,0 +1,149 @@
+{
+  "metadata": {
+    "skill_name": "goal-first",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-08-19T09:32:50Z",
+    "evals_run": [
+      4
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 4,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Logging records the full cause chain including the raw underlying error",
+          "passed": true,
+          "evidence": "Logs at the throw site in aiClient.js BEFORE wrapping: errName/errCode/errMessage of the raw fetch error, plus status/x-error-code/bodySnippet(500) on non-2xx. Raw info captured where it still exists, making chain-walking unnecessary. fetch error's own nested cause (e.g. ECONNREFUSED under TypeError) partially covered via err.code."
+        },
+        {
+          "text": "Captures AIProviderError's status, code, and provider response body",
+          "passed": true,
+          "evidence": "status, x-error-code header, bodySnippet all logged."
+        },
+        {
+          "text": "One change sufficient to isolate proxy vs provider vs timeout vs DNS",
+          "passed": true,
+          "evidence": "errName distinguishes TimeoutError/AbortError vs connection errors; status+body distinguishes provider vs proxy-generated 502 ('Bad Gateway from proxy' visible in body)."
+        },
+        {
+          "text": "Verified by executing a faked failure, output shown",
+          "passed": true,
+          "evidence": "Mocked network-exception and 502 cases executed; structured log lines pasted in reply."
+        },
+        {
+          "text": "Reply reasons about the 1-2h staging round trip",
+          "passed": true,
+          "evidence": "'staging \u3078\u306e\u53cd\u6620\u304c1\u5f80\u5fa91\u301c2\u6642\u9593\u304b\u304b\u308b\u5236\u7d04\u304c\u3042\u308b\u306e\u3067\u30011\u56de\u306e\u30c7\u30d7\u30ed\u30a4\u3067\u5168\u30d1\u30bf\u30fc\u30f3\u3092\u5224\u5225\u3067\u304d\u308b\u3060\u3051\u306e\u60c5\u5831\u3092\u6700\u521d\u304b\u3089\u4ed5\u8fbc\u3093\u3067\u3044\u307e\u3059'."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 4,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Logging records the full cause chain including the raw underlying error",
+          "passed": true,
+          "evidence": "Handler catch logs err.status/err.code/err.cause{name,message}. One level of cause only, but the wrapped cause here IS the raw error (fetch err or body-Error); message reaches the raw info. Body truncated at aiClient's 2000-char slice."
+        },
+        {
+          "text": "Captures AIProviderError's status, code, and provider response body",
+          "passed": true,
+          "evidence": "status, code, and cause.message (= body slice) logged in generateHandler catch."
+        },
+        {
+          "text": "One change sufficient to isolate proxy vs provider vs timeout vs DNS",
+          "passed": true,
+          "evidence": "Reply gives a 3-way decision table: TimeoutError/AbortError vs status-non-2xx vs cause-only (proxy unreachable)."
+        },
+        {
+          "text": "Verified by executing a faked failure, output shown",
+          "passed": false,
+          "evidence": "No test executed, no output shown. The logged shape was never run \u2014 e.g. whether cause.message actually surfaces ECONNREFUSED for an undici TypeError was not confirmed."
+        },
+        {
+          "text": "Reply reasons about the 1-2h staging round trip",
+          "passed": false,
+          "evidence": "Mentions '1\u5f80\u5fa91\u301c2\u6642\u9593\u304b\u304b\u308b\u3068\u306e\u3053\u3068\u306a\u306e\u3067\u3001\u6b21\u306e staging \u53cd\u6620\u5f8c\u306b\u30ed\u30b0\u3092\u78ba\u8a8d' \u2014 acknowledges the cost but doesn't use it as a design driver for one-shot sufficiency."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.6,
+        "stddev": 0.0,
+        "min": 0.6,
+        "max": 0.6
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.40",
+      "time_seconds": "+0.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}

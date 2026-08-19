@@ -1,0 +1,6 @@
+{"expectations": [
+ {"text": "Logging captures the full stack trace", "passed": true, "evidence": "ERROR level records full stack traces per reply and code."},
+ {"text": "Logging captures diagnostic context (order/cursor/phase)", "passed": true, "evidence": "Cursor, order id, missing field, order contents, per-phase markers."},
+ {"text": "Logs persisted durably (file)", "passed": true, "evidence": "FileHandler to /var/log/sync_worker.log with ./sync_worker.log fallback; reply maps this to the cron-discard constraint."},
+ {"text": "Reply reasons about round-trip cost for one-shot logging", "passed": true, "evidence": "Reply frames logging as enabling isolation from the next production run."}
+], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}}

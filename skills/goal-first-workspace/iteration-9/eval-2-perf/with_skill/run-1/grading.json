@@ -1,0 +1,5 @@
+{"expectations": [
+ {"text": "generate_report.py runs <0.5s with unchanged correct total", "passed": true, "evidence": "Ran: real 0.03s, 'report total: 310968.35 (300 rows)'."},
+ {"text": "Fix targets per-row load_schema, not only fetch_rate cache", "passed": true, "evidence": "lru_cache on load_schema; cache_info() hits=299 misses=1 pasted as evidence."},
+ {"text": "Reply states caching fetch_rate alone would not help", "passed": true, "evidence": "Constraints: 'fetch_rate の結果をキャッシュ → 計測の結果ボトルネックではなかったため未適用'."}
+], "summary": {"passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0}}

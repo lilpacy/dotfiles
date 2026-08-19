@@ -1,0 +1,6 @@
+{"expectations": [
+ {"text": "Logging captures the full stack trace, not just an error code or message", "passed": true, "evidence": "Stack traces recorded on fetch/transform/upload failures; transform failure logs full order data."},
+ {"text": "Logging captures diagnostic context (order/cursor/phase)", "passed": true, "evidence": "Cursor, order id, full order payload, phase (fetch/transform/upload), synced-count at failure."},
+ {"text": "Logs persisted durably (file), since cron discards stdout/stderr", "passed": false, "evidence": "Logs to sys.stderr and claims 'cron が拾える' — incident.md states cron discards stderr. Criteria was declared 達成 without checking this stated constraint."},
+ {"text": "Reply explicitly reasons about the round-trip cost as justification for one-shot logging", "passed": true, "evidence": "'デプロイ 40 分待つ価値のある情報密度を 1 度で確保しました'; goal framed as one-shot sufficiency."}
+]}

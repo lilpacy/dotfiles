@@ -1,0 +1,139 @@
+{
+  "metadata": {
+    "skill_name": "goal-first",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-08-19T08:50:33Z",
+    "evals_run": [
+      3
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 3,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Logging captures the full stack trace, not just an error code or message",
+          "passed": true,
+          "evidence": "Per-order failure logs exception + raw record + stack trace; self-check verified 'order failed ... error=KeyError' with Traceback."
+        },
+        {
+          "text": "Logging captures diagnostic context (order/cursor/phase)",
+          "passed": true,
+          "evidence": "Logs page number, index, order_id, cursor, raw order JSON, HTTP status/headers/body, per-page progress and final summary."
+        },
+        {
+          "text": "Logs persisted durably (file), since cron discards stdout/stderr",
+          "passed": true,
+          "evidence": "Writes to SYNC_WORKER_LOG (default /var/log/sync_worker.log) plus stderr; identified cron-discard as the primary obstacle."
+        },
+        {
+          "text": "Reply explicitly reasons about the round-trip cost as justification for one-shot logging",
+          "passed": true,
+          "evidence": "Opens with: deploy 40min, one run per night, incremental logging costs 1 day per increment \u2014 '1\u30d1\u30b9\u3067\u8db3\u308a\u308b\u60c5\u5831\u91cf\u3092\u6700\u521d\u304b\u3089\u5165\u308c\u307e\u3057\u305f'. DEBUG level justified by the same tradeoff."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Logging captures the full stack trace, not just an error code or message",
+          "passed": true,
+          "evidence": "Reply lists '\u4f8b\u5916\u306e\u30b9\u30bf\u30c3\u30af\u30c8\u30ec\u30fc\u30b9'; sample log shows Traceback with KeyError."
+        },
+        {
+          "text": "Logging captures diagnostic context (order/cursor/phase)",
+          "passed": true,
+          "evidence": "Logs cursor, page, counts, failed record id and raw JSON (2000-char cap), HTTP status/reason/body."
+        },
+        {
+          "text": "Logs persisted durably (file), since cron discards stdout/stderr",
+          "passed": true,
+          "evidence": "SYNC_WORKER_LOG env var, default /tmp/sync_worker.log; explicitly notes print would be discarded by cron."
+        },
+        {
+          "text": "Reply explicitly reasons about the round-trip cost as justification for one-shot logging",
+          "passed": true,
+          "evidence": "'\u5909\u66f4\u304c\u5fc5\u8981\u306a\u3089 CI 40 \u5206\u304c\u3082\u3046\u4e00\u5f80\u5fa9\u3059\u308b\u305f\u3081\u3001\u3042\u3048\u3066\u30b3\u30fc\u30c9\u5185\u3067\u5b8c\u7d50\u3055\u305b\u307e\u3057\u305f' \u2014 cost-aware, though framed around cron config rather than log-content sufficiency."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.00",
+      "time_seconds": "+0.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}

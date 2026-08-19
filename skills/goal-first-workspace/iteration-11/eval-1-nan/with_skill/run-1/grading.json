@@ -1,0 +1,5 @@
+{"expectations": [
+ {"text": "node invoice.js prints correct total 1635.49 (not NaN)", "passed": true, "evidence": "Ran: 'Invoice total: 1635.49'."},
+ {"text": "receipt.js and summary.js also fixed via shared utils.js", "passed": true, "evidence": "Ran: 38.5 / 7700.75; fix located in utils.js."},
+ {"text": "Reply explains root cause is parseAmount in utils.js and mentions other callers", "passed": true, "evidence": "Reply identifies utils.js parseAmount as root cause."}
+], "summary": {"passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0}}

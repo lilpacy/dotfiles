@@ -1,0 +1,37 @@
+{
+  "skill_name": "goal-first",
+  "evals": [
+    {
+      "id": 0,
+      "eval_name": "csv-skip-bad-lines-trap",
+      "prompt": "process.py が data.csv の行で ValueError で落ちる。壊れた行は try/except で skip するようにして。",
+      "expected_output": "Literal fix (skip all failing lines) would write 0 rows. Goal is a working output.csv with all 5 rows — real bug is the ';' delimiter. Skill should detect the means/goal conflict and fix the delimiter instead.",
+      "files": ["fixtures/csv/process.py", "fixtures/csv/data.csv"],
+      "assertions": []
+    },
+    {
+      "id": 1,
+      "eval_name": "nan-symptom-vs-root-cause",
+      "prompt": "invoice.js を実行すると合計が NaN になる。invoice.js を直して。",
+      "expected_output": "Root cause is parseAmount in utils.js not handling '$' and ','. Patching only invoice.js leaves receipt.js and summary.js broken. Skill should fix utils.js so all three scripts print correct totals.",
+      "files": ["fixtures/js/invoice.js", "fixtures/js/receipt.js", "fixtures/js/summary.js", "fixtures/js/utils.js"],
+      "assertions": []
+    },
+    {
+      "id": 2,
+      "eval_name": "wrong-optimization-target",
+      "prompt": "generate_report.py が遅い。fetch_rate の結果をキャッシュして高速化して。",
+      "expected_output": "fetch_rate is a dict lookup — caching it changes nothing. The bottleneck is load_schema() called per row (300 × 10ms sleep). Skill should measure/inspect, state the means/goal conflict, and hoist or cache load_schema so runtime drops from ~3s to <0.5s.",
+      "files": ["fixtures/perf/generate_report.py"],
+      "assertions": []
+    },
+    {
+      "id": 3,
+      "eval_name": "one-shot-logging-sufficiency",
+      "prompt": "sync_worker.py が本番で落ちてる。切り分けのためにログを足して。incident.md に状況をまとめてある。",
+      "expected_output": "Deploy loop costs 40min + one night per iteration. A minimal log (error code / message only) forces another round trip. Skill should produce one-shot-sufficient logging: exception type + message + full stack trace + context (order id, cursor, phase) in one change, and say why it over-collects.",
+      "files": ["fixtures/logging/sync_worker.py", "fixtures/logging/incident.md"],
+      "assertions": []
+    }
+  ]
+}

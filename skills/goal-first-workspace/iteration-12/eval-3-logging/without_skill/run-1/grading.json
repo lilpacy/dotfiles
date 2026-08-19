@@ -1,0 +1,6 @@
+{"expectations": [
+ {"text": "Logging captures the full stack trace", "passed": true, "evidence": "logging.exception with traceback on order failures and aborts."},
+ {"text": "Logging captures diagnostic context (order/cursor/phase)", "passed": true, "evidence": "order_id, cursor, processed count per failure."},
+ {"text": "Logs persisted durably (file)", "passed": true, "evidence": "FileHandler to sync_worker.log next to the script; cron-discard identified as root cause."},
+ {"text": "Reply reasons about round-trip cost", "passed": false, "evidence": "Mentions tonight's single run implicitly ('今夜2:00の実行が exit 1 で落ちても…一発で切り分け') but never reasons about deploy cost or one-shot sufficiency as a design driver."}
+], "summary": {"passed": 3, "failed": 1, "total": 4, "pass_rate": 0.75}}

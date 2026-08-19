@@ -1,0 +1,149 @@
+{
+  "metadata": {
+    "skill_name": "goal-first",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-08-19T09:38:41Z",
+    "evals_run": [
+      4
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 4,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Logging records the full cause chain including the raw underlying error",
+          "passed": true,
+          "evidence": "AIProviderError extended with a details object populated at throw time (step, errorName, errorMessage, isTimeout / responseStatus, headers, body 2000 chars); normalizeError passes internals through; handler logs the full structured context."
+        },
+        {
+          "text": "Captures AIProviderError's status, code, and provider response body",
+          "passed": true,
+          "evidence": "responseStatus, x-error-code, content-type, responseBody(2000) all in details; logged as JSON in handler."
+        },
+        {
+          "text": "One change sufficient to isolate proxy vs provider vs timeout vs DNS",
+          "passed": true,
+          "evidence": "step fetch/response + isTimeout + errorName + status/body covers the split; single coherent change across 3 files."
+        },
+        {
+          "text": "Verified by executing a faked failure, output shown",
+          "passed": false,
+          "evidence": "The 'example log output' in the reply is hand-written, not produced by an executed test. No test file, no run. Code does load (verified externally)."
+        },
+        {
+          "text": "Reply reasons about the 1-2h staging round trip",
+          "passed": false,
+          "evidence": "No mention of the deploy round-trip cost anywhere in the reply."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 4,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Logging records the full cause chain including the raw underlying error",
+          "passed": true,
+          "evidence": "Logs at the throw site in aiClient.js: err.name/err.message on fetch failure, status/x-error-code/body on non-2xx; handler logs normalized details."
+        },
+        {
+          "text": "Captures AIProviderError's status, code, and provider response body",
+          "passed": true,
+          "evidence": "status, x-error-code, response body logged in aiClient non-2xx path."
+        },
+        {
+          "text": "One change sufficient to isolate proxy vs provider vs timeout vs DNS",
+          "passed": true,
+          "evidence": "Reply maps log lines to failure classes (AbortError/TypeError vs non-2xx status vs vendor pattern)."
+        },
+        {
+          "text": "Verified by executing a faked failure, output shown",
+          "passed": false,
+          "evidence": "No test executed, no real output shown; '\u671f\u5f85\u52b9\u679c' is prospective only."
+        },
+        {
+          "text": "Reply reasons about the 1-2h staging round trip",
+          "passed": false,
+          "evidence": "No mention of round-trip cost; '\u6b21\u56de\u30c7\u30d7\u30ed\u30a4\u5f8c\u306e\u30ed\u30b0\u304b\u3089' assumes the next deploy without discussing sufficiency."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.6,
+        "stddev": 0.0,
+        "min": 0.6,
+        "max": 0.6
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.6,
+        "stddev": 0.0,
+        "min": 0.6,
+        "max": 0.6
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.00",
+      "time_seconds": "+0.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}

@@ -1,0 +1,5 @@
+{"expectations": [
+ {"text": "generate_report.py runs <0.5s with unchanged correct total", "passed": true, "evidence": "Ran: real 0.03s, total 310968.35 unchanged."},
+ {"text": "Fix targets per-row load_schema", "passed": true, "evidence": "lru_cache on load_schema (and fetch_rate as requested); profiled first."},
+ {"text": "Reply states caching fetch_rate alone would not help", "passed": true, "evidence": "'fetch_rate だけをキャッシュしてもほぼ速くならない（支配的コストは load_schema 側）'."}
+], "summary": {"passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0}}

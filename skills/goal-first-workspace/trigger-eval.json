@@ -1,0 +1,82 @@
+[
+  {
+    "query": "stagingで /api/generate が ai_unavailable 返しまくってる。切り分けたいからログ足して。デプロイはCI経由で30分かかる",
+    "should_trigger": true
+  },
+  {
+    "query": "process.pyがdata.csvでValueErrorで落ちる。壊れた行はtry/exceptでskipするようにして",
+    "should_trigger": true
+  },
+  {
+    "query": "invoice.js動かすと合計がNaNになるんだけど、invoice.js直してくれる？",
+    "should_trigger": true
+  },
+  {
+    "query": "generate_report.pyが遅い。fetch_rateの結果キャッシュして高速化して",
+    "should_trigger": true
+  },
+  {
+    "query": "sync.tsのAPI呼び出しにリトライ入れて。よく失敗するんだよね",
+    "should_trigger": true
+  },
+  {
+    "query": "本番のnightly batchが今朝落ちてた。cronのメールにはexit 1しか出てない。原因調査できるようにしといて",
+    "should_trigger": true
+  },
+  {
+    "query": "この関数のタイムアウトを30秒から60秒に伸ばして。たまに処理が間に合わないみたいで",
+    "should_trigger": true
+  },
+  {
+    "query": "ユーザー登録のバリデーションが甘いから、emailのチェックを強化して。あとテストも",
+    "should_trigger": true
+  },
+  {
+    "query": "この画面の読み込みが遅いってCSから報告きてる。useMemoで最適化して",
+    "should_trigger": true
+  },
+  {
+    "query": "DBのコネクションプールのサイズ増やして。接続エラーが出てるらしい",
+    "should_trigger": true
+  },
+  {
+    "query": "READMEにインストール手順のセクション追加して。brew installのやつ",
+    "should_trigger": false
+  },
+  {
+    "query": "この変数名、camelCaseに統一しといて",
+    "should_trigger": false
+  },
+  {
+    "query": "TypeScriptのsatisfiesとasの違いって何？",
+    "should_trigger": true
+  },
+  {
+    "query": "package.jsonのversionを1.2.0に上げて",
+    "should_trigger": false
+  },
+  {
+    "query": "このMarkdownの表、列そろえて整形して",
+    "should_trigger": false
+  },
+  {
+    "query": "Reactのサンプルでカウンターアプリ書いてみて。学習用なのでシンプルでいい",
+    "should_trigger": true
+  },
+  {
+    "query": "git logで先週のコミット一覧見せて",
+    "should_trigger": false
+  },
+  {
+    "query": "この英語のエラーメッセージ、日本語に翻訳して",
+    "should_trigger": false
+  },
+  {
+    "query": ".gitignoreにnode_modulesとdist追加しといて",
+    "should_trigger": false
+  },
+  {
+    "query": "prettierの設定でセミコロンなしにして",
+    "should_trigger": false
+  }
+]

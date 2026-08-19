@@ -1,0 +1,6 @@
+{"expectations": [
+ {"text": "Logging captures the full stack trace", "passed": true, "evidence": "Stack traces on all stage failures; HTTPError body captured."},
+ {"text": "Logging captures diagnostic context (order/cursor/phase)", "passed": true, "evidence": "Stage, failing order data, synced count, HTTP status/body."},
+ {"text": "Logs persisted durably (file)", "passed": true, "evidence": "File logging to /tmp/sync_worker.log (env-overridable); cron-discard named as root obstacle."},
+ {"text": "Reply reasons about round-trip cost", "passed": true, "evidence": "'次の実行チャンスが今夜2:00の1回きり・デプロイに40分かかるという制約があるため…この1回のデプロイで原因を特定できる情報を一度に埋め込み'. Also ran a mocked repro to verify log output."}
+], "summary": {"passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0}}

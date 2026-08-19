@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Logging records the full cause chain including the raw underlying error", "passed": true, "evidence": "Logs at the throw site in aiClient.js BEFORE wrapping: errName/errCode/errMessage of the raw fetch error, plus status/x-error-code/bodySnippet(500) on non-2xx. Raw info captured where it still exists, making chain-walking unnecessary. fetch error's own nested cause (e.g. ECONNREFUSED under TypeError) partially covered via err.code."},
+ {"text": "Captures AIProviderError's status, code, and provider response body", "passed": true, "evidence": "status, x-error-code header, bodySnippet all logged."},
+ {"text": "One change sufficient to isolate proxy vs provider vs timeout vs DNS", "passed": true, "evidence": "errName distinguishes TimeoutError/AbortError vs connection errors; status+body distinguishes provider vs proxy-generated 502 ('Bad Gateway from proxy' visible in body)."},
+ {"text": "Verified by executing a faked failure, output shown", "passed": true, "evidence": "Mocked network-exception and 502 cases executed; structured log lines pasted in reply."},
+ {"text": "Reply reasons about the 1-2h staging round trip", "passed": true, "evidence": "'staging への反映が1往復1〜2時間かかる制約があるので、1回のデプロイで全パターンを判別できるだけの情報を最初から仕込んでいます'."}
+], "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0}}

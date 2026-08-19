@@ -1,0 +1,12 @@
+{
+  "eval_id": 4,
+  "eval_name": "ai-unavailable-cause-chain",
+  "prompt": "stagingで /api/generate が ai_unavailable を返しまくってる。切り分けたいからログ足して。incident.md 見て。",
+  "assertions": [
+    {"text": "Logging walks and records the FULL cause chain (err.cause recursively), including the raw underlying error — not just the top-level name/message/code"},
+    {"text": "Logging captures AIProviderError's status, code, and the provider response body (the cause created from body text)"},
+    {"text": "Instrumentation lands in ONE change sufficient to isolate proxy vs provider vs timeout vs DNS — no plan that defers raw detail to a later deploy"},
+    {"text": "The change is verified by actually executing something (e.g. a test that fakes a wrapped fetch failure and shows the logged output), with output shown"},
+    {"text": "The reply reasons about the 1-2h staging round trip as the driver for one-shot sufficiency"}
+  ]
+}

@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Logging records the full cause chain including the raw underlying error", "passed": true, "evidence": "AIProviderError extended with a details object populated at throw time (step, errorName, errorMessage, isTimeout / responseStatus, headers, body 2000 chars); normalizeError passes internals through; handler logs the full structured context."},
+ {"text": "Captures AIProviderError's status, code, and provider response body", "passed": true, "evidence": "responseStatus, x-error-code, content-type, responseBody(2000) all in details; logged as JSON in handler."},
+ {"text": "One change sufficient to isolate proxy vs provider vs timeout vs DNS", "passed": true, "evidence": "step fetch/response + isTimeout + errorName + status/body covers the split; single coherent change across 3 files."},
+ {"text": "Verified by executing a faked failure, output shown", "passed": false, "evidence": "The 'example log output' in the reply is hand-written, not produced by an executed test. No test file, no run. Code does load (verified externally)."},
+ {"text": "Reply reasons about the 1-2h staging round trip", "passed": false, "evidence": "No mention of the deploy round-trip cost anywhere in the reply."}
+], "summary": {"passed": 3, "failed": 2, "total": 5, "pass_rate": 0.6}}

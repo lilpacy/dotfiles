@@ -1,0 +1,6 @@
+{"expectations": [
+ {"text": "Logging captures the full stack trace", "passed": true, "evidence": "Exception details logged with error classification."},
+ {"text": "Logging captures diagnostic context (order/cursor/phase)", "passed": true, "evidence": "Cursor, order dump on KeyError, HTTP status/body."},
+ {"text": "Logs persisted durably (file)", "passed": false, "evidence": "Logs to stderr with wishful reasoning: 'cron は stderr は保持することが多い' — incident.md states cron discards stderr."},
+ {"text": "Reply reasons about round-trip cost for one-shot logging", "passed": false, "evidence": "No mention of 40-min deploy or once-per-night constraint."}
+], "summary": {"passed": 2, "failed": 2, "total": 4, "pass_rate": 0.5}}

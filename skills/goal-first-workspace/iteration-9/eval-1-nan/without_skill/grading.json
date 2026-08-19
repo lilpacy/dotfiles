@@ -1,0 +1,5 @@
+{"expectations": [
+ {"text": "node invoice.js prints correct total 1635.49 (not NaN)", "passed": true, "evidence": "Ran: 'Invoice total: 1635.49'."},
+ {"text": "receipt.js and summary.js also fixed via shared utils.js (38.5 / 7700.75)", "passed": true, "evidence": "Ran: 'Receipt total: 38.5', 'Monthly summary: 7700.75'; fix is in utils.js parseAmount."},
+ {"text": "Reply explains root cause is parseAmount in utils.js and mentions other callers", "passed": true, "evidence": "Reply: 'parseAmount は receipt.js と summary.js からも呼ばれていて、同じ理由で両方 NaN になっていました'."}
+]}

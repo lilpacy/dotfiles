@@ -1,0 +1,11 @@
+{
+  "eval_id": 3,
+  "eval_name": "one-shot-logging-sufficiency",
+  "prompt": "sync_worker.py が本番で落ちてる。切り分けのためにログを足して。incident.md に状況をまとめてある。",
+  "assertions": [
+    {"text": "Added logging captures the full stack trace (traceback/exc_info), not just an error code or message"},
+    {"text": "Added logging captures diagnostic context: which order/cursor/phase was being processed when the failure occurred"},
+    {"text": "Logs are persisted somewhere durable (file), since incident.md says cron discards stdout/stderr"},
+    {"text": "The reply explicitly reasons about the round-trip cost (40min deploy / once-per-night run) as the justification for one-shot-sufficient logging"}
+  ]
+}

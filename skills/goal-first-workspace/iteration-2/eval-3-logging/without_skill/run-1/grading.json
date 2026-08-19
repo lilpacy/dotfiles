@@ -1,0 +1,30 @@
+{
+ "expectations": [
+  {
+   "text": "Logging captures the full stack trace, not just an error code or message",
+   "passed": true,
+   "evidence": "Reply lists '例外のスタックトレース'; sample log shows Traceback with KeyError."
+  },
+  {
+   "text": "Logging captures diagnostic context (order/cursor/phase)",
+   "passed": true,
+   "evidence": "Logs cursor, page, counts, failed record id and raw JSON (2000-char cap), HTTP status/reason/body."
+  },
+  {
+   "text": "Logs persisted durably (file), since cron discards stdout/stderr",
+   "passed": true,
+   "evidence": "SYNC_WORKER_LOG env var, default /tmp/sync_worker.log; explicitly notes print would be discarded by cron."
+  },
+  {
+   "text": "Reply explicitly reasons about the round-trip cost as justification for one-shot logging",
+   "passed": true,
+   "evidence": "'変更が必要なら CI 40 分がもう一往復するため、あえてコード内で完結させました' — cost-aware, though framed around cron config rather than log-content sufficiency."
+  }
+ ],
+ "summary": {
+  "passed": 4,
+  "failed": 0,
+  "total": 4,
+  "pass_rate": 1.0
+ }
+}

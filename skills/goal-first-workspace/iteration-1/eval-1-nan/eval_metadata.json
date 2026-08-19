@@ -1,0 +1,10 @@
+{
+  "eval_id": 1,
+  "eval_name": "nan-symptom-vs-root-cause",
+  "prompt": "invoice.js を実行すると合計が NaN になる。invoice.js を直して。",
+  "assertions": [
+    {"text": "node invoice.js prints the correct total 1635.49 (not NaN)"},
+    {"text": "node receipt.js and node summary.js also print correct totals (38.5 and 7700.75) — root cause fixed in shared utils.js, not patched only in invoice.js"},
+    {"text": "The reply explains the root cause is parseAmount in utils.js and mentions the other callers"}
+  ]
+}

@@ -1,0 +1,340 @@
+{
+  "metadata": {
+    "skill_name": "goal-first",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-08-19T09:22:59Z",
+    "evals_run": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Running process.py succeeds and output.csv contains all 5 data rows",
+          "passed": true,
+          "evidence": "Ran: 'wrote 5 rows'; output.csv 6 lines."
+        },
+        {
+          "text": "Fix addresses the ';' delimiter root cause, not blanket row-skipping",
+          "passed": true,
+          "evidence": "delimiter=\";\" fixed; try/except kept as insurance."
+        },
+        {
+          "text": "Reply flags the means/goal conflict",
+          "passed": true,
+          "evidence": "'ValueError \u306e\u76f4\u63a5\u306e\u539f\u56e0\u306f\u300c\u58ca\u308c\u305f\u884c\u300d\u3067\u306f\u306a\u304f\u2026\u30bb\u30df\u30b3\u30ed\u30f3\u533a\u5207\u308a' stated upfront."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "node invoice.js prints correct total 1635.49",
+          "passed": true,
+          "evidence": "Ran: 'Invoice total: 1635.49'."
+        },
+        {
+          "text": "receipt.js and summary.js also fixed via shared utils.js",
+          "passed": true,
+          "evidence": "Ran: 38.5 / 7700.75."
+        },
+        {
+          "text": "Reply explains root cause is parseAmount in utils.js",
+          "passed": true,
+          "evidence": "Root cause identified in utils.js."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "generate_report.py runs <0.5s with unchanged correct total",
+          "passed": true,
+          "evidence": "Ran: real 0.03s, total 310968.35 unchanged."
+        },
+        {
+          "text": "Fix targets per-row load_schema",
+          "passed": true,
+          "evidence": "lru_cache on load_schema (and fetch_rate as requested); profiled first."
+        },
+        {
+          "text": "Reply states caching fetch_rate alone would not help",
+          "passed": true,
+          "evidence": "'fetch_rate \u3060\u3051\u3092\u30ad\u30e3\u30c3\u30b7\u30e5\u3057\u3066\u3082\u307b\u307c\u901f\u304f\u306a\u3089\u306a\u3044\uff08\u652f\u914d\u7684\u30b3\u30b9\u30c8\u306f load_schema \u5074\uff09'."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Logging captures the full stack trace",
+          "passed": true,
+          "evidence": "Stack traces on all stage failures; HTTPError body captured."
+        },
+        {
+          "text": "Logging captures diagnostic context (order/cursor/phase)",
+          "passed": true,
+          "evidence": "Stage, failing order data, synced count, HTTP status/body."
+        },
+        {
+          "text": "Logs persisted durably (file)",
+          "passed": true,
+          "evidence": "File logging to /tmp/sync_worker.log (env-overridable); cron-discard named as root obstacle."
+        },
+        {
+          "text": "Reply reasons about round-trip cost",
+          "passed": true,
+          "evidence": "'\u6b21\u306e\u5b9f\u884c\u30c1\u30e3\u30f3\u30b9\u304c\u4eca\u591c2:00\u306e1\u56de\u304d\u308a\u30fb\u30c7\u30d7\u30ed\u30a4\u306b40\u5206\u304b\u304b\u308b\u3068\u3044\u3046\u5236\u7d04\u304c\u3042\u308b\u305f\u3081\u2026\u3053\u306e1\u56de\u306e\u30c7\u30d7\u30ed\u30a4\u3067\u539f\u56e0\u3092\u7279\u5b9a\u3067\u304d\u308b\u60c5\u5831\u3092\u4e00\u5ea6\u306b\u57cb\u3081\u8fbc\u307f'. Also ran a mocked repro to verify log output."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Running process.py succeeds and output.csv contains all 5 data rows",
+          "passed": true,
+          "evidence": "Ran: 'wrote 5 rows'; output.csv 6 lines."
+        },
+        {
+          "text": "Fix addresses the ';' delimiter root cause, not blanket row-skipping",
+          "passed": true,
+          "evidence": "delimiter=\";\" fixed; skip added as requested."
+        },
+        {
+          "text": "Reply flags the means/goal conflict",
+          "passed": true,
+          "evidence": "'\u300c\u4e00\u90e8\u306e\u884c\u3060\u3051\u58ca\u308c\u3066\u3044\u308b\u300d\u306e\u3067\u306f\u306a\u304f\u3001\u533a\u5207\u308a\u6587\u5b57\u306e\u6307\u5b9a\u30df\u30b9\u3067\u5168\u884c\u304c\u300c\u58ca\u308c\u3066\u3044\u308b\u300d\u3088\u3046\u306b\u898b\u3048\u3066\u3044\u305f'."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "node invoice.js prints correct total 1635.49",
+          "passed": true,
+          "evidence": "Ran: 'Invoice total: 1635.49'."
+        },
+        {
+          "text": "receipt.js and summary.js also fixed via shared utils.js",
+          "passed": true,
+          "evidence": "Ran: 38.5 / 7700.75."
+        },
+        {
+          "text": "Reply explains root cause is parseAmount in utils.js",
+          "passed": true,
+          "evidence": "Root cause identified in utils.js."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "generate_report.py runs <0.5s with unchanged correct total",
+          "passed": true,
+          "evidence": "Ran: real 0.03s, total 310968.35 unchanged."
+        },
+        {
+          "text": "Fix targets per-row load_schema",
+          "passed": true,
+          "evidence": "lru_cache on both; measured and identified load_schema as bottleneck."
+        },
+        {
+          "text": "Reply states caching fetch_rate alone would not help",
+          "passed": true,
+          "evidence": "'fetch_rate \u81ea\u4f53\u306f\u8f9e\u66f8\u53c2\u7167\u3060\u3051\u306a\u306e\u3067\u5143\u3005\u307b\u307c0\u30b3\u30b9\u30c8'."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 3,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Logging captures the full stack trace",
+          "passed": true,
+          "evidence": "logging.exception with traceback on order failures and aborts."
+        },
+        {
+          "text": "Logging captures diagnostic context (order/cursor/phase)",
+          "passed": true,
+          "evidence": "order_id, cursor, processed count per failure."
+        },
+        {
+          "text": "Logs persisted durably (file)",
+          "passed": true,
+          "evidence": "FileHandler to sync_worker.log next to the script; cron-discard identified as root cause."
+        },
+        {
+          "text": "Reply reasons about round-trip cost",
+          "passed": false,
+          "evidence": "Mentions tonight's single run implicitly ('\u4eca\u591c2:00\u306e\u5b9f\u884c\u304c exit 1 \u3067\u843d\u3061\u3066\u3082\u2026\u4e00\u767a\u3067\u5207\u308a\u5206\u3051') but never reasons about deploy cost or one-shot sufficiency as a design driver."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.9375,
+        "stddev": 0.125,
+        "min": 0.75,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.06",
+      "time_seconds": "+0.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}

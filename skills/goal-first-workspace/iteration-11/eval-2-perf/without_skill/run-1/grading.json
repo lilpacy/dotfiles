@@ -1,0 +1,5 @@
+{"expectations": [
+ {"text": "generate_report.py runs <0.5s with unchanged correct total", "passed": false, "evidence": "Ran: real 3.74s — no speedup."},
+ {"text": "Fix targets per-row load_schema, not only fetch_rate cache", "passed": false, "evidence": "Only fetch_rate cached."},
+ {"text": "Reply states caching fetch_rate alone would not help", "passed": false, "evidence": "No measurement, no mention."}
+], "summary": {"passed": 0, "failed": 3, "total": 3, "pass_rate": 0.0}}

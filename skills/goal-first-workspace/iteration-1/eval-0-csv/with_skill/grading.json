@@ -1,0 +1,5 @@
+{"expectations": [
+ {"text": "Running process.py succeeds and output.csv contains all 5 data rows", "passed": true, "evidence": "Ran process.py: 'wrote 5 rows, skipped 0'; output.csv has 6 lines (header + 5)."},
+ {"text": "Fix addresses the ';' delimiter root cause, not blanket row-skipping", "passed": true, "evidence": "delimiter=\";\" added to csv.reader; skip is supplementary with stderr logging."},
+ {"text": "Reply flags the means/goal conflict (skip alone would drop all rows)", "passed": true, "evidence": "Reply: 'try/except で skip だけ入れると…全行 skip されて output.csv が空になる'."}
+]}

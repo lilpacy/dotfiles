@@ -96,6 +96,9 @@ def run_single_query(
         # Track state for stream event detection
         pending_tool_name = None
         accumulated_json = ""
+        # Track whether Claude mentions the skill in thinking/text
+        # as evidence of recognition even without a formal Skill call
+        skill_mentioned_in_content = False
 
         try:
             while time.time() - start_time < timeout:
@@ -137,45 +140,84 @@ def run_single_query(
                                 if tool_name in ("Skill", "Read"):
                                     pending_tool_name = tool_name
                                     accumulated_json = ""
+                                elif tool_name == "ToolSearch":
+                                    # ToolSearch is a prerequisite for
+                                    # loading deferred tools like Skill;
+                                    # skip it and keep parsing.
+                                    pass
                                 else:
-                                    return False
+                                    # Non-skill tool; if skill was already
+                                    # mentioned in thinking/text, count it
+                                    return skill_mentioned_in_content
 
-                        elif se_type == "content_block_delta" and pending_tool_name:
+                        elif se_type == "content_block_delta":
                             delta = se.get("delta", {})
-                            if delta.get("type") == "input_json_delta":
-                                accumulated_json += delta.get("partial_json", "")
-                                if clean_name in accumulated_json:
-                                    return True
+                            if pending_tool_name:
+                                if delta.get("type") == "input_json_delta":
+                                    accumulated_json += delta.get("partial_json", "")
+                                    if clean_name in accumulated_json or skill_name in accumulated_json:
+                                        return True
+                            # Detect skill name in thinking/text deltas
+                            elif delta.get("type") in ("thinking_delta", "text_delta"):
+                                text_chunk = delta.get(
+                                    "thinking" if delta["type"] == "thinking_delta" else "text", ""
+                                )
+                                if skill_name in text_chunk:
+                                    skill_mentioned_in_content = True
 
                         elif se_type in ("content_block_stop", "message_stop"):
                             if pending_tool_name:
-                                return clean_name in accumulated_json
+                                return (clean_name in accumulated_json
+                                        or skill_name in accumulated_json)
                             if se_type == "message_stop":
-                                return False
+                                return skill_mentioned_in_content
 
                     # Fallback: full assistant message
                     elif event.get("type") == "assistant":
                         message = event.get("message", {})
                         for content_item in message.get("content", []):
-                            if content_item.get("type") != "tool_use":
-                                continue
-                            tool_name = content_item.get("name", "")
-                            tool_input = content_item.get("input", {})
-                            if tool_name == "Skill" and clean_name in tool_input.get("skill", ""):
-                                triggered = True
-                            elif tool_name == "Read" and clean_name in tool_input.get("file_path", ""):
-                                triggered = True
-                            return triggered
+                            content_type = content_item.get("type", "")
+
+                            # Check thinking/text for skill name mentions.
+                            # Claude often recognizes a skill in its thinking
+                            # before formally calling it, and with limited
+                            # turns it may not get to the Skill tool call.
+                            if content_type in ("thinking", "text"):
+                                text = content_item.get(
+                                    "thinking" if content_type == "thinking" else "text", ""
+                                )
+                                if skill_name in text or clean_name in text:
+                                    skill_mentioned_in_content = True
+
+                            elif content_type == "tool_use":
+                                tool_name = content_item.get("name", "")
+                                tool_input = content_item.get("input", {})
+                                input_str = json.dumps(tool_input)
+                                if tool_name == "Skill" and (clean_name in input_str or skill_name in input_str):
+                                    return True
+                                elif tool_name == "Read" and (clean_name in input_str or skill_name in input_str):
+                                    return True
+                                elif tool_name == "ToolSearch":
+                                    # Check if ToolSearch is loading the Skill tool
+                                    if "Skill" in input_str:
+                                        return True
+                                    continue
+                                else:
+                                    # Non-skill tool call; if we already saw the skill
+                                    # mentioned in thinking/text, count as triggered
+                                    if skill_mentioned_in_content:
+                                        return True
+                                    return False
 
                     elif event.get("type") == "result":
-                        return triggered
+                        return triggered or skill_mentioned_in_content
         finally:
             # Clean up process on any exit path (return, exception, timeout)
             if process.poll() is None:
                 process.kill()
                 process.wait()
 
-        return triggered
+        return triggered or skill_mentioned_in_content
     finally:
         if command_file.exists():
             command_file.unlink()

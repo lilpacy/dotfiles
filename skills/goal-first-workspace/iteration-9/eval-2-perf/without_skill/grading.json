@@ -1,0 +1,5 @@
+{"expectations": [
+ {"text": "generate_report.py runs <0.5s with unchanged correct total", "passed": true, "evidence": "Ran: real 0.03s, 'report total: 310968.35 (300 rows)' matches original."},
+ {"text": "Fix targets per-row load_schema, not only fetch_rate cache", "passed": true, "evidence": "lru_cache(maxsize=1) on load_schema; fetch_rate cache explicitly declined."},
+ {"text": "Reply states caching fetch_rate alone would not help (dict lookup)", "passed": true, "evidence": "Reply: 'fetch_rate は RATES 辞書を引くだけなので 0.000s、ここをキャッシュしても速くなりません' with cProfile output."}
+]}

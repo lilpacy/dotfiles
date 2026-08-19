@@ -1,0 +1,5 @@
+{"expectations": [
+ {"text": "generate_report.py runs <0.5s with unchanged correct total", "passed": false, "evidence": "Ran: real 3.64s — no speedup. load_schema still called 300 times."},
+ {"text": "Fix targets per-row load_schema, not only fetch_rate cache", "passed": false, "evidence": "Only fetch_rate cached (lru_cache maxsize=10); the actual bottleneck untouched."},
+ {"text": "Reply states caching fetch_rate alone would not help", "passed": false, "evidence": "Reply celebrates '99% のキャッシュヒット率' on a dict lookup; verified output correctness but never measured time."}
+], "summary": {"passed": 0, "failed": 3, "total": 3, "pass_rate": 0.0}}
