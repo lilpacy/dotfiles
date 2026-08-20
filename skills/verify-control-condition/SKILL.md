@@ -1,46 +1,55 @@
 ---
 name: verify-control-condition
-description: Use whenever you design or run any comparison with a "without X" / baseline / control / off condition — A/B tests, feature-flag comparisons, ablation studies, skill-on-vs-off benchmarks, before/after measurements. Forces you to prove the control condition is actually free of X by inspecting raw execution evidence, instead of assuming absence because you didn't put X in the prompt/config. Also covers the sibling failures that hide inside the same "trusted my own design instead of checking evidence" pattern: single-trial overconfidence, fixture answer-leakage, shared mutable state contaminating trials, mismatched instrumentation between compared conditions, and polling against a premature (not terminal) completion artifact.
+description: Use whenever you design or run any comparison with a baseline / control / "without X" / off arm — A/B tests, skill-on-vs-off benchmarks, ablation studies, feature-flag comparisons, before/after measurements — and also whenever you write a check meant to detect contamination or absence (a grep gate, a leak detector, an isolation test). Forces two proofs instead of zero: prove the control arm is actually free of X by inspecting raw execution evidence, and prove the detector itself works by showing it fires on a known-dirty sample and stays quiet on a known-clean one. Also covers the sibling failures in the same family: single-trial overconfidence, fixture answer-leakage, shared mutable state across trials, mismatched instrumentation between arms, polling a premature completion artifact, and verifying your fix instead of the claim.
 ---
 
 # Verify the Control Condition
 
-Designing a "without X" condition is a claim, not a fact. The claim is only true once you have checked — every time you build a comparison and don't check, you are trusting your own design instead of the evidence, which is exactly the failure this skill exists to catch.
+A control condition is a claim about the world — "this arm ran without X" — and it stays an unverified claim until you have looked at raw execution evidence. Every result computed on top of an unverified control inherits its uncertainty, and the cost compounds with every run you add before checking.
 
-## The core failure and why it's expensive
+## The incident this comes from
 
-A real example: a benchmark compared an AI skill's effect by embedding its instructions directly in prompts for the "with_skill" condition, and omitting them for "without_skill" — a reasonable design, explicitly chosen to avoid relying on any harness-specific skill-loading mechanism. But the skill was *also* globally registered on the machine (symlinked into the CLI's own skill-discovery directory), so the model could — and did — discover and read the skill's file directly during "without_skill" runs, regardless of what the prompt said. This went unnoticed through a single ad-hoc test, then a 42-run benchmark, then an 84-run benchmark — hours of compute and human attention spent measuring a control condition that was never actually controlled. It was found in one command: `grep -c "skill-name" harness_log.txt` on a single run. That one grep, run once, right after the first "without_skill" execution, would have caught it before any of the expensive re-runs.
+A benchmark measured an AI skill's effect by embedding its text into the prompt for the "with_skill" arm and omitting it for "without_skill". The design was fine. The machine was not: the same skill was also symlinked into the CLI's global skill-discovery directory, so in "without_skill" runs the model could — and sometimes did — find and read the skill file on its own, announcing "this is a non-trivial investigation, so I'll apply the skill too." Nothing in the prompt caused this, and nothing in the prompt could have prevented it.
 
-The general shape: you designed condition B to lack property X. You never checked. B silently has X anyway, through a path you didn't think to block (global config, environment inheritance, shared state, a cache, a default). Every result computed under the unverified assumption is wrong, and the cost compounds with every re-run you do before catching it.
+The contamination survived one ad-hoc test, a 42-run benchmark, and an 84-run benchmark. It was found in seconds, by one command run against a single control-arm log:
+
+    grep -c "skill-name" harness_log.txt
+
+That command could have run right after the very first control run. Everything between that moment and its actual discovery was compute and attention spent measuring a control that was never controlled.
 
 ## The rule
 
-**Before trusting any "without X" result, grep the raw execution trace for X's own name or signature — at least once, on the first run, before scaling up to more trials or more conditions.** Not the summarized output, not your own recollection of how you configured it — the actual log of what the system under test did. If X could plausibly be discovered through more than one path (a prompt, a config file, an environment variable, a global registry, a cache directory, an auto-loaded default), check that every path is closed, not just the one you edited.
+Before trusting any control-arm result, inspect the raw execution trace of one control run for X's own signature — its name, its file path, a distinctive phrase from its content. Do this on the first run, before adding trials, arms, or models.
 
-This generalizes past "skill A/B tests": any time you build a baseline/control by *subtracting* something from a full setup, the subtraction is unverified until you inspect what actually ran. Cheap ways to verify, pick whichever fits:
-- Grep the raw stdout/stderr/tool-call log for the feature's name, file path, or a distinctive string from its content.
-- Diff the "with" and "without" prompts/configs byte-for-byte and confirm the diff is *only* the intended feature.
-- If the feature could load from a global/user-level location outside your control (a symlinked plugin dir, a `$HOME`-scoped config, an OS-level default), explicitly override that scope for the run (an isolated `$XDG_CONFIG_HOME`-style env var, a scratch home directory, a `--no-plugins`-style flag) and verify with the same grep that the override worked — overriding without verifying is the same unverified-claim mistake one layer down.
+"Raw" matters. Inspect the actual record of what the system did — tool calls, files opened, commands executed — not the final answer, not a summary, and never the system's own report of what it saw: models asked to count their visible skills returned different numbers under identical conditions. If the invocation path gives you no raw trace at all (some subagent mechanisms don't), that is itself the finding — switch to a path that does, because a control you cannot inspect is a control you cannot claim.
+
+Then enumerate discovery paths. Removing X from the prompt closes one path; X can still arrive through a global registry, an environment variable, a user-level config, a cache, an auto-loaded directory, a default. Close each path explicitly (an isolated home directory, a `--no-plugins`-style flag, a scratch config dir) and verify each closure with the same trace inspection. An override you didn't verify is the original mistake, one layer down.
+
+## Calibrate the detector before believing it
+
+The check is a measurement instrument, and instruments fail in both directions.
+
+**False dirty.** After the global-registry leak above was fixed with an isolated home directory, the same grep still returned 5–17 hits per run — which read as "a second, unknown leak path" and nearly launched another day of hunting. Reading the actual matches dissolved them: the results directory was itself named `results/<skill-name>-<timestamp>/…`, so every quoted file path matched, and the fixture lived inside the benchmark's own git repository, so the model's routine `git log` printed a commit titled "add <skill-name> suite". The isolation had worked all along; the detector's signature collided with the harness's own naming and history.
+
+**False clean.** The mirror failure is quieter and worse: a grep against the wrong file, a mistyped pattern, a log that was never written — all return zero, and zero reads as "verified clean".
+
+So calibrate the gate before letting it certify anything: show it turns red on a sample you know is dirty (a pre-fix run, or a deliberately contaminated environment) and green on one you know is clean. A gate you have never seen fail detects nothing — you just haven't noticed yet. And keep the signature from colliding with your own infrastructure: don't name run directories, suites, or commits after the exact string you will grep for, and don't nest fixtures inside a repository whose history mentions X.
 
 ## Sibling failures — same root, different surface
 
-These showed up in the same benchmark, and they all share the same cause: trusting the design instead of checking the evidence.
+All of these appeared in the same benchmark, and all are one mistake: trusting the design where evidence was available.
 
-**Single-trial overconfidence.** A result from one run is a sample, not a fact. Report "unconfirmed, n=1" rather than a confident causal claim, or run enough trials to see the actual spread before concluding anything. A value that looks anomalous after one run is exactly as likely to be a fresh sample from a wide distribution as it is to be a real effect — you cannot tell which without more trials.
+- **Single-trial overconfidence.** One run is a sample from a distribution you haven't seen. An anomalous n=1 result is exactly as consistent with "wide variance" as with "real effect" — report it as unconfirmed, or run enough trials to see the spread.
+- **Fixture answer-leakage.** Re-read fixtures as the subject would, with no prior context. A corrupted test file named `broken.pdf` turns "can it discover the corruption" into "can it read a filename" — a different and much easier test that silently invalidates the result.
+- **Shared mutable state across trials.** If runs share a writable directory, later runs inherit earlier runs' side effects — a database one run created lets the next run skip the exact step being tested. Give each trial its own copy or sandbox whenever the subject can write anything.
+- **Mismatched instrumentation between arms.** Measuring arm A through a path with raw logs and arm B through one with only summaries makes differences in *visibility* look like differences in *behavior*. Match the measurement channel before comparing measurements. This includes the invocation itself: a shell alias that silently appends flags (`alias codex='codex --yolo'`) means the command you think you benchmarked is not the one that ran — invoke the binary explicitly (`command codex`) and check the run header.
+- **Polling a premature artifact.** Wait on the artifact written last (the final result file, process exit), not one created before the expensive work starts (an output directory, an early log line). The premature artifact reports "done" mid-flight and turns a running job into a false failure.
+- **Verifying your fix instead of the claim.** After fixing one real bug in the setup, "my fix works" is the wrong success criterion — the claim needing verification is "this result is now trustworthy". A cell that has already produced contradictory values is evidence that *something* is wrong, not that you found the only something: here, two independent contaminations produced the same symptom, and confirming the first fix said nothing about the second cause. Ask "what else could produce this symptom" before scaling up. When anomalies accumulate across a timeline and stop cohering, escalate from this skill to `detective-reasoning`.
 
-**Fixture answer-leakage.** When you build a test fixture meant to see whether a subject discovers something on its own, read the fixture back as if you were the subject with no prior context. A filename, comment, or variable name that spells out the intended finding (e.g. naming a corrupted test file `broken.pdf`) turns "can it find this" into "can it read a filename" — a different, much easier question that silently invalidates the test.
+## In practice
 
-**Shared mutable state across trials.** If multiple runs write to the same physical location (a shared working directory, a shared cache, a shared file created by a setup step), a later run can inherit an earlier run's leftovers and skip the exact step you meant to test. Isolate each trial into its own copy/sandbox whenever the thing under test can write anything.
-
-**Mismatched instrumentation between compared conditions.** If you measure condition A through a path that gives you raw logs and token counts, and condition B through a path that only gives you a final summary, any difference you observe might be a difference in what you *can see*, not a difference in what happened. Match the measurement method before comparing the measurements.
-
-**Polling against a premature artifact.** When waiting for a background job, poll for the artifact that is written *last* (e.g., a final result file), not one written early in the job's lifecycle (e.g., a directory or an initial log line that exists before the expensive work even starts) — the latter reports "done" while the real work is still running, and reads as a false failure if you check the wrong thing right after.
-
-**Verifying your fix instead of verifying the claim.** After you find and fix one real bug in the setup (say, a shared directory contaminating trials), it is tempting to define "done" as "my fix works" — run a small test, confirm the fix's own mechanism holds, and scale up. But "my fix works" is a narrower claim than "this result is now trustworthy." A cell that has already flipped between wildly different values across the day is strong evidence that *something* is wrong — not evidence that you've found *the* something. Fixing one bug and confirming that specific bug is gone does not rule out a second, independent bug producing the same symptom (in one real case, a shared-directory leak and a global skill-registration leak were two separate causes of the same instability; fixing the first and re-testing looked like success right up until the second was found by a completely different check). Before scaling up on the strength of "I fixed a bug and verified the fix," generate at least one alternative explanation for the original anomaly and check whether it's also ruled out — don't let finding one real cause end the search for others. This is the same "hypothesis lock-in" failure as thickening evidence for your current theory instead of testing a competing one; it just resurfaces one level up, in verifying your own patch rather than in diagnosing the original task.
-
-## What to do in practice
-
-1. State explicitly what "without X" is supposed to guarantee, in one sentence, before running anything.
-2. Run one instance of the control condition. Before looking at its *result*, grep its raw execution trace for direct evidence that X was absent.
-3. Only after that check passes, scale up to more trials, more conditions, or a bigger benchmark. Re-verify after any change to fixtures, sandboxing, or environment — a fix in one place can reopen the leak through another path. If the specific cell you're re-checking has flip-flopped before, treat "my fix's mechanism works" as insufficient evidence on its own; explicitly ask "what else could produce this same symptom" before trusting the number and moving on.
-4. When reporting results, name the check you ran to confirm the control condition held, the same way you'd cite the command you ran to verify any other claim.
+1. Write down, in one sentence, what the control arm is supposed to guarantee.
+2. Run one control instance. Inspect its raw trace for X's signature before looking at its score.
+3. Calibrate the gate: known-dirty goes red, known-clean goes green, and the signature doesn't match your own paths, names, or history.
+4. Only then scale up. Re-verify after any change to fixtures, environment, or isolation — a fix in one place can reopen a path in another.
+5. When reporting results, name the check that certified the control, exactly as you would cite the command that verified any other claim.

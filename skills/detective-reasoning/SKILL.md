@@ -1,30 +1,44 @@
 ---
 name: detective-reasoning
-description: Use when investigating unexplained or inconsistent behavior — a result that changed for no clear reason, a bug that only shows up sometimes, benchmark numbers that swing between runs, "why did X get better/worse" questions, or any situation where you've already found one plausible cause but something still doesn't add up. Forces holding every anomaly observed so far on one evidence board instead of resolving each one in isolation, testing whether a new explanation accounts for ALL of them (not just the one that prompted the search), and actively hunting for facts that contradict your leading theory instead of just the ones that confirm it. Escalate to this from `verify-control-condition` when a single verification check isn't enough — when you have a *history* of conflicting or unstable observations, not just one unverified claim.
+description: Use when investigating anything with a *history* of inconsistent observations — a result that flips between runs, a bug that appears and disappears, benchmark numbers that contradict yesterday's, a "why did X change" question about something already explained once. Also use at the exact moment you notice you've explained the newest anomaly and feel done: that feeling is the trigger. Forces keeping every anomaly from the whole timeline on one evidence board, replaying each new theory against all of them, holding multiple simultaneous causes, treating the measuring instrument as a suspect, and deliberately hunting disconfirming evidence. Escalate here from `verify-control-condition` when individual checks keep passing but the overall picture still doesn't cohere.
 ---
 
 # Detective Reasoning
 
-Finding *an* explanation is not the same as finding *the* explanation. The moment you're satisfied because a new fact fits the anomaly in front of you, stop and ask what else in the timeline that explanation has to account for — and whether it does.
+Finding *an* explanation is not finding *the* explanation. The pull to close the case at the first fact that fits the newest anomaly is exactly the pull this skill exists to resist.
 
-## Why "found a cause" isn't "found the cause"
+## A solved case, for calibration
 
-A benchmark result for one specific test case flipped between wildly different values across a single day: catastrophic failure in an early ad-hoc test, near-perfect in a mid-day 3-trial run, still near-perfect after finding and fixing one contamination path, and *still* showing traces of the same contamination after supposedly isolating that path. Each time a new anomaly appeared, the investigation found *a* plausible cause, fixed it, ran one check that confirmed the fix worked, and moved on — treating the mystery as closed.
+One benchmark cell — one model, control arm — produced these observations across a single day:
 
-It wasn't closed. The theory found at each step explained the *most recent* anomaly but contradicted an earlier one: if the contamination source was globally reachable the whole time (as it turned out to be, from more than one leak path), the very first ad-hoc test should have shown the same contamination too — but it didn't. A theory that explains your latest data point while contradicting an earlier one isn't the answer; it's a partial answer sharing the stage with at least one more variable you haven't found yet. (Here, the missing variable was that the model's decision to actually *read* an available skill turned out to be probabilistic, not automatic — which is what reconciles why the same globally-reachable resource was used in some runs and ignored in others.)
+1. Morning, one ad-hoc run: catastrophic failure.
+2. Midday, three trials: perfect scores.
+3. Afternoon: a real bug found — trials shared a writable fixture, so later runs inherited earlier runs' side effects. Fixed, re-verified, declared solved; an 84-run benchmark launched on the strength of it.
+4. Evening: a prompted grep of raw logs caught the control arm reading a globally-registered skill file — a second, independent real bug. Environment isolated. Declared solved again.
+5. After isolation: the same grep *still* hit 5–17 times per run. A third leak path?
 
-This is the gap between "verify the claim you're about to act on" — one check, one moment — and detective reasoning: a discipline for when you have *a history* of inconsistent observations and are tempted to declare the mystery solved at the first fact that fits.
+The full answer needed four elements, every one necessary:
 
-## The rule
+- **Two independent real causes** — the shared fixture and the global skill registration — active at the same time, producing the same symptom.
+- **One probabilistic mechanism** — a model that *can* see a skill only *sometimes* chooses to read it. This is the only way to reconcile observation 1 with observation 2: the contamination was equally available during the catastrophic morning run and the perfect midday runs.
+- **One lying witness** — the post-isolation grep hits were the results directory's own name and the benchmark repo's git history matching the search string. The isolation had worked; the detector hadn't.
 
-**Keep every anomaly you've observed on one board, and don't retire an item just because your current lead explains the newest one.** When you find a new candidate explanation:
+At steps 3, 4, and 5 the investigation held a theory that explained the newest observation while contradicting an older one, and each time it shipped anyway. The case closed only when all five observations were finally read as one dataset.
 
-1. **Replay it against the whole timeline, not just the trigger.** List every strange result you've seen, in order, including the ones you thought you'd already explained. Ask whether the new theory predicts *all* of them — including the earliest one, including the ones that seemed unrelated at the time.
-2. **Look for the fact that doesn't fit — on purpose.** After finding a theory that feels satisfying, spend one deliberate pass hunting for a *disconfirming* fact, not more confirming ones. The theory that survives an active search for counter-evidence is worth trusting; the theory you only ever tested by looking for support is not.
-3. **Hold more than one suspect at a time.** A confirmed cause doesn't rule out a second, independent cause producing the same symptom. Before closing the case, ask "if this weren't the (only) answer, what would that look like?" and check whether that alternate signature is present anywhere in the evidence.
-4. **When a fact contradicts your leading theory, don't discard the fact — upgrade the theory.** A theory that can't be made deterministic (e.g. "the resource is always available" doesn't predict "sometimes it's used, sometimes not") often means the real mechanism is probabilistic or compound, not that the contradicting data point was noise. Reach for a model with an extra variable (a probability, a second cause, an interaction) before reaching for "ignore that outlier."
-5. **State what's still unexplained.** If, after all this, some part of the timeline still doesn't fit, say so explicitly rather than presenting the tidiest available theory as settled. "This explains most of what we saw; X is still open" is a more honest and more useful report than a complete-sounding story that quietly ignores one inconvenient data point.
+## The rules
 
-## How this differs from verifying a single claim
+**1. One board.** List every anomaly of the whole investigation, in order, including the ones you believe you've already explained. A new theory is tested against the board, not against the observation that prompted it. "Explains #5 but contradicts #1" is not a solution — it's a clue that a variable is missing.
 
-Checking whether a "without X" condition is really without X, or whether a fix you just wrote actually works, is a single verification: one claim, one check, pass or fail. Detective reasoning is for when you already have several such moments scattered across a longer investigation and they don't cohere — when the honest move isn't "run one more check" but "look at everything collected so far as one connected dataset and ask what theory survives contact with all of it." Reach for it when a pattern recurs (the same test case keeps surprising you), when a fix's own verification succeeds but the broader mystery still feels unresolved, or when someone asks "why did this change" about something you'd already quietly moved past.
+**2. Suspects are not mutually exclusive.** One confirmed cause doesn't acquit the others. Two independent bugs producing the same symptom is not exotic — it happened here within one afternoon. Before closing, ask: if a second cause were also active, what would that look like, and is that signature anywhere on the board?
+
+**3. Interrogate the instrument.** Every observation on the board was produced by some measurement — a grep, a test, a log, a score. When an observation resists every theory, check whether it is real before inventing mechanisms for it: read the raw matches instead of the count, ask what the instrument would report on a known-clean and a known-dirty sample, ask whether its signature collides with your own infrastructure. In this case the one unexplainable anomaly *was* the instrument. The witness lied.
+
+**4. Probabilistic mechanisms are admissible.** "The resource was available all day but only some runs used it" does not mean the odd runs were noise — it means the mechanism has a random or conditional step. When no deterministic story fits every observation, add a variable (a probability, a trigger condition, an interaction) rather than deleting an observation.
+
+**5. Hunt disconfirmation on purpose.** Once a theory starts feeling right, spend one deliberate pass looking for the observation that would break it — not for more that support it. A theory tested only by its friends has not been tested.
+
+**6. Close honestly.** The case is closed when every board entry is accounted for — by a cause, a mechanism, or a demonstrated instrument fault. Anything short of that, report as "this explains everything except X; X is open." A tidy story that quietly drops one data point is how this entire day happened.
+
+## Relation to single-claim verification
+
+`verify-control-condition` is one claim, one check, pass or fail — run it every time you build a baseline. Detective reasoning is for when several such checks have individually passed and the totality still doesn't make sense: the same test case keeps surprising you, a fix's own verification succeeded but the number flipped again, someone asks "why did this change" about something you had quietly moved past. The unit of analysis stops being the latest check and becomes the entire timeline.
