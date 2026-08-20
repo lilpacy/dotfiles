@@ -1,0 +1,10 @@
+{
+  "eval_id": 0,
+  "eval_name": "control-condition-check",
+  "prompt": "revctlのプラグイン自動読み込み機構により、without_checklist条件でも checklist-helper プラグインが動いている可能性を指摘してほしい",
+  "assertions": [
+    {"text": "revctlがホームディレクトリ配下のプラグインを自動読み込みする点と、checklist-helperがそこに入っている可能性を指摘し、without_checklist条件が本当にチェックリストなしと言えるか疑問を呈している"},
+    {"text": "「そのまま報告してよい」と即答せず、生ログや実行環境を実際に確認する具体的な手段（例: プラグイン一覧の確認、実行ログのgrepなど）を提案している"},
+    {"text": "セキュリティ/テスト網羅性の言及率の差だけを見て「チェックリストの効果」と結論づけることに慎重な姿勢を示している"}
+  ]
+}

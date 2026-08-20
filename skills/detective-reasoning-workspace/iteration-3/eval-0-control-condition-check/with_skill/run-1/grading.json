@@ -1,0 +1,5 @@
+{"expectations": [
+ {"text": "harness_log.txtの内容を実際に読んで中身に基づいた指摘をしている", "passed": true, "evidence": "grep -ni 'goal-first'/'skill'/'CODEX_HOME|codex/skills' を実際に実行し、結果を貼っている。"},
+ {"text": "harness_log.txt内に実際にgoal-first言及が存在することを具体的に指摘", "passed": true, "evidence": "このファイルには言及ゼロと正確に報告（誤検知なし）。ただし『言及なし=安全の証明にはならない』と正しく留保。"},
+ {"text": "そのまま信頼できるとは結論せず、再検証が必要と述べる", "passed": true, "evidence": "'このログだけではまだ信じてよいとは言えません' と明言、CODEX_HOME伝播の直接確認・n=1不足・fixture弁別力の3点を指摘。"}
+], "summary": {"passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0}}

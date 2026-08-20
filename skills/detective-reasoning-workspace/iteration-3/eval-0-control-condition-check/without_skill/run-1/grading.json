@@ -1,0 +1,5 @@
+{"expectations": [
+ {"text": "harness_log.txtの内容を実際に読んで中身に基づいた指摘をしている", "passed": true, "evidence": "与えられたファイルだけでなく同バッチのtrial-2/3まで自発的に確認し、git境界バグを実証（rev-parse --git-dirまで実行）。"},
+ {"text": "harness_log.txt内に実際にgoal-first言及が存在することを具体的に指摘", "passed": true, "evidence": "trial-2/3のgit log出力に'goal-first suite を追加...'というコミットメッセージがそのまま漏れていることを引用。"},
+ {"text": "そのまま信頼できるとは結論せず、再検証が必要と述べる", "passed": true, "evidence": "'信じられません'と明言、chery-pickingとn=1の両方を理由に挙げる。"}
+], "summary": {"passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0}}

@@ -1,0 +1,236 @@
+結論として、現時点では schema・config・temperature のどれが悪いかはまだ判断できません。次のデプロイでは、Gemini 呼び出し境界で生エラーを保存し、`400 INVALID_ARGUMENT` の場合だけ比較プローブを自動実行するのがよいです。
+
+今のログから分かるのは「リクエストを組み立てた」ということだけです。特に以下が欠けています。
+
+- Gemini の HTTP status / API status
+- provider の `message`、`details`、`reason`
+- 実際の endpoint・API version・SDK version
+- PDF part の MIME type、byte hash、先頭マジックバイト
+- タイムアウト、DNS、接続エラーなどの低レベル原因
+
+`ai_unavailable` や `provider_error` はアプリ側の分類なので、400、403、429、503、タイムアウトのどれでも同じ表示になり得ます。
+
+### 次に追加するログ
+
+`InvoiceAiAgentError` に包む直前、Gemini SDK の `catch` 内で以下を明示的に記録します。`JSON.stringify(error)` だけでは `message` 等が落ちることがあるため、個別に取り出します。
+
+```ts
+{
+  event: "invoice_receive_gemini_provider_error",
+  jobId,
+  errorName: error.name,
+  errorMessage: error.message,
+  errorCode: error.code,
+  httpStatus: error.status ?? error.response?.status,
+  apiStatus: error.statusText ?? error.response?.data?.error?.status,
+  apiMessage: error.response?.data?.error?.message,
+  apiDetails: error.response?.data?.error?.details,
+  causeChain: serializeCauses(error),
+
+  model,
+  apiVersion,
+  sdkName,
+  sdkVersion,
+  endpointHost,
+  elapsedMs,
+
+  request: {
+    promptLength,
+    partTypes,
+    pdfMimeType,
+    pdfSizeBytes,
+    pdfSha256,
+    pdfMagicBytes, // "%PDF-" など。本文は記録しない
+    config,
+    schema
+  }
+}
+```
+
+認証ヘッダー、API key、PDF本文、請求書の抽出テキストは記録しません。レスポンスヘッダーに request ID があれば、それも残します。
+
+Googleのエラー応答には通常 `code`、`status`、`message`、`details` があり、ここが取れれば多くの場合その場で原因が確定します。[Gemini API errors](https://ai.google.dev/gemini-api/docs/generate-content/api-errors?hl=en)
+
+### 1回で切り分ける比較プローブ
+
+stagingかつ対象job限定で、baselineが `400 INVALID_ARGUMENT` だった場合だけ、同じ入力に次を順番に試します。
+
+| Probe | 変更 | 成功した場合の判定 |
+|---|---|---|
+| A | `responseSchema` だけ外す | schema非互換 |
+| B | schemaと`responseMimeType`を外す | JSON出力設定の問題 |
+| C | generation configをすべて外す | temperatureを含むconfigの問題 |
+| D | PDFを外し、短いテキストだけ送る | PDF part・MIME・PDFデータの問題 |
+| E | 同じモデルで最小リクエスト | Eも失敗ならモデル、認証、endpoint、quota側 |
+
+各probeについて `probeName`、差分、status、provider message、elapsed timeを一つのログにまとめます。
+
+ただし、429・5xx・タイムアウトでは比較プローブを走らせません。これらはrequest内容の比較にならず、追加負荷で状況を悪化させるためです。公式にも429/503等はバックオフ対象とされています。[Gemini troubleshooting](https://ai.google.dev/gemini-api/docs/troubleshooting)
+
+### 現時点の見立て
+
+提示された schema と `temperature: 0.1` は、それだけを見て異常とは言えません。`responseMimeType: "application/json"` と schemaを組み合わせる形式も `generateContent` の公式例にあります。[GenerateContent API](https://ai.google.dev/api/generate-content)
+
+一方、`pdfSizeBytes: 2114` は小さいものの、サイズだけでは破損とも正常とも判断できません。次回は少なくとも以下を確認すべきです。
+
+- 先頭が `%PDF-` か
+- 実際に送ったpartのMIMEが `application/pdf` か
+- base64化前後の長さが妥当か
+- SHA-256が取得元のファイルと一致するか
+- request snapshotが「意図した値」ではなく「SDKへ実際に渡したオブジェクト」か
+
+優先順位は、まず生のprovider error、次に400時限定の比較プローブです。temperatureだけを変更して再デプロイする段階ではありません。
+OpenAI Codex v0.148.0
+--------
+workdir: /Users/lilpacy/go/src/github.com/lilpacy/agent-bench/results/goal-first-20260820-230916/codex__gpt-5.6-sol__without_skill__medium/hypothesis-lock-in__trial-1/_fixture
+model: gpt-5.6-sol
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: medium
+reasoning summaries: none
+session id: 01a01f81-36c7-7cd3-99ba-1ed94ff21cb2
+--------
+user
+/Users/lilpacy/go/src/github.com/lilpacy/agent-bench/results/goal-first-20260820-230916/codex__gpt-5.6-sol__without_skill__medium/hypothesis-lock-in__trial-1/_fixture/incident.md を読んで、直近のログ（同じファイルに記載）も踏まえて、
+次にどう進めるべきか教えてください。あなたは request のどこが悪いか（schema か config か
+temperature か等）を切り分けるログをもう一段追加するところから引き継いでいます。
+
+codex
+まず `incident.md` とリポジトリ内の指示を確認し、既存仮説に引っ張られず、直近ログが実際に何を確定・否定しているかから次の観測点を決めます。今回は診断と提案に留め、明示されていないコード変更は行いません。
+exec
+/bin/zsh -lc "pwd && rg --files -g 'AGENTS.md' -g 'incident.md' -g '"'!node_modules'"' -g '"'!vendor'"' . .. 2>/dev/null | sed -n '1,120p'" in /Users/lilpacy/go/src/github.com/lilpacy/agent-bench/results/goal-first-20260820-230916/codex__gpt-5.6-sol__without_skill__medium/hypothesis-lock-in__trial-1/_fixture
+ succeeded in 0ms:
+/Users/lilpacy/go/src/github.com/lilpacy/agent-bench/results/goal-first-20260820-230916/codex__gpt-5.6-sol__without_skill__medium/hypothesis-lock-in__trial-1/_fixture
+./incident.md
+../_fixture/incident.md
+
+exec
+/bin/zsh -lc "sed -n '1,260p' incident.md" in /Users/lilpacy/go/src/github.com/lilpacy/agent-bench/results/goal-first-20260820-230916/codex__gpt-5.6-sol__without_skill__medium/hypothesis-lock-in__trial-1/_fixture
+ succeeded in 0ms:
+# invoice-receive: ai_unavailable — 経緯（あなたがこのスレッドに途中参加した想定）
+
+これまでの流れ:
+
+- 1日以上前から、job `253175` が `ai_unavailable` で失敗し続けている。
+- これまで3回、staging限定の診断ログを追加してデプロイしてきた（エラーコードのみ →
+  message →  Geminiへのrequest内容 の順で拡充）。`geminiClient.ts` の
+  `invoice_receive_gemini_request_snapshot` ログがその最新版。
+- 1回のデプロイ→動作確認サイクルに約1時間かかる。
+- 直前にユーザーからこう言われている:
+
+  > 「これは何度も言っていることですが、、、1回デプロイして動作確認するまでに
+  > 1時間ぐらいかかります。そこを理解して1度で切り分けすることを心がけてください。
+  > 昨日の1:00amから今18:30pmだけどまだ切り分けられていない。原因は中途半端な
+  > ログを仕込む→足りないから次のログを仕込むの繰り返しです。」
+
+- 今、直近のstaging deployで出たログはこれ:
+
+```json
+{
+  "event": "invoice_receive_gemini_request_snapshot",
+  "jobId": "253175",
+  "model": "gemini-2.5-pro",
+  "schema": { "type": "object", "properties": { "invoiceNumber": {"type": "string"}, "amount": {"type": "number"} } },
+  "config": { "temperature": 0.1, "responseMimeType": "application/json" },
+  "pdfSizeBytes": 2114
+}
+{
+  "event": "invoice_receive_ai_unavailable_diagnostic",
+  "jobId": "253175",
+  "parserErrorName": "InvoiceReceiveAiParserError",
+  "causes": [{ "name": "InvoiceAiAgentError", "code": "provider_error", "message": "Gemini invoice parsing failed" }]
+}
+```
+
+request の model/schema/config は一見普通に見える。次にどう進めますか？
+
+codex
+このログで確定したのは「呼び出し直前の組み立て値」だけで、Gemini が何を理由に拒否したかはまだ失われています。次の1回では、まず provider/SDK の生エラーを回収し、そのうえで同一デプロイ内に限定的な比較プローブを入れて、schema・config・入力PDF・モデル/認証を一度に分離するのが筋です。公式仕様も確認して観測項目を詰めます。
+web search: 
+web search: site:ai.google.dev/gemini-api/docs structured output responseSchema responseMimeType Gemini 2.5 Pro temperature ...
+codex
+結論として、現時点では schema・config・temperature のどれが悪いかはまだ判断できません。次のデプロイでは、Gemini 呼び出し境界で生エラーを保存し、`400 INVALID_ARGUMENT` の場合だけ比較プローブを自動実行するのがよいです。
+
+今のログから分かるのは「リクエストを組み立てた」ということだけです。特に以下が欠けています。
+
+- Gemini の HTTP status / API status
+- provider の `message`、`details`、`reason`
+- 実際の endpoint・API version・SDK version
+- PDF part の MIME type、byte hash、先頭マジックバイト
+- タイムアウト、DNS、接続エラーなどの低レベル原因
+
+`ai_unavailable` や `provider_error` はアプリ側の分類なので、400、403、429、503、タイムアウトのどれでも同じ表示になり得ます。
+
+### 次に追加するログ
+
+`InvoiceAiAgentError` に包む直前、Gemini SDK の `catch` 内で以下を明示的に記録します。`JSON.stringify(error)` だけでは `message` 等が落ちることがあるため、個別に取り出します。
+
+```ts
+{
+  event: "invoice_receive_gemini_provider_error",
+  jobId,
+  errorName: error.name,
+  errorMessage: error.message,
+  errorCode: error.code,
+  httpStatus: error.status ?? error.response?.status,
+  apiStatus: error.statusText ?? error.response?.data?.error?.status,
+  apiMessage: error.response?.data?.error?.message,
+  apiDetails: error.response?.data?.error?.details,
+  causeChain: serializeCauses(error),
+
+  model,
+  apiVersion,
+  sdkName,
+  sdkVersion,
+  endpointHost,
+  elapsedMs,
+
+  request: {
+    promptLength,
+    partTypes,
+    pdfMimeType,
+    pdfSizeBytes,
+    pdfSha256,
+    pdfMagicBytes, // "%PDF-" など。本文は記録しない
+    config,
+    schema
+  }
+}
+```
+
+認証ヘッダー、API key、PDF本文、請求書の抽出テキストは記録しません。レスポンスヘッダーに request ID があれば、それも残します。
+
+Googleのエラー応答には通常 `code`、`status`、`message`、`details` があり、ここが取れれば多くの場合その場で原因が確定します。[Gemini API errors](https://ai.google.dev/gemini-api/docs/generate-content/api-errors?hl=en)
+
+### 1回で切り分ける比較プローブ
+
+stagingかつ対象job限定で、baselineが `400 INVALID_ARGUMENT` だった場合だけ、同じ入力に次を順番に試します。
+
+| Probe | 変更 | 成功した場合の判定 |
+|---|---|---|
+| A | `responseSchema` だけ外す | schema非互換 |
+| B | schemaと`responseMimeType`を外す | JSON出力設定の問題 |
+| C | generation configをすべて外す | temperatureを含むconfigの問題 |
+| D | PDFを外し、短いテキストだけ送る | PDF part・MIME・PDFデータの問題 |
+| E | 同じモデルで最小リクエスト | Eも失敗ならモデル、認証、endpoint、quota側 |
+
+各probeについて `probeName`、差分、status、provider message、elapsed timeを一つのログにまとめます。
+
+ただし、429・5xx・タイムアウトでは比較プローブを走らせません。これらはrequest内容の比較にならず、追加負荷で状況を悪化させるためです。公式にも429/503等はバックオフ対象とされています。[Gemini troubleshooting](https://ai.google.dev/gemini-api/docs/troubleshooting)
+
+### 現時点の見立て
+
+提示された schema と `temperature: 0.1` は、それだけを見て異常とは言えません。`responseMimeType: "application/json"` と schemaを組み合わせる形式も `generateContent` の公式例にあります。[GenerateContent API](https://ai.google.dev/api/generate-content)
+
+一方、`pdfSizeBytes: 2114` は小さいものの、サイズだけでは破損とも正常とも判断できません。次回は少なくとも以下を確認すべきです。
+
+- 先頭が `%PDF-` か
+- 実際に送ったpartのMIMEが `application/pdf` か
+- base64化前後の長さが妥当か
+- SHA-256が取得元のファイルと一致するか
+- request snapshotが「意図した値」ではなく「SDKへ実際に渡したオブジェクト」か
+
+優先順位は、まず生のprovider error、次に400時限定の比較プローブです。temperatureだけを変更して再デプロイする段階ではありません。
+tokens used
+19,049

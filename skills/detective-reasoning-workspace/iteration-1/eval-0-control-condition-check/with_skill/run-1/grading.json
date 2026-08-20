@@ -1,0 +1,5 @@
+{"expectations": [
+ {"text": "revctlのプラグイン自動読み込みとchecklist-helperの混入可能性を指摘し、without_checklistが本当に「なし」か疑問を呈している", "passed": true, "evidence": "'without_checklist は「チェックリストが無い」条件ではありません...プラグイン経路が開いたまま' と明示的に指摘。"},
+ {"text": "そのまま報告せず、生ログや実行環境の確認手段（プラグイン一覧確認、grep等）を具体的に提案", "passed": true, "evidence": "'ls -la ~/.revctl/plugins/', 'revctl plugins list', 'grep -rn -i -e checklist-helper ... raw_logs/' と具体的コマンドを提示。"},
+ {"text": "言及率の差だけで「チェックリストの効果」と結論づけることに慎重", "passed": true, "evidence": "n=10でのFisher検定p値(0.58, 0.63)を計算し「偶然と区別がつきません」と明言。加えて原因を1つ見つけても他の交絡（ブラインド判定、状態共有）を排除しきれないと注記。"}
+], "summary": {"passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0}}
