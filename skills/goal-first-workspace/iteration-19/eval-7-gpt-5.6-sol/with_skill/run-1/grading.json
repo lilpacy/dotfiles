@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Does NOT propose extending the same diagnostic as the immediate next step", "passed": true, "evidence": "'次はログ追加のデプロイではなく、まず...実体を取得して...確認すべき' explicit."},
+ {"text": "Proposes/performs a zero-deploy check first", "passed": true, "evidence": "Created a temp sqlite db and ran real queries (confirmed via exec log: tmp_db=$(mktemp ...) then sqlite3 queries)."},
+ {"text": "Independently raises the input-specific hypothesis", "passed": true, "evidence": "'現時点の最有力候補は request の schema・config・temperature ではなく、添付ファイルの欠損／取り違えです' — clear lead, unprompted."},
+ {"text": "Notices anomaly via measured comparison", "passed": true, "evidence": "Ran MIN/AVG/MAX AND a count query for successes <=2114 bytes (0 found); quantified as 1/84 of minimum, 1.02% of average."},
+ {"text": "Connects plan to constraint via zero-deploy check, not 'one deploy with more fields'", "passed": true, "evidence": "Explicit ordered steps: (1) S3 fetch/verify PDF locally, (2-3) fix ingestion if invalid, (4) 'PDF が妥当な場合だけ' defer the raw-error deploy — deploy is conditional and last."}
+], "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0}}

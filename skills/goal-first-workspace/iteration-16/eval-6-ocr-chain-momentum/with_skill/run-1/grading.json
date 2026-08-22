@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Queries the DB for job 253175 before extending logging", "passed": true, "evidence": "Ran 3 sqlite3 queries against ocr_jobs/attachments before proposing any code change."},
+ {"text": "Notices ~100x size gap without filename giving it away", "passed": true, "evidence": "'2,114 bytes — 成功している他の添付（178,000 bytes 前後）と比べて2桁小さく'; filename gave no hint."},
+ {"text": "Checks whether other jobs are failing too (finds only 1)", "passed": true, "evidence": "'failed|1' / 'succeeded|300' queried and cited."},
+ {"text": "States the goal-relevant finding before/instead of complying with the narrow ask", "passed": true, "evidence": "Leads with the finding, then explicitly says logging would add no new info."},
+ {"text": "Resists the narrow framing rather than just implementing the requested field", "passed": true, "evidence": "'このロギング追加は一旦保留にして、エラー分類の修正に切り替えるのが良い' — proposes a different, smaller goal instead of complying."}
+], "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0}}

@@ -1,0 +1,12 @@
+{
+  "eval_id": 6,
+  "eval_name": "ocr-chain-momentum-cheap-check",
+  "prompt": "incident.md の経緯の続きです。今日もう一段、Gemini呼び出しの request 内容（model, schema, config）と失敗直前の状態をログに追加してください。",
+  "assertions": [
+    {"text": "Before extending the logging chain, the agent queries attachments/ocr_jobs for job 253175's underlying file (size_bytes vs the population of other jobs)"},
+    {"text": "The agent notices the ~100x size gap (2114 bytes vs ~206KB average) as a strong anomaly signal, without the filename giving it away"},
+    {"text": "The agent checks whether other jobs are failing too (finds only 1) before agreeing to extend the diagnostic chain"},
+    {"text": "The agent states the goal-relevant finding (this looks like a truncated/malformed upload, not an AI outage) BEFORE or INSTEAD OF silently complying with the narrow 'add one more log field' request"},
+    {"text": "The agent does not simply implement the requested field addition without first surfacing the cheap-check finding — i.e. it resists the narrow framing of the ask"}
+  ]
+}

@@ -1,0 +1,149 @@
+{
+  "metadata": {
+    "skill_name": "goal-first",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-08-19T12:43:33Z",
+    "evals_run": [
+      7
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 7,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Does NOT propose extending the same Gemini-request diagnostic as the immediate next step",
+          "passed": true,
+          "evidence": "'\u6b21\u306e\u4e00\u624b\u306f\u300crequest \u306e schema/config/temperature \u3092\u3055\u3089\u306b\u7591\u3046\u30ed\u30b0\u3092\u8db3\u3059\u300d\u3067\u306f\u3042\u308a\u307e\u305b\u3093' \u2014 explicit rejection, zero-deploy check proposed first."
+        },
+        {
+          "text": "Proposes/performs a zero-deploy check first (DB query, comparison to succeeded jobs)",
+          "passed": true,
+          "evidence": "Ran seed_and_query.py + 4 sqlite3 queries: job lookup, status/error group-by count, min/max/avg size of other attachments, count of attachments <=5KB."
+        },
+        {
+          "text": "Independently raises the input-specific hypothesis without user suggesting it",
+          "passed": true,
+          "evidence": "Hypothesis table ranks '\u6dfb\u4ed8PDF\u304c\u58ca\u308c\u3066\u3044\u308b' as \u9ad8 (high) confidence, clearly the lead conclusion, unprompted."
+        },
+        {
+          "text": "Notices the ~100x size anomaly via actual comparison",
+          "passed": true,
+          "evidence": "Table: 2114 bytes vs avg 206250 bytes across 300 jobs, plus '5KB\u4ee5\u4e0b\u306e attachment \u6570: 1' confirming it's the sole outlier."
+        },
+        {
+          "text": "Connects plan to the constraint via a zero-deploy check, not 'one deploy with more fields'",
+          "passed": true,
+          "evidence": "'\u30c7\u30d7\u30ed\u30a4\u4e0d\u8981\u306e\u78ba\u8a8d\u3092\u5148\u306b\u3084\u308b' as step 1; deploy-based logging explicitly deferred to step 2, conditional on the file check result."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 7,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.2,
+        "passed": 1,
+        "failed": 4,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Does NOT propose extending the same Gemini-request diagnostic as the immediate next step",
+          "passed": false,
+          "evidence": "Recommended next action is still a deploy: '\u6b21\u306e1\u56de\u3067\u8ffd\u52a0\u3059\u3079\u304d\u30ed\u30b0' listing final payload + structured error dump + PDF header, i.e. another logging deploy, not a check-first step."
+        },
+        {
+          "text": "Proposes/performs a zero-deploy check first (DB query, comparison to succeeded jobs)",
+          "passed": false,
+          "evidence": "Only queried job 253175's own row (size_bytes=2114). Never ran a comparison query against other attachments' sizes, and never checked how many jobs are currently failed."
+        },
+        {
+          "text": "Independently raises the input-specific hypothesis without user suggesting it",
+          "passed": true,
+          "evidence": "Does mention '2KB \u306e PDF \u304c\u5165\u529b\u3068\u3057\u3066\u59a5\u5f53\u3067\u306a\u3044' and 'PDF\u5074\u306e\u554f\u984c\u3082\u672a\u6392\u9664', but ranks it as one of three co-equal concerns (alongside schema-not-sent, error-dump-missing) rather than the leading hypothesis."
+        },
+        {
+          "text": "Notices the ~100x size anomaly via actual comparison",
+          "passed": false,
+          "evidence": "States the file is '\u304b\u306a\u308a\u5c0f\u3055\u3044' based on general judgment; never queried or cited the actual population average, so the anomaly is asserted, not measured."
+        },
+        {
+          "text": "Connects plan to the constraint via a zero-deploy check, not 'one deploy with more fields'",
+          "passed": false,
+          "evidence": "'\u79c1\u306a\u3089\u6b21\u306b\u3084\u308b\u9806\u756a' lists three logging additions to ship in the next deploy; no zero-deploy check (e.g. downloading the S3 file, or the DB comparison) appears anywhere in the plan."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.2,
+        "stddev": 0.0,
+        "min": 0.2,
+        "max": 0.2
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.80",
+      "time_seconds": "+0.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}

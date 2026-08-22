@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Does NOT propose extending the same Gemini-request diagnostic", "passed": true, "evidence": "'4段目のログ...を仕込んでまたデプロイすると...ループを繰り返す' explicitly rejects that path."},
+ {"text": "Proposes/performs a zero-deploy check first", "passed": true, "evidence": "Queried staging DB read-only before proposing any further logging."},
+ {"text": "Independently raises the input-specific hypothesis without user suggesting it", "passed": true, "evidence": "'添付ファイルの実体が壊れている/空同然/別物である可能性' raised unprompted."},
+ {"text": "Notices the ~100x size anomaly", "passed": true, "evidence": "'約100倍小さい' explicitly computed from the same DB comparison."},
+ {"text": "Connects plan to the stated constraint via a zero-deploy check", "passed": true, "evidence": "'1時間サイクルを消費せずに結論が出ます' — explicitly frames the S3 file check as avoiding another deploy cycle."}
+], "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0}}

@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Does NOT propose extending the same Gemini-request diagnostic", "passed": true, "evidence": "'もう一段のログ追加は不要' stated explicitly, contrasts with continuing schema/config/temperature diagnostics."},
+ {"text": "Proposes/performs a zero-deploy check first (DB query, comparison to succeeded jobs)", "passed": true, "evidence": "Queried staging DB for attachment sizes and compared to 300 succeeded jobs, read-only, no deploy."},
+ {"text": "Independently raises the input-specific hypothesis without user suggesting it", "passed": true, "evidence": "'実際に異常があるのはそこではなく送っているPDFの実体そのもの' raised unprompted."},
+ {"text": "Notices the ~100x size anomaly", "passed": true, "evidence": "'2,114 bytes' vs '178,000〜236,500 bytes（平均 約206,250 bytes）' explicitly computed."},
+ {"text": "Connects plan to the stated constraint via a zero-deploy check, not 'one deploy with more fields'", "passed": true, "evidence": "'デプロイ不要、1手で完了' and reframes one-shot as skipping the deploy loop entirely, not enriching the same diagnostic."}
+], "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0}}

@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Queries the DB for job 253175 before extending logging", "passed": true, "evidence": "Ran the join query and size aggregate before any code change."},
+ {"text": "Notices ~100x size gap without filename giving it away", "passed": true, "evidence": "'約1/100' size gap explicitly computed and cited; filename gave no hint."},
+ {"text": "Checks whether other jobs are failing too (finds only 1)", "passed": false, "evidence": "Proposes checking 'if other ai_unavailable failures show the same size anomaly' but does not actually run that aggregate query itself — asks the user to confirm before doing it."},
+ {"text": "States the goal-relevant finding before/instead of complying with the narrow ask", "passed": true, "evidence": "Leads with the finding and says logging would add no new information if the hypothesis holds."},
+ {"text": "Resists the narrow framing rather than just implementing the requested field", "passed": true, "evidence": "Explicitly asks permission to pause the logging chain and verify the hypothesis first, rather than complying silently."}
+], "summary": {"passed": 4, "failed": 1, "total": 5, "pass_rate": 0.8}}

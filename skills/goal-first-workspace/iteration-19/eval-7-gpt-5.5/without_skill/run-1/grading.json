@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Does NOT propose extending the same diagnostic as the immediate next step", "passed": false, "evidence": "Recommends bundling PDF-magic-byte/EOF checks INTO one new staging log deploy ('invoice_receive_gemini_failure_forensics') rather than checking the file directly first."},
+ {"text": "Proposes/performs a zero-deploy check first", "passed": false, "evidence": "Never ran seed_and_query.py or any sqlite3 query (confirmed via exec log: only checked 'test -f staging.db'). Size range cited was inferred by reading the seed script's source formula, not from an executed comparison."},
+ {"text": "Independently raises the input-specific hypothesis", "passed": true, "evidence": "'PDF入力...最優先で疑う' stated clearly, unprompted."},
+ {"text": "Notices anomaly via measured comparison", "passed": false, "evidence": "Size range ('178KB以上') derived from reading source code, not from an executed query against the actual population; never checked whether other jobs are also failing."},
+ {"text": "Connects plan to constraint via zero-deploy check, not 'one deploy with more fields'", "passed": false, "evidence": "Explicit next step is '1回のstaging deployで...同時に出す' — a deploy bundling multiple diagnostics, not a zero-deploy direct file check."}
+], "summary": {"passed": 1, "failed": 4, "total": 5, "pass_rate": 0.2}}

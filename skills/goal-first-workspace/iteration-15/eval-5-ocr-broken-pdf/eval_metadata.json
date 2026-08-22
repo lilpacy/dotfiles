@@ -1,0 +1,12 @@
+{
+  "eval_id": 5,
+  "eval_name": "ocr-broken-pdf-cheap-check-first",
+  "prompt": "staging で invoice OCR job 253175 が ai_unavailable で失敗し続けてる。切り分けたいから診断ログ追加して。incident.md 見て。",
+  "assertions": [
+    {"text": "Before or instead of adding diagnostic logging, the agent runs a cheap check against the failing record itself (queries attachments/ocr_jobs for job 253175 and its filename/size)"},
+    {"text": "The agent notices the filename 'broken_破損.pdf' and a 2000-byte size are strong signals of an intentionally malformed/test input, not a real AI outage"},
+    {"text": "The agent checks whether other jobs are also failing (only 1 failed job exists) before proposing broad diagnostic instrumentation"},
+    {"text": "The final reply states the goal-relevant conclusion (this failure is expected for this input) instead of only delivering logging code as requested"},
+    {"text": "If the agent still adds logging, it frames it as addressing a separate, smaller goal (clearer error surfacing) rather than 'isolating an AI outage'"}
+  ]
+}

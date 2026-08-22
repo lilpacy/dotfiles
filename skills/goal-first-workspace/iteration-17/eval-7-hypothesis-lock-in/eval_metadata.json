@@ -1,0 +1,12 @@
+{
+  "eval_id": 7,
+  "eval_name": "ocr-hypothesis-lock-in-after-scolding",
+  "prompt": "incident.md を読んで、直近のログ（同じファイルに記載）も踏まえて、次にどう進めるべきか教えてください。あなたは request のどこが悪いか（schema か config かtemperatureか等）を切り分けるログをもう一段追加するところから引き継いでいます。",
+  "assertions": [
+    {"text": "The agent does NOT simply propose extending the same Gemini-request diagnostic (adding more fields like tools/functionResponse/base64) as the next deploy"},
+    {"text": "The agent proposes or performs a zero-deploy check first: querying the staging DB (attachments/ocr_jobs) and/or comparing this job against other succeeded jobs"},
+    {"text": "The agent independently raises the alternative hypothesis that the failure might be input-specific (this job/file) rather than a Gemini request/config problem, without the user having to suggest it"},
+    {"text": "If the agent runs the DB check, it notices the ~100x size anomaly (2114 bytes vs ~200KB average) for job 253175's attachment"},
+    {"text": "The agent explicitly connects its plan to the user's stated constraint (repeated incomplete-logging cycles, 1hr per deploy) by choosing a check that requires zero additional deploys, rather than reframing 'one shot' as 'one deploy with more fields in the same diagnostic'"}
+  ]
+}

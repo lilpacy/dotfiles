@@ -1,0 +1,149 @@
+{
+  "metadata": {
+    "skill_name": "goal-first",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-08-19T12:38:15Z",
+    "evals_run": [
+      7
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 7,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Does NOT propose extending the same Gemini-request diagnostic",
+          "passed": true,
+          "evidence": "'\u3082\u3046\u4e00\u6bb5\u306e\u30ed\u30b0\u8ffd\u52a0\u306f\u4e0d\u8981' stated explicitly, contrasts with continuing schema/config/temperature diagnostics."
+        },
+        {
+          "text": "Proposes/performs a zero-deploy check first (DB query, comparison to succeeded jobs)",
+          "passed": true,
+          "evidence": "Queried staging DB for attachment sizes and compared to 300 succeeded jobs, read-only, no deploy."
+        },
+        {
+          "text": "Independently raises the input-specific hypothesis without user suggesting it",
+          "passed": true,
+          "evidence": "'\u5b9f\u969b\u306b\u7570\u5e38\u304c\u3042\u308b\u306e\u306f\u305d\u3053\u3067\u306f\u306a\u304f\u9001\u3063\u3066\u3044\u308bPDF\u306e\u5b9f\u4f53\u305d\u306e\u3082\u306e' raised unprompted."
+        },
+        {
+          "text": "Notices the ~100x size anomaly",
+          "passed": true,
+          "evidence": "'2,114 bytes' vs '178,000\u301c236,500 bytes\uff08\u5e73\u5747 \u7d04206,250 bytes\uff09' explicitly computed."
+        },
+        {
+          "text": "Connects plan to the stated constraint via a zero-deploy check, not 'one deploy with more fields'",
+          "passed": true,
+          "evidence": "'\u30c7\u30d7\u30ed\u30a4\u4e0d\u8981\u30011\u624b\u3067\u5b8c\u4e86' and reframes one-shot as skipping the deploy loop entirely, not enriching the same diagnostic."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 7,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Does NOT propose extending the same Gemini-request diagnostic",
+          "passed": true,
+          "evidence": "'4\u6bb5\u76ee\u306e\u30ed\u30b0...\u3092\u4ed5\u8fbc\u3093\u3067\u307e\u305f\u30c7\u30d7\u30ed\u30a4\u3059\u308b\u3068...\u30eb\u30fc\u30d7\u3092\u7e70\u308a\u8fd4\u3059' explicitly rejects that path."
+        },
+        {
+          "text": "Proposes/performs a zero-deploy check first",
+          "passed": true,
+          "evidence": "Queried staging DB read-only before proposing any further logging."
+        },
+        {
+          "text": "Independently raises the input-specific hypothesis without user suggesting it",
+          "passed": true,
+          "evidence": "'\u6dfb\u4ed8\u30d5\u30a1\u30a4\u30eb\u306e\u5b9f\u4f53\u304c\u58ca\u308c\u3066\u3044\u308b/\u7a7a\u540c\u7136/\u5225\u7269\u3067\u3042\u308b\u53ef\u80fd\u6027' raised unprompted."
+        },
+        {
+          "text": "Notices the ~100x size anomaly",
+          "passed": true,
+          "evidence": "'\u7d04100\u500d\u5c0f\u3055\u3044' explicitly computed from the same DB comparison."
+        },
+        {
+          "text": "Connects plan to the stated constraint via a zero-deploy check",
+          "passed": true,
+          "evidence": "'1\u6642\u9593\u30b5\u30a4\u30af\u30eb\u3092\u6d88\u8cbb\u305b\u305a\u306b\u7d50\u8ad6\u304c\u51fa\u307e\u3059' \u2014 explicitly frames the S3 file check as avoiding another deploy cycle."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.00",
+      "time_seconds": "+0.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}

@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Does NOT propose extending the same Gemini-request diagnostic as the immediate next step", "passed": true, "evidence": "'次の一手は「request の schema/config/temperature をさらに疑うログを足す」ではありません' — explicit rejection, zero-deploy check proposed first."},
+ {"text": "Proposes/performs a zero-deploy check first (DB query, comparison to succeeded jobs)", "passed": true, "evidence": "Ran seed_and_query.py + 4 sqlite3 queries: job lookup, status/error group-by count, min/max/avg size of other attachments, count of attachments <=5KB."},
+ {"text": "Independently raises the input-specific hypothesis without user suggesting it", "passed": true, "evidence": "Hypothesis table ranks '添付PDFが壊れている' as 高 (high) confidence, clearly the lead conclusion, unprompted."},
+ {"text": "Notices the ~100x size anomaly via actual comparison", "passed": true, "evidence": "Table: 2114 bytes vs avg 206250 bytes across 300 jobs, plus '5KB以下の attachment 数: 1' confirming it's the sole outlier."},
+ {"text": "Connects plan to the constraint via a zero-deploy check, not 'one deploy with more fields'", "passed": true, "evidence": "'デプロイ不要の確認を先にやる' as step 1; deploy-based logging explicitly deferred to step 2, conditional on the file check result."}
+], "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0}}

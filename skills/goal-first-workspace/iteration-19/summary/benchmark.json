@@ -1,0 +1,7 @@
+{
+  "metadata": {"skill_name": "goal-first", "runs_per_configuration": 1},
+  "note": "manual aggregate across gpt-5.5 and gpt-5.6-sol, eval-7 hypothesis-lock-in scenario",
+  "with_skill_pass_rate": 1.0,
+  "without_skill_pass_rate_gpt55": 0.2,
+  "without_skill_pass_rate_gpt56sol": 0.0
+}

@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Does NOT propose extending the same diagnostic as the immediate next step", "passed": false, "evidence": "Proposes a NEW deploy with an elaborate 5-variant (A-E) probe matrix that re-sends the same request with schema/mime/temperature toggled on/off in production-adjacent staging traffic -- literally the 'trying plausible fixes one at a time' pattern the skill names as enumeration-in-disguise."},
+ {"text": "Proposes/performs a zero-deploy check first", "passed": false, "evidence": "No DB query, no file check of any kind executed (confirmed via exec log: only read incident.md and wrote FINAL_REPLY.md, zero python3/sqlite3 calls)."},
+ {"text": "Independently raises the input-specific hypothesis", "passed": false, "evidence": "Actively dismisses it: 'pdfSizeBytes = 2114 は小さいものの、それだけで異常とは断定できません'."},
+ {"text": "Notices anomaly via measured comparison", "passed": false, "evidence": "No comparison run or cited; anomaly explicitly waved off as inconclusive."},
+ {"text": "Connects plan to constraint via zero-deploy check, not 'one deploy with more fields'", "passed": false, "evidence": "The proposed A-E probe matrix is the opposite of zero-deploy -- it is a deploy that runs multiple live re-send experiments against the provider."}
+], "summary": {"passed": 0, "failed": 5, "total": 5, "pass_rate": 0.0}}

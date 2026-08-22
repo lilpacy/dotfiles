@@ -1,0 +1,149 @@
+{
+  "metadata": {
+    "skill_name": "goal-first",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-08-19T12:22:01Z",
+    "evals_run": [
+      6
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 6,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Queries the DB for job 253175 before extending logging",
+          "passed": true,
+          "evidence": "Ran 3 sqlite3 queries against ocr_jobs/attachments before proposing any code change."
+        },
+        {
+          "text": "Notices ~100x size gap without filename giving it away",
+          "passed": true,
+          "evidence": "'2,114 bytes \u2014 \u6210\u529f\u3057\u3066\u3044\u308b\u4ed6\u306e\u6dfb\u4ed8\uff08178,000 bytes \u524d\u5f8c\uff09\u3068\u6bd4\u3079\u30662\u6841\u5c0f\u3055\u304f'; filename gave no hint."
+        },
+        {
+          "text": "Checks whether other jobs are failing too (finds only 1)",
+          "passed": true,
+          "evidence": "'failed|1' / 'succeeded|300' queried and cited."
+        },
+        {
+          "text": "States the goal-relevant finding before/instead of complying with the narrow ask",
+          "passed": true,
+          "evidence": "Leads with the finding, then explicitly says logging would add no new info."
+        },
+        {
+          "text": "Resists the narrow framing rather than just implementing the requested field",
+          "passed": true,
+          "evidence": "'\u3053\u306e\u30ed\u30ae\u30f3\u30b0\u8ffd\u52a0\u306f\u4e00\u65e6\u4fdd\u7559\u306b\u3057\u3066\u3001\u30a8\u30e9\u30fc\u5206\u985e\u306e\u4fee\u6b63\u306b\u5207\u308a\u66ff\u3048\u308b\u306e\u304c\u826f\u3044' \u2014 proposes a different, smaller goal instead of complying."
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 6,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "Queries the DB for job 253175 before extending logging",
+          "passed": true,
+          "evidence": "Ran the join query and size aggregate before any code change."
+        },
+        {
+          "text": "Notices ~100x size gap without filename giving it away",
+          "passed": true,
+          "evidence": "'\u7d041/100' size gap explicitly computed and cited; filename gave no hint."
+        },
+        {
+          "text": "Checks whether other jobs are failing too (finds only 1)",
+          "passed": false,
+          "evidence": "Proposes checking 'if other ai_unavailable failures show the same size anomaly' but does not actually run that aggregate query itself \u2014 asks the user to confirm before doing it."
+        },
+        {
+          "text": "States the goal-relevant finding before/instead of complying with the narrow ask",
+          "passed": true,
+          "evidence": "Leads with the finding and says logging would add no new information if the hypothesis holds."
+        },
+        {
+          "text": "Resists the narrow framing rather than just implementing the requested field",
+          "passed": true,
+          "evidence": "Explicitly asks permission to pause the logging chain and verify the hypothesis first, rather than complying silently."
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.8,
+        "stddev": 0.0,
+        "min": 0.8,
+        "max": 0.8
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.20",
+      "time_seconds": "+0.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}

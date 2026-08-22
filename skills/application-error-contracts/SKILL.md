@@ -35,6 +35,14 @@ Record one row per operation: expected failures, current representation, public 
 
 Do not cap public business errors at an arbitrary number. The allowlist is the closed union of supported operation outcomes, not a list of approved message strings. Never expose arbitrary `Error.message` merely to avoid a generic message.
 
+## Inspect input facts before blaming providers
+
+When an external provider returns a generic error such as invalid argument, unavailable, or bad request, inspect the input artifact before theorizing about SDK configuration, schema shape, or infrastructure health. Check the artifact or fixture name, content type, byte length, checksum, storage metadata, parser validation output, retry history, and whether the data is intentionally abnormal.
+
+If the artifact is corrupt, unsupported, missing, or intentionally an abnormal test fixture, classify that as an input contract outcome before mapping it to a provider outage. The public code should distinguish permanent input failures from transient provider failures, and retries should follow that classification.
+
+Read [references/external-provider-input-failure.md](references/external-provider-input-failure.md) for the session-derived diagnostic order.
+
 ## Define a serializable contract
 
 Prefer the smallest existing discriminated-union pattern in the codebase:

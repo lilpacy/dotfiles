@@ -7,6 +7,8 @@ description: Design, implement, and review CI test-result parsers, flaky-issue f
 
 Keep three facts separate: what the runner did, what tests observed, and whether policy allows the change to proceed. A trustworthy report preserves each fact instead of collapsing all non-success states into `failed`.
 
+Keep the investigation transport separate too. If a command fails before shell startup or before the CLI emits output, classify it as agent/tool transport, not as a `gh`, GitHub, or CI failure. Read [references/tool-transport-attribution.md](references/tool-transport-attribution.md) for the boundary rule.
+
 ## Choose the automation owner first
 
 Before editing a workflow, compare the operating models when a request mixes terms such as “AI detects,” “automatically file,” retries, or required checks.
@@ -88,6 +90,8 @@ Treat optional local artifacts as resource costs. If video generation or a local
 When monitoring a long remote run, use the user's requested polling interval for both tool checks and status reports. Do not insert extra no-change updates between those intervals.
 
 Read [references/full-to-partial-e2e-triage.md](references/full-to-partial-e2e-triage.md) for the validated shifted-boundary pattern and reporting checklist.
+
+When an E2E failure reports a long assertion wait, attribute the time to the exact test timeout before calling the product operation slow. Quote the helper constant and assertion, then compare backend/network/trace timings with the final UI observation. Read [references/e2e-timeout-and-runner-provenance.md](references/e2e-timeout-and-runner-provenance.md) for the timeout-source and rerun provenance checklist.
 
 ## Provenance and validation claims
 

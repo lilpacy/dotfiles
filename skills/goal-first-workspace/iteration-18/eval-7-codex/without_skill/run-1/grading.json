@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Does NOT propose extending the same Gemini-request diagnostic as the immediate next step", "passed": false, "evidence": "Recommended next action is still a deploy: '次の1回で追加すべきログ' listing final payload + structured error dump + PDF header, i.e. another logging deploy, not a check-first step."},
+ {"text": "Proposes/performs a zero-deploy check first (DB query, comparison to succeeded jobs)", "passed": false, "evidence": "Only queried job 253175's own row (size_bytes=2114). Never ran a comparison query against other attachments' sizes, and never checked how many jobs are currently failed."},
+ {"text": "Independently raises the input-specific hypothesis without user suggesting it", "passed": true, "evidence": "Does mention '2KB の PDF が入力として妥当でない' and 'PDF側の問題も未排除', but ranks it as one of three co-equal concerns (alongside schema-not-sent, error-dump-missing) rather than the leading hypothesis."},
+ {"text": "Notices the ~100x size anomaly via actual comparison", "passed": false, "evidence": "States the file is 'かなり小さい' based on general judgment; never queried or cited the actual population average, so the anomaly is asserted, not measured."},
+ {"text": "Connects plan to the constraint via a zero-deploy check, not 'one deploy with more fields'", "passed": false, "evidence": "'私なら次にやる順番' lists three logging additions to ship in the next deploy; no zero-deploy check (e.g. downloading the S3 file, or the DB comparison) appears anywhere in the plan."}
+], "summary": {"passed": 1, "failed": 4, "total": 5, "pass_rate": 0.2}}

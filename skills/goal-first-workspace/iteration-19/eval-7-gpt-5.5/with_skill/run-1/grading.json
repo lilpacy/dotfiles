@@ -1,0 +1,7 @@
+{"expectations": [
+ {"text": "Does NOT propose extending the same diagnostic as the immediate next step", "passed": true, "evidence": "'次に追加するべきなのは「schema/config/temperature を切り分けるログ」ではありません' explicit."},
+ {"text": "Proposes/performs a zero-deploy check first", "passed": true, "evidence": "Ran real sqlite3 queries: status/error group-by count, job lookup, MIN/AVG/MAX size comparison, before writing any conclusion."},
+ {"text": "Independently raises the input-specific hypothesis", "passed": true, "evidence": "Table leads with 'attachment を直接見るべき', PDF size flagged as top signal."},
+ {"text": "Notices anomaly via measured comparison", "passed": true, "evidence": "Executed MIN/AVG/MAX query: 178000-236500 vs target 2114, explicitly labeled '外れ値'."},
+ {"text": "Connects plan to constraint via zero-deploy check, not 'one deploy with more fields'", "passed": true, "evidence": "'デプロイ1回が約1時間かかるので...分割ログはしない方がいい'; proposes local S3/pdfinfo check as step 1, defers any deploy to a conditional step 2."}
+], "summary": {"passed": 5, "failed": 0, "total": 5, "pass_rate": 1.0}}

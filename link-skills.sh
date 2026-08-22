@@ -20,8 +20,11 @@ CLAUDE_SKILLS=(
   cloudflare
   cloudflare-email-service
   codex-exec-review
+  codex-session-history-recovery
+  codex-thread-branch-diagnostics
   credential-redaction
   defuddle
+  detective-reasoning
   development-workflow
   diagram-design
   durable-objects
@@ -29,8 +32,10 @@ CLAUDE_SKILLS=(
   find-skills
   frontend-design
   git-commit-workflow
+  goal-first
   hallmark
   improve-animations
+  ingest-llm-wiki-query
   interaction-design-review-agent
   japanese-test-conventions
   json-canvas
@@ -57,8 +62,9 @@ CLAUDE_SKILLS=(
   test-layer-classification
   test-redundancy-judgment
   test-suite-pruning
+  ui-visual-critic
   understand
-  view-x-post
+  verify-control-condition
   web-doc-reading
   web-perf
   workers-best-practices
@@ -88,6 +94,7 @@ CODEX_SKILLS=(
   codex-thread-branch-diagnostics
   credential-redaction
   defuddle
+  detective-reasoning
   development-workflow
   diagnose-site-migration-seo
   diagram-design
@@ -98,6 +105,7 @@ CODEX_SKILLS=(
   git-pull-with-live-file-watchers
   github-actions-runtime-falsification
   github-actions-secret-probe
+  goal-first
   hallmark
   improve-animations
   ingest-llm-wiki-query
@@ -136,7 +144,7 @@ CODEX_SKILLS=(
   tooltip-latency-verification
   ui-visual-critic
   understand
-  view-x-post
+  verify-control-condition
   web-doc-reading
   web-perf
   workers-best-practices
