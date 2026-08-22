@@ -75,7 +75,7 @@
       "Bash(git reset:*)"
     ]
   },
-  "model": "sonnet",
+  "model": "opus",
   "hooks": {
     "UserPromptSubmit": [
       {
@@ -112,14 +112,21 @@
     "frontend-design@claude-plugins-official": false,
     "linear-cli@linear-cli": true,
     "skill-creator@claude-plugins-official": true,
-    "superpowers@claude-plugins-official": true,
-    "ponytail@ponytail": true
+    "superpowers@claude-plugins-official": false,
+    "ponytail@ponytail": true,
+    "hermes-self-improvement@lilpacy": true
   },
   "extraKnownMarketplaces": {
     "ponytail": {
       "source": {
         "source": "github",
         "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "lilpacy": {
+      "source": {
+        "source": "github",
+        "repo": "lilpacy/hermes-self-improvement-claude-plugin"
       }
     }
   },
@@ -383,7 +390,7 @@
     ]
   },
   "alwaysThinkingEnabled": true,
-  "effortLevel": "medium",
+  "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true,
   "theme": "dark-daltonized",
   "teammateMode": "in-process"
