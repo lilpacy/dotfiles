@@ -40,7 +40,7 @@ description: Use before presenting implementation plans and after non-trivial co
 ```bash
 command codex exec \
   --sandbox read-only \
-  --model gpt-5.4 \
+  --model gpt-5.5 \
   -c model_reasoning_effort=medium \
   -c service_tier=fast \
   -c features.fast_mode=true \
@@ -54,7 +54,7 @@ Use the same session for updated plan reviews:
 ```bash
 command codex exec resume \
   -c 'sandbox_mode="read-only"' \
-  --model gpt-5.4 \
+  --model gpt-5.5 \
   -c model_reasoning_effort=medium \
   -c service_tier=fast \
   -c features.fast_mode=true \
